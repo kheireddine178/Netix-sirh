@@ -329,13 +329,13 @@ export default function SaisieFormulaireConsolide({
     startTransition(async () => {
       try {
         const res = await creerBulletin(salarieActive.id, formData);
-        if (res.success) {
+        if (res && (res.bulletin_id || res.net_a_payer !== undefined)) {
           setEstEnregistre(true);
           setSaveStatus("saved");
-          setMessageCharge("Bulletin enregistré et certifié conforme.");
+          setMessageCharge("Bulletin enregistré avec succès et certifié conforme.");
           router.refresh();
         } else {
-          setErreur(res.error || "Erreur lors de l'enregistrement");
+          setErreur("Erreur lors de l'enregistrement du bulletin.");
           setSaveStatus("error");
         }
       } catch (err: any) {
@@ -436,7 +436,7 @@ export default function SaisieFormulaireConsolide({
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <span className="text-[11px] font-semibold text-slate-500 px-1 font-mono">
+              <span className="text-[11px] font-semibold text-slate-500 px-1 tabular-nums">
                 {pagerInfo.current}/{pagerInfo.total}
               </span>
               <Button
@@ -541,7 +541,7 @@ export default function SaisieFormulaireConsolide({
                   </div>
                   <h3 className="font-bold text-slate-900 text-sm">Salaire de Base & Profil Contractuel</h3>
                 </div>
-                <span className="text-xs font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-200/60">
+                <span className="text-xs font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-200/60">
                   {salarieActive.type_contrat || "CDI"} · {salarieActive.fonction || "Poste standard"}
                 </span>
               </div>
@@ -557,7 +557,7 @@ export default function SaisieFormulaireConsolide({
                     step="0.01"
                     defaultValue={initialValues["salaire_base_theorique"] ?? salarieActive.salaire_base_theorique}
                     onChange={debounceCalcul}
-                    className="font-mono font-bold text-base text-slate-900"
+                    className="tabular-nums font-bold text-base text-slate-900"
                   />
                   <span className="text-[11px] text-slate-400">
                     Durée légale : {parametres.duree_legale_mensuelle}h/mois (Loi 90-11)
@@ -566,7 +566,7 @@ export default function SaisieFormulaireConsolide({
 
                 <div className="flex flex-col justify-center p-3 rounded-xl bg-slate-50/80 border border-slate-200/60 text-xs">
                   <span className="text-slate-500 font-medium">Taux horaire calculé :</span>
-                  <span className="text-lg font-extrabold text-indigo-600 font-mono mt-0.5">
+                  <span className="text-lg font-extrabold text-indigo-600 tabular-nums mt-0.5">
                     {resultat ? formatDA(resultat.taux_horaire) : "—"} / heure
                   </span>
                   <span className="text-[10px] text-slate-400 mt-1">
@@ -608,7 +608,7 @@ export default function SaisieFormulaireConsolide({
                       placeholder="0"
                       defaultValue={initialValues[champ.name] || ""}
                       onChange={debounceCalcul}
-                      className="h-8 font-mono text-xs font-bold bg-white text-right"
+                      className="h-8 tabular-nums text-xs font-bold bg-white text-right"
                     />
                     <span className="text-[10px] text-slate-400 truncate">{champ.hint}</span>
                   </div>
@@ -625,7 +625,7 @@ export default function SaisieFormulaireConsolide({
                   </div>
                   <h3 className="font-bold text-slate-900 text-sm">Heures Supplémentaires (Loi 90-11)</h3>
                 </div>
-                <span className="text-xs text-slate-500 font-mono">Majorations 50% / 75% / 100%</span>
+                <span className="text-xs text-slate-500 font-medium">Majorations 50% / 75% / 100%</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -640,7 +640,7 @@ export default function SaisieFormulaireConsolide({
                       placeholder="0"
                       defaultValue={initialValues[hs.name] || ""}
                       onChange={debounceCalcul}
-                      className="h-8 font-mono text-xs font-bold bg-white text-right"
+                      className="h-8 tabular-nums text-xs font-bold bg-white text-right"
                     />
                     <span className="text-[10px] text-slate-400">{hs.hint}</span>
                   </div>
@@ -680,10 +680,10 @@ export default function SaisieFormulaireConsolide({
                       max="31"
                       defaultValue={initialValues["panier_jours"] ?? 22}
                       onChange={debounceCalcul}
-                      className="font-mono text-sm font-bold bg-white w-24 text-right"
+                      className="tabular-nums text-sm font-bold bg-white w-24 text-right"
                     />
                     <span className="text-xs text-slate-500">× 500 DA =</span>
-                    <span className="text-xs font-bold text-slate-900 font-mono ml-auto">
+                    <span className="text-xs font-bold text-slate-900 tabular-nums ml-auto">
                       {resultat ? formatDA(resultat.prime_panier) : "—"}
                     </span>
                   </div>
@@ -705,7 +705,7 @@ export default function SaisieFormulaireConsolide({
                     placeholder="0.00 DA"
                     defaultValue={initialValues["prime_transport"] || ""}
                     onChange={debounceCalcul}
-                    className="font-mono text-sm font-bold bg-white text-right"
+                    className="tabular-nums text-sm font-bold bg-white text-right"
                   />
                 </div>
 
@@ -727,10 +727,10 @@ export default function SaisieFormulaireConsolide({
                       placeholder="0%"
                       defaultValue={initialValues["prime_anciennete_pourcentage"] || ""}
                       onChange={debounceCalcul}
-                      className="font-mono text-sm font-bold bg-white w-24 text-right"
+                      className="tabular-nums text-sm font-bold bg-white w-24 text-right"
                     />
                     <span className="text-xs text-slate-500">% du SB =</span>
-                    <span className="text-xs font-bold text-slate-900 font-mono ml-auto">
+                    <span className="text-xs font-bold text-slate-900 tabular-nums ml-auto">
                       {resultat ? formatDA(resultat.prime_anciennete) : "—"}
                     </span>
                   </div>
@@ -752,7 +752,7 @@ export default function SaisieFormulaireConsolide({
                     placeholder="0.00 DA"
                     defaultValue={initialValues["icr"] || ""}
                     onChange={debounceCalcul}
-                    className="font-mono text-sm font-bold bg-white text-right"
+                    className="tabular-nums text-sm font-bold bg-white text-right"
                   />
                 </div>
               </div>
@@ -770,7 +770,7 @@ export default function SaisieFormulaireConsolide({
                     <p className="text-[11px] text-slate-400">Ajout instantané de primes ou retenues sans défilement</p>
                   </div>
                 </div>
-                <span className="text-xs font-mono font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
                   {lignes.length} active(s)
                 </span>
               </div>
@@ -812,7 +812,7 @@ export default function SaisieFormulaireConsolide({
                         className="w-full p-3 text-left hover:bg-purple-50/60 transition-colors flex items-center justify-between gap-3 group"
                       >
                         <div className="flex items-center gap-2.5">
-                          <span className="px-2 py-0.5 rounded font-mono text-xs font-bold bg-purple-100 text-purple-800">
+                          <span className="px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-800">
                             {r.code}
                           </span>
                           <span className="text-xs font-bold text-slate-900 group-hover:text-purple-700">
@@ -847,7 +847,7 @@ export default function SaisieFormulaireConsolide({
                       className="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-50 transition-colors"
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className="font-mono text-xs font-bold bg-white px-2 py-1 rounded border border-slate-200 text-slate-700">
+                        <span className="text-xs font-bold bg-white px-2 py-1 rounded border border-slate-200 text-slate-700">
                           {l.code}
                         </span>
                         <div>
@@ -865,7 +865,7 @@ export default function SaisieFormulaireConsolide({
                           value={l.valeur_1 || ""}
                           onChange={(e) => handleModifierLigne(l.code, "valeur_1", parseFloat(e.target.value) || 0)}
                           placeholder="0"
-                          className="w-28 h-8 font-mono text-xs font-bold bg-white text-right"
+                          className="w-28 h-8 tabular-nums text-xs font-bold bg-white text-right"
                         />
                         <span className="text-xs font-semibold text-slate-500 w-6">
                           {l.categorie === "pourcentage" ? "%" : "DA"}
@@ -895,7 +895,7 @@ export default function SaisieFormulaireConsolide({
                   </div>
                   <h3 className="font-bold text-slate-900 text-sm">Avances & Retenues Personnalisées</h3>
                 </div>
-                <span className="text-xs text-slate-400 font-mono">Déductions après IRG</span>
+                <span className="text-xs text-slate-400 font-medium">Déductions après IRG</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -908,7 +908,7 @@ export default function SaisieFormulaireConsolide({
                     placeholder="0.00 DA"
                     defaultValue={initialValues["cotisation_mutuelle"] || ""}
                     onChange={debounceCalcul}
-                    className="h-8 font-mono text-xs font-bold bg-white text-right"
+                    className="h-8 tabular-nums text-xs font-bold bg-white text-right"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -920,7 +920,7 @@ export default function SaisieFormulaireConsolide({
                     placeholder="0.00 DA"
                     defaultValue={initialValues["avance_salaire"] || ""}
                     onChange={debounceCalcul}
-                    className="h-8 font-mono text-xs font-bold bg-white text-right"
+                    className="h-8 tabular-nums text-xs font-bold bg-white text-right"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -932,7 +932,7 @@ export default function SaisieFormulaireConsolide({
                     placeholder="0.00 DA"
                     defaultValue={initialValues["retenue_sur_salaire"] || ""}
                     onChange={debounceCalcul}
-                    className="h-8 font-mono text-xs font-bold bg-white text-right"
+                    className="h-8 tabular-nums text-xs font-bold bg-white text-right"
                   />
                 </div>
               </div>
@@ -970,7 +970,7 @@ export default function SaisieFormulaireConsolide({
                 <span className="text-xs font-extrabold text-indigo-900 uppercase tracking-wider block">
                   Net à Payer (Virement / CCP)
                 </span>
-                <span className="text-3xl sm:text-4xl font-extrabold text-indigo-600 font-mono tracking-tight block mt-1">
+                <span className="text-3xl sm:text-4xl font-black text-indigo-600 tabular-nums tracking-tight block mt-1">
                   {resultat ? formatDA(resultat.net_a_payer) : "—"}
                 </span>
                 <span className="text-[11px] text-slate-500 font-medium mt-1 block">
@@ -987,13 +987,13 @@ export default function SaisieFormulaireConsolide({
                       <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-[10px]">1</span>
                       <span className="font-bold text-slate-800">Total Gains Bruts</span>
                     </div>
-                    <span className="font-mono font-extrabold text-slate-900">{formatDA(resultat.total_gains)}</span>
+                    <span className="tabular-nums font-extrabold text-slate-900">{formatDA(resultat.total_gains)}</span>
                   </div>
 
                   {/* Assiette CNAS */}
                   <div className="flex items-center justify-between py-1 px-2.5 text-slate-500">
                     <span className="pl-7 text-[11px]">Assiette Cotisable CNAS (panier exclu) :</span>
-                    <span className="font-mono">{formatDA(resultat.base_cnas)}</span>
+                    <span className="tabular-nums">{formatDA(resultat.base_cnas)}</span>
                   </div>
 
                   {/* Retenue CNAS 9% */}
@@ -1002,13 +1002,13 @@ export default function SaisieFormulaireConsolide({
                       <span className="w-5 h-5 rounded-full bg-rose-200 text-rose-800 flex items-center justify-center font-bold text-[10px]">2</span>
                       <span className="font-bold text-rose-900">Cotisation CNAS Salariale (9%)</span>
                     </div>
-                    <span className="font-mono font-extrabold text-rose-600">-{formatDA(resultat.retenue_cnas)}</span>
+                    <span className="tabular-nums font-extrabold text-rose-600">-{formatDA(resultat.retenue_cnas)}</span>
                   </div>
 
                   {/* Base IRG */}
                   <div className="flex items-center justify-between py-1 px-2.5 text-slate-500">
                     <span className="pl-7 text-[11px]">Base Imposable IRG (panier inclus) :</span>
-                    <span className="font-mono">{formatDA(resultat.base_imposable_irg)}</span>
+                    <span className="tabular-nums">{formatDA(resultat.base_imposable_irg)}</span>
                   </div>
 
                   {/* Retenue IRG */}
@@ -1020,14 +1020,14 @@ export default function SaisieFormulaireConsolide({
                         <span className="text-[10px] text-slate-500">Abattement 40% : -{formatDA(resultat.abattement_irg)}</span>
                       </div>
                     </div>
-                    <span className="font-mono font-extrabold text-rose-600">-{formatDA(resultat.retenue_irg_nette)}</span>
+                    <span className="tabular-nums font-extrabold text-rose-600">-{formatDA(resultat.retenue_irg_nette)}</span>
                   </div>
 
                   {/* Autres Retenues */}
                   {resultat.avance_salaire > 0 || resultat.cotisation_mutuelle > 0 || resultat.retenue_sur_salaire > 0 ? (
                     <div className="flex items-center justify-between py-1 px-2.5 text-slate-600">
                       <span className="pl-7 text-[11px]">Avances, Mutuelle & Saisies :</span>
-                      <span className="font-mono font-semibold text-rose-600">
+                      <span className="tabular-nums font-semibold text-rose-600">
                         -{formatDA((resultat.avance_salaire || 0) + (resultat.cotisation_mutuelle || 0) + (resultat.retenue_sur_salaire || 0))}
                       </span>
                     </div>
@@ -1037,11 +1037,11 @@ export default function SaisieFormulaireConsolide({
                   <div className="mt-4 p-3 rounded-xl bg-slate-100/70 border border-slate-200/70 flex flex-col gap-1.5">
                     <div className="flex items-center justify-between text-slate-600">
                       <span>CNAS Patronale (26%) :</span>
-                      <span className="font-mono font-bold">{formatDA(resultat.charge_patronale_cnas)}</span>
+                      <span className="tabular-nums font-bold">{formatDA(resultat.charge_patronale_cnas)}</span>
                     </div>
                     <div className="flex items-center justify-between text-slate-900 font-extrabold pt-1 border-t border-slate-200">
                       <span>Coût Total Entreprise :</span>
-                      <span className="font-mono text-indigo-700">{formatDA(resultat.cout_total_employeur)}</span>
+                      <span className="tabular-nums text-indigo-700">{formatDA(resultat.cout_total_employeur)}</span>
                     </div>
                   </div>
                 </div>

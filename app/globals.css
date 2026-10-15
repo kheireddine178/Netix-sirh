@@ -43,12 +43,14 @@
 }
 
 /* Base Body Styles */
-*, *::before, *::after {
+*, *::before, *::after, input, button, select, textarea {
   box-sizing: border-box;
+  font-feature-settings: "zero" 0;
 }
 
 html {
   scroll-behavior: smooth;
+  font-feature-settings: "zero" 0;
 }
 
 body {
@@ -57,14 +59,16 @@ body {
   background-color: var(--bg-app);
   color: var(--text-primary);
   font-family: var(--font-sans);
+  font-feature-settings: "zero" 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* Tabular figures for payroll and currency numbers */
+/* Tabular figures for payroll and currency numbers (chiffres tabulaires avec zéros normaux ronds non barrés) */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "zero" 0;
   letter-spacing: -0.01em;
 }
 
