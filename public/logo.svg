@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 32" fill="none" role="img" aria-label="Netix">
+  <!-- Icon mark: N with diagonal accent -->
+  <rect width="32" height="32" rx="7" fill="#4F46E5"/>
+  <!-- N shape -->
+  <path d="M8 8h3.2l7.6 10.4V8H22v16h-3.2L11.2 13.6V24H8V8Z" fill="white"/>
+  <!-- Accent diagonal slash (the "x" energy) -->
+  <line x1="20" y1="22" x2="26" y2="10" stroke="#34D399" stroke-width="2.2" stroke-linecap="round"/>
+
+  <!-- Wordmark: Netix -->
+  <text x="40" y="22" font-family="'Plus Jakarta Sans', 'Outfit', 'Inter', system-ui, sans-serif" font-size="17" font-weight="700" letter-spacing="-0.5" fill="#FFFFFF">Neti<tspan fill="#34D399">x</tspan></text>
+</svg>
