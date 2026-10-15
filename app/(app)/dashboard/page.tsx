@@ -16,6 +16,10 @@ import {
   FileSpreadsheet,
   AlertCircle,
   ChevronRight,
+  Sparkles,
+  Layers,
+  Scale,
+  Zap,
 } from "lucide-react";
 import { listerSalaries, listerTousContrats } from "../salaries/actions";
 import { StatCard } from "@/components/ui/StatCard";
@@ -53,7 +57,7 @@ export default async function DashboardPage() {
   const dans30Jours = new Date();
   dans30Jours.setDate(now.getDate() + 30);
 
-  // --- DÉTECTION DES ALERTES « À TRAITER » (§5.1) ---
+  // --- DÉTECTION DES ALERTES RH ---
   interface AlerteItem {
     id: string;
     type: "cdd" | "essai" | "medical" | "dossier" | "contrat";
@@ -129,7 +133,6 @@ export default async function DashboardPage() {
 
   // 4. Données mensuelles pour le graphique de masse salariale sur 12 mois
   const MOIS_LABELS = ["Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc", "Jan", "Fév", "Mar"];
-  // Variation progressive réaliste basée sur la masse actuelle
   const baseMasse = masseSalarialeBrute > 0 ? masseSalarialeBrute : 598000;
   const MASSE_12_MOIS = [
     Math.round(baseMasse * 0.92),
@@ -146,7 +149,6 @@ export default async function DashboardPage() {
     Math.round(baseMasse),
   ];
 
-  // Calcul des coordonnées SVG pour le graphique
   const minMasse = Math.min(...MASSE_12_MOIS) * 0.95;
   const maxMasse = Math.max(...MASSE_12_MOIS) * 1.05;
   const svgWidth = 800;
@@ -166,112 +168,113 @@ export default async function DashboardPage() {
 
   const areaD = `${pathD} L ${points[points.length - 1].x},${svgHeight - paddingY} L ${points[0].x},${svgHeight - paddingY} Z`;
 
-  // 5. Activité récente (5 dernières actions)
+  // 5. Activité récente
   const activiteRecente = [
     {
       id: "act-1",
       action: "Préparation de la paie de Mars 2026",
       auteur: "Kharrouby K.",
       date: "Aujourd'hui à 14:30",
-      type: "paie",
     },
     {
       id: "act-2",
       action: "Validation des congés annuels de Mars",
       auteur: "Direction RH",
       date: "Hier à 16:15",
-      type: "conges",
     },
     {
       id: "act-3",
       action: "Ajout du collaborateur Tarek Medjani",
       auteur: "Kharrouby K.",
       date: "01/03/2026",
-      type: "collaborateur",
     },
     {
       id: "act-4",
       action: "Génération de l'attestation de travail (Amine B.)",
       auteur: "Kharrouby K.",
       date: "26/02/2026",
-      type: "contrat",
     },
     {
       id: "act-5",
       action: "Clôture de la période Février 2026",
       auteur: "Kharrouby K.",
       date: "28/02/2026",
-      type: "paie",
     },
   ];
 
   return (
-    <div className="flex flex-col gap-6 w-full">
-      {/* PageHeader conforme §4.2 */}
+    <div className="flex flex-col gap-8 w-full">
+      {/* Top Page Header */}
       <PageHeader
         breadcrumbs={[{ label: "Accueil", href: "/dashboard" }]}
-        title="Tableau de Bord RH & Paie"
-        subtitle="Pilotage global des effectifs, suivi de la masse salariale et alertes d'échéances légales (Loi 90-11)."
+        title="Cockpit de Pilotage RH & Paie"
+        subtitle="Supervision en temps réel des effectifs, de la masse salariale et de la conformité légale (Loi 90-11 & CIDTA Art. 104)."
         primaryAction={
           <Button
             variant="primary"
-            href="/salaries/nouveau"
-            icon={<UserPlus className="w-4 h-4 text-white" />}
+            href="/saisie"
+            icon={<Wallet className="w-4 h-4 text-white" />}
           >
-            Nouveau Collaborateur
+            Saisie Live 2026
           </Button>
         }
         secondaryActions={
-          <Button variant="secondary" href="/saisie" icon={<FileSpreadsheet className="w-4 h-4" />}>
-            Saisie du Mois
+          <Button variant="secondary" href="/salaries/nouveau" icon={<UserPlus className="w-4 h-4" />}>
+            Nouveau Salarié
           </Button>
         }
       />
 
-      {/* 1. BANDEAU « PROCHAINE ÉTAPE » (§5.1) */}
-      <div className="rounded-lg bg-[#4F46E5] text-white p-5 shadow-[0_1px_2px_rgba(79,70,229,0.15)] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
-            <Wallet className="w-5 h-5 text-white" strokeWidth={2} />
-          </div>
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xs uppercase font-bold tracking-wider text-indigo-200">
-                Action Prioritaire
-              </span>
-              <span className="text-[11px] bg-white/20 text-white px-2 py-0.5 rounded-full font-semibold">
-                Mars 2026
-              </span>
-            </div>
-            <h3 className="text-base font-bold text-white leading-tight">
-              Clôture de paie : Saisie des variables en cours
-            </h3>
-            <p className="text-xs text-indigo-100 max-w-xl leading-relaxed">
-              Vérifiez les heures supplémentaires, primes d&apos;assiduité et retenues sur absences avant de lancer le calcul des bulletins.
-            </p>
-          </div>
-        </div>
+      {/* 1. HERO COCKPIT BANNER (2026 Design) */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-8 shadow-xl border border-white/10">
+        {/* Glow Spheres */}
+        <div className="absolute top-0 right-1/4 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 right-0 w-64 h-64 bg-violet-600/20 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="flex items-center gap-3 shrink-0 self-start md:self-center">
-          <Button
-            variant="secondary"
-            size="md"
-            href="/saisie"
-            icon={<ArrowRight className="w-4 h-4 text-[#4F46E5]" />}
-            iconPosition="right"
-            className="!bg-white !text-[#4F46E5] hover:!bg-indigo-50 border-transparent font-bold shadow-sm"
-          >
-            Commencer la Saisie
-          </Button>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0 backdrop-blur-md shadow-inner">
+              <Zap className="w-6 h-6 text-indigo-400" />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase font-black tracking-widest text-indigo-300 bg-indigo-500/20 px-2.5 py-0.5 rounded-full border border-indigo-400/30">
+                  Période en cours
+                </span>
+                <span className="text-xs font-semibold text-slate-300">
+                  Mars 2026
+                </span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                Moteur Split-Screen Live Opérationnel
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+                Saisissez les variables du mois (absences, primes panier/transport, heures sup) et visualisez le Net à payer calculé instantanément à la frappe.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0 self-start md:self-center">
+            <Button
+              variant="secondary"
+              size="lg"
+              href="/saisie"
+              icon={<ArrowRight className="w-4 h-4 text-slate-900" />}
+              iconPosition="right"
+              className="!bg-white !text-slate-900 hover:!bg-slate-100 font-extrabold shadow-lg"
+            >
+              Lancer la Saisie Live
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* 2. 4 INDICATEURS STATCARDS NEUTRES (§5.1) */}
+      {/* 2. 4 INDICATEURS CLES STATCARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Effectif Actif"
+          label="Effectif Total Actif"
           value={actifs}
-          subtext={`Sur ${totalCollaborateurs} collaborateurs`}
+          subtext={`Sur ${totalCollaborateurs} collaborateurs enregistrés`}
           icon={<Users className="w-4 h-4" />}
           badge={{
             text: inactifs > 0 ? `${inactifs} inactifs` : "100% Déclarés",
@@ -282,79 +285,77 @@ export default async function DashboardPage() {
         <StatCard
           label="Masse Salariale Brute"
           value={formatDA(masseSalarialeBrute)}
-          subtext="Base mensuelle théorique"
+          subtext="Base mensuelle cotisable"
           icon={<Wallet className="w-4 h-4" />}
           trend={{ value: "+2.1% vs Fév", positive: true }}
         />
 
         <StatCard
-          label="Net à Payer Total"
+          label="Net à Payer Global"
           value={formatDA(netAPayerTotal)}
-          subtext="Montant estimé des virements"
-          icon={<CheckCircle2 className="w-4 h-4" />}
+          subtext="Virements bancaires estimés"
+          icon={<CheckCircle2 className="w-4 h-4 text-emerald-600" />}
         />
 
         <StatCard
-          label="Charges Patronales CNAS"
+          label="Cotisation CNAS Patronale"
           value={formatDA(chargesPatronalesCNAS)}
-          subtext="26% (Loi 83-11 Sécurité Sociale)"
-          icon={<ShieldCheck className="w-4 h-4" />}
+          subtext="Taux légal 26% (Loi 83-11)"
+          icon={<ShieldCheck className="w-4 h-4 text-indigo-600" />}
         />
       </div>
 
-      {/* 3. SECTION « À TRAITER » (ALERTES ACTIONNABLES) & ACTIVITÉ RÉCENTE */}
+      {/* 3. SECTION ALERTES ACTIONNABLES & ACTIVITE RECENTE */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Colonne Gauche / Centre (2 colonnes) : Liste À Traiter (§5.1) */}
+        {/* Colonne Alertes (2 cols) */}
         <div className="lg:col-span-2 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-[#0F172A] tracking-tight">
-                À Traiter ({alertes.length})
+              <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+                Alertes &amp; Échéances Légales ({alertes.length})
               </h3>
               {alertes.length > 0 && (
                 <Badge variant={alertes.some((a) => a.urgence === "danger") ? "danger" : "warning"} size="sm" dot>
-                  {alertes.some((a) => a.urgence === "danger") ? "Critique" : "À surveiller"}
+                  {alertes.some((a) => a.urgence === "danger") ? "Action Requise" : "À surveiller"}
                 </Badge>
               )}
             </div>
-            <span className="text-xs text-[#64748B]">Trié par niveau d&apos;urgence</span>
+            <span className="text-xs text-slate-400">Classé par criticité</span>
           </div>
 
-          <div className="rounded-lg border border-[#E2E8F0] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] overflow-hidden">
+          <div className="rounded-2xl border border-slate-200/80 bg-white shadow-xs overflow-hidden">
             {alertes.length > 0 ? (
-              <div className="divide-y divide-[#F1F5F9]">
+              <div className="divide-y divide-slate-100">
                 {alertes.map((alerte) => (
                   <div
                     key={alerte.id}
-                    className="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-[#F8FAFC] transition-colors"
+                    className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-slate-50/70 transition-colors"
                   >
                     <div className="flex items-start gap-3">
                       <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
                           alerte.urgence === "danger"
-                            ? "bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA]"
-                            : "bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A]"
+                            ? "bg-rose-50 text-rose-600 border border-rose-200"
+                            : "bg-amber-50 text-amber-600 border border-amber-200"
                         }`}
                       >
-                        <AlertTriangle className="w-4 h-4" strokeWidth={1.75} />
+                        <AlertTriangle className="w-4 h-4" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-xs font-bold text-[#0F172A] leading-snug">
+                        <span className="text-xs font-bold text-slate-900 leading-snug">
                           {alerte.titre}
                         </span>
-                        <div className="flex items-center gap-2 mt-0.5 text-xs text-[#64748B]">
-                          <span className="font-semibold text-[#334155]">{alerte.salarieNom}</span>
+                        <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500">
+                          <span className="font-semibold text-slate-700">{alerte.salarieNom}</span>
                           <span>•</span>
-                          <span>Échéance : {alerte.echeanceOuStatut}</span>
+                          <span>Statut : {alerte.echeanceOuStatut}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                      <Button variant="secondary" size="sm">
-                        <Link href={alerte.actionHref} className="text-[#0F172A] font-semibold text-xs">
-                          {alerte.actionLabel}
-                        </Link>
+                    <div className="shrink-0 self-end sm:self-center">
+                      <Button variant="secondary" size="sm" href={alerte.actionHref}>
+                        {alerte.actionLabel}
                       </Button>
                     </div>
                   </div>
@@ -362,37 +363,37 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <div className="p-8 text-center flex flex-col items-center justify-center">
-                <CheckCircle2 className="w-8 h-8 text-[#16A34A] mb-2" />
-                <span className="text-sm font-semibold text-[#0F172A]">Aucune alerte en attente</span>
-                <span className="text-xs text-[#64748B] mt-1">Tous les contrats et dossiers sont conformes et à jour.</span>
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-2" />
+                <span className="text-sm font-bold text-slate-900">Aucune alerte en attente</span>
+                <span className="text-xs text-slate-500 mt-1">Tous les contrats et déclarations sont 100% conformes.</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Colonne Droite (1 colonne) : Activité Récente (§5.1) */}
+        {/* Colonne Activite (1 col) */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-[#0F172A] tracking-tight">
+            <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
               Activité Récente
             </h3>
-            <span className="text-xs text-[#64748B]">Journal d&apos;audit</span>
+            <span className="text-xs text-slate-400">Journal d&apos;audit</span>
           </div>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="flex flex-col gap-3.5">
-                {activiteRecente.map((item, idx) => (
+            <CardContent className="p-5">
+              <div className="flex flex-col gap-4">
+                {activiteRecente.map((item) => (
                   <div key={item.id} className="flex items-start gap-3 text-left">
-                    <div className="w-7 h-7 rounded-full bg-[#F1F5F9] border border-[#E2E8F0] text-[#64748B] flex items-center justify-center shrink-0 mt-0.5">
-                      <Clock className="w-3.5 h-3.5" />
+                    <div className="w-8 h-8 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <Clock className="w-4 h-4" />
                     </div>
                     <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-xs font-semibold text-[#0F172A] leading-tight">
+                      <span className="text-xs font-bold text-slate-800 leading-tight">
                         {item.action}
                       </span>
-                      <div className="flex items-center gap-1.5 mt-1 text-[11px] text-[#94A3B8]">
-                        <span className="text-[#64748B] font-medium">{item.auteur}</span>
+                      <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-400">
+                        <span className="text-slate-600 font-medium">{item.auteur}</span>
                         <span>•</span>
                         <span>{item.date}</span>
                       </div>
@@ -405,7 +406,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* 4. ÉVOLUTION DE LA MASSE SALARIALE SUR 12 MOIS (§5.1) */}
+      {/* 4. EVOLUTION DE LA MASSE SALARIALE SUR 12 MOIS */}
       <Card>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2">
           <div>
@@ -416,10 +417,10 @@ export default async function DashboardPage() {
           </div>
           <div className="flex items-center gap-3 mt-2 sm:mt-0 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#4F46E5]" />
-              <span className="text-[#64748B] font-medium">Masse cotisable</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
+              <span className="text-slate-500 font-medium">Masse cotisable</span>
             </div>
-            <span className="text-[#0F172A] font-bold tabular-nums">
+            <span className="text-slate-900 font-bold tabular-nums">
               Moyenne : {formatDA(baseMasse)}
             </span>
           </div>
@@ -434,12 +435,12 @@ export default async function DashboardPage() {
             >
               <defs>
                 <linearGradient id="indigoGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.2" />
+                  <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.25" />
                   <stop offset="100%" stopColor="#4F46E5" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
 
-              {/* Lignes de repère horizontales */}
+              {/* Repères horizontaux */}
               {[0, 0.33, 0.66, 1].map((ratio, i) => {
                 const y = paddingY + ratio * (svgHeight - 2 * paddingY);
                 return (
@@ -456,10 +457,10 @@ export default async function DashboardPage() {
                 );
               })}
 
-              {/* Remplissage sous la courbe */}
+              {/* Remplissage de zone */}
               <path d={areaD} fill="url(#indigoGradient)" />
 
-              {/* Ligne principale Indigo #4F46E5 */}
+              {/* Ligne principale */}
               <path
                 d={pathD}
                 fill="none"
@@ -469,20 +470,20 @@ export default async function DashboardPage() {
                 strokeLinejoin="round"
               />
 
-              {/* Points sur la courbe */}
+              {/* Points */}
               {points.map((pt, idx) => (
                 <circle
                   key={idx}
                   cx={pt.x}
                   cy={pt.y}
-                  r="3.5"
+                  r="4"
                   fill="#FFFFFF"
                   stroke="#4F46E5"
-                  strokeWidth="2"
+                  strokeWidth="2.5"
                 />
               ))}
 
-              {/* Libellés de l'axe X (Mois) */}
+              {/* Libellés de mois */}
               {points.map((pt, idx) => (
                 <text
                   key={idx}

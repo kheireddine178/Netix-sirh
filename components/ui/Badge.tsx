@@ -8,8 +8,8 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 /**
- * Badge — Composant statut Netix SIRH
- * Règle §3.2 : Vert / orange / rouge UNIQUEMENT pour exprimer un statut (badge, alerte). Jamais en décoration.
+ * Badge — Composant statut Netix SIRH 2026
+ * Style : Pilule arrondie, micro-bordure translucide, pastille de statut avec halo.
  */
 export function Badge({
   className,
@@ -20,29 +20,29 @@ export function Badge({
   ...props
 }: BadgeProps) {
   const variantStyles = {
-    // Statut validé / payé / conforme
-    success: "bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]",
-    // Statut alerte / à surveiller / échéance proche
-    warning: "bg-[#FFFBEB] text-[#B45309] border-[#FDE68A]",
-    // Statut erreur / retard / suppression
-    danger: "bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]",
-    // Statut neutre / brouillon / archivé
-    neutral: "bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]",
-    // Statut actif / en cours Netix
-    brand: "bg-[#EEF2FF] text-[#4F46E5] border-[#E0E7FF]",
+    // Validé / Payé / Conforme
+    success: "bg-emerald-50 text-emerald-700 border-emerald-200/80 shadow-[0_0_8px_rgba(16,185,129,0.1)]",
+    // Alerte / Échéance proche
+    warning: "bg-amber-50 text-amber-700 border-amber-200/80 shadow-[0_0_8px_rgba(245,158,11,0.1)]",
+    // Erreur / Retard / Suppression
+    danger: "bg-rose-50 text-rose-700 border-rose-200/80 shadow-[0_0_8px_rgba(239,68,68,0.1)]",
+    // Neutre / Brouillon
+    neutral: "bg-slate-100/80 text-slate-600 border-slate-200",
+    // Brand / Actif / Netix
+    brand: "bg-indigo-50 text-indigo-700 border-indigo-200/80 shadow-[0_0_8px_rgba(79,70,229,0.1)]",
   };
 
   const dotColors = {
-    success: "bg-[#16A34A]",
-    warning: "bg-[#D97706]",
-    danger: "bg-[#DC2626]",
-    neutral: "bg-[#64748B]",
-    brand: "bg-[#4F46E5]",
+    success: "bg-emerald-500",
+    warning: "bg-amber-500",
+    danger: "bg-rose-500",
+    neutral: "bg-slate-400",
+    brand: "bg-indigo-600",
   };
 
   const sizeStyles = {
-    sm: "text-[11px] px-2 py-0.5 rounded gap-1 font-semibold",
-    md: "text-xs px-2.5 py-0.5 rounded-md gap-1.5 font-medium",
+    sm: "text-[10px] font-extrabold tracking-wide uppercase px-2 py-0.5 rounded-full gap-1",
+    md: "text-xs font-bold tracking-tight px-2.5 py-0.5 rounded-full gap-1.5",
   };
 
   return (
@@ -56,12 +56,22 @@ export function Badge({
       {...props}
     >
       {dot && (
-        <span
-          className={cn("w-1.5 h-1.5 rounded-full shrink-0", dotColors[variant])}
-          aria-hidden="true"
-        />
+        <span className="relative flex h-1.5 w-1.5 shrink-0">
+          <span
+            className={cn(
+              "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+              dotColors[variant]
+            )}
+          />
+          <span
+            className={cn(
+              "relative inline-flex rounded-full h-1.5 w-1.5",
+              dotColors[variant]
+            )}
+          />
+        </span>
       )}
-      <span>{children}</span>
+      {children}
     </span>
   );
 }

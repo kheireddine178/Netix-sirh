@@ -6,17 +6,17 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * Card — Composant carte Netix SIRH
- * Règle §3.4 : Rayon 8px (rounded-lg), ombre unique légère 0 1px 2px rgba(15,23,42,.06).
- * Pas de dégradés, pas d'ombres colorées, bordures fines 1px.
+ * Card — Composant carte Netix SIRH 2026
+ * Style : Rayon 16px (rounded-2xl), bordures fines découpées, ombrage diffus aérien.
  */
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, hoverable = false, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        "rounded-lg border border-[#E2E8F0] bg-white text-[#0F172A] shadow-[0_1px_2px_rgba(15,23,42,0.06)]",
-        hoverable && "transition-all duration-150 hover:border-[#CBD5E1] hover:shadow-[0_4px_6px_-1px_rgba(15,23,42,0.08)]",
+        "rounded-2xl border border-slate-200/80 bg-white text-slate-900 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.03)]",
+        hoverable &&
+          "transition-all duration-200 hover:border-slate-300 hover:shadow-[0_4px_20px_-4px_rgba(15,23,42,0.08)] hover:-translate-y-0.5",
         className
       )}
       {...props}
@@ -40,7 +40,7 @@ export const CardTitle = forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTM
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn("text-base font-semibold leading-tight text-[#0F172A] tracking-tight", className)}
+      className={cn("text-base font-bold leading-tight text-slate-900 tracking-tight", className)}
       {...props}
     />
   )
@@ -51,7 +51,7 @@ export const CardDescription = forwardRef<HTMLParagraphElement, React.HTMLAttrib
   ({ className, ...props }, ref) => (
     <p
       ref={ref}
-      className={cn("text-xs text-[#64748B] leading-relaxed", className)}
+      className={cn("text-xs text-slate-500 leading-relaxed", className)}
       {...props}
     />
   )
@@ -69,7 +69,7 @@ export const CardFooter = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("flex items-center justify-between p-6 pt-0 border-t border-[#F1F5F9] mt-4 pt-4", className)}
+      className={cn("flex items-center justify-between p-6 pt-0 border-t border-slate-100 mt-4 pt-4", className)}
       {...props}
     />
   )

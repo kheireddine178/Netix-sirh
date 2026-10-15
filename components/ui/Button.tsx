@@ -14,9 +14,8 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 /**
- * Button — Composant bouton standard Netix SIRH
- * Règle §3.2 : UN seul bouton principal (Indigo #4F46E5) par écran.
- * Supporte `href` pour créer directement un lien avec le style exact de bouton.
+ * Button — Composant bouton Netix SIRH 2026
+ * Style tactile moderne, biseau supérieur lumineux, micro-interaction au clic.
  */
 export const Button = forwardRef<any, ButtonProps>(
   (
@@ -37,31 +36,31 @@ export const Button = forwardRef<any, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer no-underline";
+      "inline-flex items-center justify-center font-bold tracking-tight transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer active:scale-[0.98] no-underline";
 
     const variantStyles = {
-      // Primary: Indigo #4F46E5 (Action principale unique) - Texte BLANC garanti (#ffffff)
+      // Primary: Indigo profond avec highlight lumineux supérieur
       primary:
-        "bg-[#4F46E5] text-white hover:bg-[#4338CA] active:bg-[#3730A3] focus-visible:ring-[#4F46E5] shadow-[0_1px_2px_rgba(79,70,229,0.15)] [&_*]:text-white",
-      // Secondary: Contour neutre, fond blanc
+        "bg-indigo-600 text-white hover:bg-indigo-500 active:bg-indigo-700 focus-visible:ring-indigo-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_2px_4px_rgba(79,70,229,0.25)] [&_*]:text-white",
+      // Secondary: Fond blanc, contour doux, ombre feutrée
       secondary:
-        "bg-white border border-[#E2E8F0] text-[#0F172A] hover:bg-[#F8FAFC] hover:border-[#CBD5E1] active:bg-[#F1F5F9] focus-visible:ring-slate-400 shadow-[0_1px_2px_rgba(15,23,42,0.04)]",
-      // Ghost: Fond transparent
+        "bg-white border border-slate-200/90 text-slate-800 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 focus-visible:ring-slate-300 shadow-[0_1px_2px_rgba(15,23,42,0.04)]",
+      // Ghost: Subtil
       ghost:
-        "bg-transparent text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] active:bg-[#E2E8F0] focus-visible:ring-slate-400",
-      // Danger: Actions destructives directes
+        "bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 focus-visible:ring-slate-300",
+      // Danger: Action destructive
       danger:
-        "bg-[#DC2626] text-white hover:bg-[#B91C1C] active:bg-[#991B1B] focus-visible:ring-[#DC2626] shadow-[0_1px_2px_rgba(220,38,38,0.15)] [&_*]:text-white",
-      // Danger Outline: Avertissement discret
+        "bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 focus-visible:ring-rose-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_2px_4px_rgba(225,29,72,0.25)] [&_*]:text-white",
+      // Danger Outline
       "danger-outline":
-        "bg-white border border-[#FECACA] text-[#DC2626] hover:bg-[#FEF2F2] hover:border-[#FCA5A5] active:bg-[#FEE2E2] focus-visible:ring-[#DC2626]",
+        "bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 active:bg-rose-100 focus-visible:ring-rose-500",
     };
 
     const sizeStyles = {
-      sm: "h-8 px-3 text-xs rounded-md gap-1.5",
-      md: "h-10 px-4 text-sm rounded-lg gap-2",
-      lg: "h-12 px-6 text-base rounded-lg gap-2.5",
-      icon: "h-9 w-9 p-0 rounded-lg justify-center",
+      sm: "h-8 px-3 text-xs rounded-lg gap-1.5",
+      md: "h-9 sm:h-10 px-4 text-xs sm:text-sm rounded-xl gap-2",
+      lg: "h-11 sm:h-12 px-6 text-sm sm:text-base rounded-xl gap-2.5",
+      icon: "h-9 w-9 p-0 rounded-xl justify-center",
     };
 
     const combinedClassName = cn(baseStyles, variantStyles[variant], sizeStyles[size], className);
@@ -69,34 +68,31 @@ export const Button = forwardRef<any, ButtonProps>(
 
     const content = (
       <>
-        {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin text-current" strokeWidth={2} />
-        ) : (
-          icon && iconPosition === "left" && <span className="inline-flex shrink-0">{icon}</span>
+        {loading && <Loader2 className="w-4 h-4 animate-spin shrink-0 text-current" />}
+        {!loading && icon && iconPosition === "left" && (
+          <span className="shrink-0 text-current">{icon}</span>
         )}
-        {children && (
-          <span className="inline-flex items-center gap-1.5 [&_a]:text-inherit [&_a]:hover:text-inherit">
-            {children}
-          </span>
-        )}
+        {children}
         {!loading && icon && iconPosition === "right" && (
-          <span className="inline-flex shrink-0">{icon}</span>
+          <span className="shrink-0 text-current">{icon}</span>
         )}
       </>
     );
 
-    // Si `href` est fourni, on rend directement un composant Next Link
-    if (href) {
+    if (href && !isDisabled) {
       return (
-        <Link
-          ref={ref}
-          href={href}
-          className={combinedClassName}
-          {...(props as any)}
-        >
+        <Link href={href} className={combinedClassName}>
           {content}
         </Link>
       );
+    }
+
+    if (asChild && React.isValidElement(children)) {
+      return React.cloneElement(children as React.ReactElement<any>, {
+        className: cn(combinedClassName, (children as React.ReactElement<any>).props.className),
+        ref,
+        ...props,
+      });
     }
 
     return (
@@ -112,5 +108,4 @@ export const Button = forwardRef<any, ButtonProps>(
     );
   }
 );
-
 Button.displayName = "Button";

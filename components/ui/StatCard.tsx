@@ -20,8 +20,8 @@ export interface StatCardProps {
 }
 
 /**
- * StatCard — Carte d'indicateur clé Netix SIRH
- * Règle §3.3 & §3.6 : Montants en tabular-nums, icône discrète, pas de couleurs vives décoratives.
+ * StatCard — Carte d'indicateur clé Netix SIRH 2026
+ * Style : Rayon 16px (rounded-2xl), grands chiffres tabulaires haute lisibilité, micro-badge.
  */
 export function StatCard({
   label,
@@ -35,52 +35,54 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06)] flex flex-col justify-between transition-all duration-150 hover:border-[#CBD5E1]",
+        "rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs flex flex-col justify-between transition-all duration-200 hover:border-slate-300 hover:shadow-md",
         className
       )}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
           {label}
         </span>
         {icon && (
-          <div className="w-8 h-8 rounded-md bg-[#F8FAFC] border border-[#E2E8F0] text-[#64748B] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 text-slate-500 flex items-center justify-center shrink-0">
             {icon}
           </div>
         )}
       </div>
 
-      <div className="my-2.5">
-        <div className="text-2xl font-bold tracking-tight text-[#0F172A] tabular-nums">
+      <div className="my-3">
+        <div className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 tabular-nums">
           {value}
         </div>
       </div>
 
       {(subtext || trend || badge) && (
-        <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#F1F5F9] text-xs">
-          {trend ? (
-            <div
+        <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100 text-xs">
+          {subtext && <span className="text-slate-500 truncate">{subtext}</span>}
+
+          {trend && (
+            <span
               className={cn(
-                "inline-flex items-center gap-1 font-semibold tabular-nums",
-                trend.positive ? "text-[#15803D]" : "text-[#B91C1C]"
+                "inline-flex items-center gap-1 font-bold text-[11px] px-2 py-0.5 rounded-full shrink-0",
+                trend.positive
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                  : "bg-rose-50 text-rose-700 border border-rose-200/60"
               )}
             >
               {trend.positive ? (
-                <TrendingUp className="w-3.5 h-3.5" strokeWidth={2} />
+                <TrendingUp className="w-3 h-3" />
               ) : (
-                <TrendingDown className="w-3.5 h-3.5" strokeWidth={2} />
+                <TrendingDown className="w-3 h-3" />
               )}
-              <span>{trend.value}</span>
-            </div>
-          ) : badge ? (
+              {trend.value}
+            </span>
+          )}
+
+          {badge && (
             <Badge variant={badge.variant || "neutral"} size="sm">
               {badge.text}
             </Badge>
-          ) : (
-            <span className="text-[#94A3B8]">{subtext}</span>
           )}
-
-          {trend && subtext && <span className="text-[#94A3B8] truncate">{subtext}</span>}
         </div>
       )}
     </div>

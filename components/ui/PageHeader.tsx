@@ -19,8 +19,8 @@ export interface PageHeaderProps {
 }
 
 /**
- * PageHeader — Structure standard de haut de page Netix SIRH
- * Règle §4.2 : Fil d'Ariane, Titre, Sous-titre court, et UNE action principale en haut à droite.
+ * PageHeader — Structure de haut de page Netix SIRH 2026
+ * Style : Titre fort, typographie épurée, fil d'Ariane subtil, actions groupées.
  */
 export function PageHeader({
   title,
@@ -32,24 +32,24 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col gap-4 pb-6 border-b border-[#E2E8F0] mb-6", className)}>
+    <div className={cn("flex flex-col gap-4 pb-6 border-b border-slate-200/80 mb-8", className)}>
       {/* Fil d'Ariane */}
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-xs text-[#64748B]">
+        <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
           {breadcrumbs.map((item, idx) => {
             const isLast = idx === breadcrumbs.length - 1;
             return (
               <React.Fragment key={idx}>
-                {idx > 0 && <ChevronRight className="w-3.5 h-3.5 text-[#94A3B8] shrink-0" />}
+                {idx > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />}
                 {item.href && !isLast ? (
                   <Link
                     href={item.href}
-                    className="hover:text-[#0F172A] transition-colors"
+                    className="hover:text-slate-800 transition-colors"
                   >
                     {item.label}
                   </Link>
                 ) : (
-                  <span className={isLast ? "font-semibold text-[#0F172A]" : ""}>
+                  <span className={isLast ? "font-bold text-slate-700" : ""}>
                     {item.label}
                   </span>
                 )}
@@ -59,16 +59,19 @@ export function PageHeader({
         </nav>
       )}
 
-      {/* Titre et zone d'action */}
+      {/* Titre + Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold tracking-tight text-[#0F172A] leading-tight">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
             {title}
           </h1>
-          {subtitle && <p className="text-sm text-[#64748B]">{subtitle}</p>}
+          {subtitle && (
+            <p className="mt-1 text-xs sm:text-sm text-slate-500 leading-relaxed max-w-3xl">
+              {subtitle}
+            </p>
+          )}
         </div>
 
-        {/* Boutons d'action (Règle §4.2 : un seul bouton indigo principal) */}
         {(primaryAction || secondaryActions) && (
           <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
             {secondaryActions}
@@ -77,7 +80,6 @@ export function PageHeader({
         )}
       </div>
 
-      {/* Zone optionnelle pour onglets ou filtres */}
       {children && <div className="mt-2">{children}</div>}
     </div>
   );
