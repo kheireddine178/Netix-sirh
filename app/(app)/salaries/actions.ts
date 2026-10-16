@@ -398,7 +398,16 @@ export async function assignerRubriquesSalarie(salarieId: number, formData: Form
   for (const [key, value] of formData.entries()) {
     if (key.startsWith("rub_") && value === "on") {
       const code = key.slice(4);
-      const valeurDefaut = parseFloat((formData.get(`defaut_${code}`) as string) || "0") || 0;
+      let valeurDefaut = parseFloat((formData.get(`defaut_${code}`) as string) || "0") || 0;
+      const nbStr = formData.get(`defaut_nombre_${code}`) as string | null;
+      const txStr = formData.get(`defaut_taux_${code}`) as string | null;
+      if (nbStr !== null && txStr !== null) {
+        const nb = parseFloat(nbStr) || 0;
+        const tx = parseFloat(txStr) || 0;
+        if (nb > 0 && tx > 0) {
+          valeurDefaut = nb * tx;
+        }
+      }
       codesCoches.push({ code, valeur_defaut: valeurDefaut });
     }
   }

@@ -282,10 +282,10 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
       prev.map((r) => ({
         ...r,
         joursPanier: 22,
-        tauxPanier: 300,
+        tauxPanier: 500,
       }))
     );
-    showNotice("✅ Prime de Panier fixée à 22 jours pour les 200 collaborateurs !");
+    showNotice("✅ Prime de Panier fixée à 22 jours × 500 DA (11 000 DA) pour tous les collaborateurs !");
   };
 
   const handleAppliquerForfaitTransportTous = () => {
@@ -1199,7 +1199,7 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
                   </div>
                   <div className="p-3 rounded-md bg-white border border-[#E6E4DD] space-y-1 text-xs">
                     <div className="flex justify-between">
-                      <span className="text-[#5A6065]">Indemnité Panier ({drawerRow.joursPanier}j) :</span>
+                      <span className="text-[#5A6065]">Indemnité Panier ({drawerRow.joursPanier}j × {drawerRow.tauxPanier || 500} DA) :</span>
                       <span className="tabular-nums font-semibold">{formatDA(activeEmployeeCalc.montantPanier)}</span>
                     </div>
                     <div className="flex justify-between">

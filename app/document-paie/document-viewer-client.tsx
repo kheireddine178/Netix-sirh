@@ -598,7 +598,7 @@ export default function DocumentViewerClient({
                       <td className="py-1.5 px-3 text-[#5A6065] font-mono">R250</td>
                       <td className="py-1.5 px-3 text-[#111315]">Indemnité de Panier (Restauration)</td>
                       <td className="py-1.5 px-3 text-right text-[#5A6065]">{currentVariables.joursPanier} j</td>
-                      <td className="py-1.5 px-3 text-right text-[#5A6065]">300 DA</td>
+                      <td className="py-1.5 px-3 text-right text-[#5A6065]">{formatDA(currentVariables.tauxPanier || 500, false)} DA</td>
                       <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
                         {formatDA(calc.montantPanier, false)}
                       </td>

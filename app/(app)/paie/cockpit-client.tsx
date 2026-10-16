@@ -117,6 +117,9 @@ export default function CockpitClient({
   const [rubriqueSearch, setRubriqueSearch] = useState<string>("");
   const [selectedRubriqueCode, setSelectedRubriqueCode] = useState<string>("");
   const [customAmount, setCustomAmount] = useState<number>(5000);
+  const [fixedNombre, setFixedNombre] = useState<number>(22);
+  const [fixedTaux, setFixedTaux] = useState<number>(500);
+  const [fixedMode, setFixedMode] = useState<"montant" | "nombre_x_taux">("montant");
 
   // Le salarié actuellement affiché au centre
   const currentSalarie = useMemo(() => {
@@ -853,22 +856,48 @@ export default function CockpitClient({
                         Paniers & Transports du Mois (Hors Assiette CNAS)
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
-                        <div>
-                          <label className="text-[11px] text-[#5A6065] block mb-1">
-                            Jours de panier réels (300 DA/j) :
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              min="0"
-                              max="31"
-                              value={currentVariables.joursPanier}
-                              onChange={(e) =>
-                                handleVariableChange("joursPanier", parseInt(e.target.value, 10) || 0)
-                              }
-                              className="w-full bg-white border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
-                            />
-                            <span className="text-xs font-mono text-[#5A6065]">jours</span>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[11px] text-[#5A6065] block">
+                              Indemnité de Panier (Nombre × Taux) :
+                            </label>
+                            <span className="font-mono text-[11px] font-bold text-[#0D3B2E]">
+                              = {formatDA((currentVariables.joursPanier || 0) * (currentVariables.tauxPanier || 500))}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <span className="text-[10px] text-[#94A3B8] block mb-0.5">Nombre (jours / paniers)</span>
+                              <div className="flex items-center gap-1.5">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="31"
+                                  value={currentVariables.joursPanier}
+                                  onChange={(e) =>
+                                    handleVariableChange("joursPanier", parseInt(e.target.value, 10) || 0)
+                                  }
+                                  className="w-full bg-white border border-[#E6E4DD] rounded-lg px-2.5 py-1.5 font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
+                                />
+                                <span className="text-[11px] font-mono text-[#5A6065]">j</span>
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-[#94A3B8] block mb-0.5">Taux unitaire du panier</span>
+                              <div className="flex items-center gap-1.5">
+                                <input
+                                  type="number"
+                                  step="50"
+                                  min="0"
+                                  value={currentVariables.tauxPanier || 500}
+                                  onChange={(e) =>
+                                    handleVariableChange("tauxPanier", parseFloat(e.target.value) || 0)
+                                  }
+                                  className="w-full bg-white border border-[#E6E4DD] rounded-lg px-2.5 py-1.5 font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
+                                />
+                                <span className="text-[11px] font-mono text-[#5A6065]">DA</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
 
@@ -1676,7 +1705,19 @@ export default function CockpitClient({
                 {filteredCatalogue.map((cat) => (
                   <div
                     key={cat.code}
-                    onClick={() => setSelectedRubriqueCode(cat.code)}
+                    onClick={() => {
+                      setSelectedRubriqueCode(cat.code);
+                      const isNombreTaux = cat.categorie === "nombre_x_taux" || cat.code.startsWith("R52");
+                      if (isNombreTaux) {
+                        setFixedMode("nombre_x_taux");
+                        setFixedNombre(22);
+                        setFixedTaux(500);
+                        setCustomAmount(22 * 500);
+                      } else {
+                        setFixedMode("montant");
+                        setCustomAmount(5000);
+                      }
+                    }}
                     className={`p-2.5 cursor-pointer flex items-center justify-between transition-colors ${
                       selectedRubriqueCode === cat.code
                         ? "bg-[#EEF4F0] font-semibold text-[#0D3B2E]"
@@ -1687,31 +1728,115 @@ export default function CockpitClient({
                       <span className="font-mono font-bold text-[#0D3B2E]">{cat.code}</span>
                       <span>{cat.libelle}</span>
                     </div>
-                    <span className="text-[10px] text-[#94A3B8]">
-                      {cat.cotisable === "OUI" ? "CNAS" : "Non cotisable"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {(cat.categorie === "nombre_x_taux" || cat.code.startsWith("R52")) && (
+                        <span className="text-[9px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded font-semibold">
+                          Nombre × Taux
+                        </span>
+                      )}
+                      <span className="text-[10px] text-[#94A3B8]">
+                        {cat.cotisable === "OUI" ? "CNAS" : "Non cotisable"}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Montant mensuel par défaut */}
-            <div className="space-y-1.5 pt-2 border-t border-[#E6E4DD]">
-              <label className="text-xs font-semibold text-[#111315]">
-                Montant mensuel fixe (DA) :
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  step="500"
-                  min="0"
-                  value={customAmount}
-                  onChange={(e) => setCustomAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-white border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-mono font-bold text-sm text-[#111315] outline-none focus:border-[#0D3B2E]"
-                />
-                <span className="text-xs text-[#5A6065] font-mono">DA</span>
+            {/* Saisie du montant : Mode Nombre x Taux OU Montant Fixe */}
+            {fixedMode === "nombre_x_taux" ? (
+              <div className="space-y-2 pt-2 border-t border-[#E6E4DD]">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-[#111315]">
+                    Saisie Nombre × Taux (ex: 22 paniers × 500 DA) :
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setFixedMode("montant")}
+                    className="text-[10px] text-[#0D3B2E] font-medium hover:underline cursor-pointer"
+                  >
+                    Passer en Montant Fixe direct
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[11px] text-[#5A6065] block mb-1">Nombre / Quantité :</label>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={fixedNombre}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setFixedNombre(val);
+                          setCustomAmount(val * fixedTaux);
+                        }}
+                        placeholder="22"
+                        className="w-full bg-white border border-[#E6E4DD] rounded-lg px-2.5 py-1.5 font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
+                      />
+                      <span className="text-xs text-[#5A6065]">unités</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-[#5A6065] block mb-1">Taux unitaire (DA) :</label>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="number"
+                        min="0"
+                        step="50"
+                        value={fixedTaux}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setFixedTaux(val);
+                          setCustomAmount(fixedNombre * val);
+                        }}
+                        placeholder="500"
+                        className="w-full bg-white border border-[#E6E4DD] rounded-lg px-2.5 py-1.5 font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
+                      />
+                      <span className="text-xs text-[#5A6065] font-mono">DA</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#E6F3EE] border border-[#A7F3D0] flex items-center justify-between text-xs">
+                  <span className="text-[#0D3B2E] font-medium">Montant mensuel total calculé :</span>
+                  <span className="font-mono font-bold text-[#0D3B2E]">
+                    {fixedNombre} × {formatDA(fixedTaux, false)} = {formatDA(customAmount)}
+                  </span>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-1.5 pt-2 border-t border-[#E6E4DD]">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-[#111315]">
+                    Montant mensuel fixe (DA) :
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFixedMode("nombre_x_taux");
+                      setFixedNombre(22);
+                      setFixedTaux(500);
+                      setCustomAmount(22 * 500);
+                    }}
+                    className="text-[10px] text-[#0D3B2E] font-medium hover:underline cursor-pointer"
+                  >
+                    Passer en Nombre × Taux
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    step="500"
+                    min="0"
+                    value={customAmount}
+                    onChange={(e) => setCustomAmount(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-white border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-mono font-bold text-sm text-[#111315] outline-none focus:border-[#0D3B2E]"
+                  />
+                  <span className="text-xs text-[#5A6065] font-mono">DA</span>
+                </div>
+              </div>
+            )}
 
             {/* Boutons d'action modale */}
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6E4DD]">

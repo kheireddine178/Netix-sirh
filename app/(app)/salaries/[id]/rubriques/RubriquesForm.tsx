@@ -39,6 +39,39 @@ export default function RubriquesForm({
   const [typeFiltre, setTypeFiltre] = useState<string>("tous");
   const [selectionneesUniquement, setSelectionneesUniquement] = useState(false);
 
+  // Valeurs séparées pour les rubriques Nombre x Taux (ex: Panier 22 * 500 DA)
+  const [valeursNombreTaux, setValeursNombreTaux] = useState<Record<string, { nombre: number; taux: number }>>(() => {
+    const init: Record<string, { nombre: number; taux: number }> = {};
+    for (const a of assignees) {
+      const cat = catalogue.find((c) => c.code === a.code);
+      if (cat?.categorie === "nombre_x_taux" || a.code.startsWith("R52")) {
+        const total = a.valeur_defaut || 0;
+        if (total > 0) {
+          const defaultTaux = total % 500 === 0 && total >= 500 ? 500 : (total % 300 === 0 ? 300 : 500);
+          const defaultNombre = Math.round(total / defaultTaux);
+          init[a.code] = { nombre: defaultNombre || 22, taux: defaultTaux };
+        } else {
+          init[a.code] = { nombre: 22, taux: 500 };
+        }
+      }
+    }
+    return init;
+  });
+
+  const getNombreTaux = (code: string) => {
+    return valeursNombreTaux[code] || { nombre: 22, taux: 500 };
+  };
+
+  const updateNombreTaux = (code: string, patch: Partial<{ nombre: number; taux: number }>) => {
+    setValeursNombreTaux((prev) => {
+      const current = prev[code] || { nombre: 22, taux: 500 };
+      return {
+        ...prev,
+        [code]: { ...current, ...patch },
+      };
+    });
+  };
+
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -309,27 +342,88 @@ export default function RubriquesForm({
                           transition: "opacity 0.2s ease",
                         }}
                       >
-                        <input
-                          type="number"
-                          step="0.01"
-                          name={`defaut_${r.code}`}
-                          defaultValue={valeursDefautInitiales.get(r.code) ?? 0}
-                          placeholder={
-                            r.categorie === "pourcentage"
-                              ? "Taux (%)"
-                              : r.categorie === "nombre_x_taux"
-                              ? "Quantité / Taux"
-                              : "Montant (DA)"
-                          }
-                          style={{
-                            width: "100%",
-                            padding: "6px 10px",
-                            borderRadius: "var(--rsm)",
-                            border: "1px solid var(--border)",
-                            fontSize: "var(--txs)",
-                            background: estCoche ? "var(--surface)" : "var(--surface-2)",
-                          }}
-                        />
+                        {r.categorie === "nombre_x_taux" ? (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 3, flex: 1 }}>
+                                <input
+                                  type="number"
+                                  step="1"
+                                  min="0"
+                                  name={`defaut_nombre_${r.code}`}
+                                  value={getNombreTaux(r.code).nombre}
+                                  onChange={(e) => updateNombreTaux(r.code, { nombre: parseFloat(e.target.value) || 0 })}
+                                  placeholder="Nombre (22)"
+                                  title="Nombre / Quantité (ex: 22 paniers)"
+                                  style={{
+                                    width: "100%",
+                                    minWidth: 50,
+                                    padding: "5px 7px",
+                                    borderRadius: "var(--rsm)",
+                                    border: "1px solid var(--border)",
+                                    fontSize: "var(--txs)",
+                                    fontWeight: 650,
+                                    fontFamily: "var(--mono)",
+                                    background: estCoche ? "var(--surface)" : "var(--surface-2)",
+                                  }}
+                                />
+                                <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 700 }}>×</span>
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 3, flex: 1.2 }}>
+                                <input
+                                  type="number"
+                                  step="50"
+                                  min="0"
+                                  name={`defaut_taux_${r.code}`}
+                                  value={getNombreTaux(r.code).taux}
+                                  onChange={(e) => updateNombreTaux(r.code, { taux: parseFloat(e.target.value) || 0 })}
+                                  placeholder="Taux (500)"
+                                  title="Taux unitaire en DA (ex: 500 DA)"
+                                  style={{
+                                    width: "100%",
+                                    minWidth: 65,
+                                    padding: "5px 7px",
+                                    borderRadius: "var(--rsm)",
+                                    border: "1px solid var(--border)",
+                                    fontSize: "var(--txs)",
+                                    fontWeight: 650,
+                                    fontFamily: "var(--mono)",
+                                    background: estCoche ? "var(--surface)" : "var(--surface-2)",
+                                  }}
+                                />
+                                <span style={{ fontSize: "10px", color: "var(--text-muted)", fontFamily: "var(--mono)" }}>DA</span>
+                              </div>
+                            </div>
+                            <input
+                              type="hidden"
+                              name={`defaut_${r.code}`}
+                              value={getNombreTaux(r.code).nombre * getNombreTaux(r.code).taux}
+                            />
+                            <div style={{ fontSize: "10px", color: "var(--teal)", fontWeight: 700, fontFamily: "var(--mono)", textAlign: "right" }}>
+                              = {(getNombreTaux(r.code).nombre * getNombreTaux(r.code).taux).toLocaleString("fr-FR")} DA
+                            </div>
+                          </div>
+                        ) : (
+                          <input
+                            type="number"
+                            step="0.01"
+                            name={`defaut_${r.code}`}
+                            defaultValue={valeursDefautInitiales.get(r.code) ?? 0}
+                            placeholder={
+                              r.categorie === "pourcentage"
+                                ? "Taux (%)"
+                                : "Montant (DA)"
+                            }
+                            style={{
+                              width: "100%",
+                              padding: "6px 10px",
+                              borderRadius: "var(--rsm)",
+                              border: "1px solid var(--border)",
+                              fontSize: "var(--txs)",
+                              background: estCoche ? "var(--surface)" : "var(--surface-2)",
+                            }}
+                          />
+                        )}
                       </div>
                     </td>
                   </tr>
