@@ -32,26 +32,30 @@ function getAuditAuteurId(userId?: string | null): string | null {
 
 export async function enforceSession() {
   const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, email, salarie_id")
-      .eq("id", user.id)
-      .single();
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role, email, salarie_id")
+        .eq("id", user.id)
+        .maybeSingle();
 
-    if (profile) {
-      return { supabase, user, role: profile.role, email: profile.email, salarieId: profile.salarie_id };
+      if (profile) {
+        return { supabase, user, role: profile.role, email: profile.email, salarieId: profile.salarie_id };
+      }
     }
+  } catch (err) {
+    console.error("Erreur enforceSession:", err);
   }
 
   // Profil par défaut pour accès sans authentification
   return {
     supabase,
-    user: user || { id: "guest-user", email: "guest@netix.local" },
+    user: { id: "guest-user", email: "guest@netix.local" },
     role: "Responsable RH",
-    email: user?.email || "guest@netix.local",
+    email: "guest@netix.local",
     salarieId: null,
   };
 }
@@ -83,14 +87,22 @@ export interface Salarie {
 }
 
 export async function listerSalaries(): Promise<Salarie[]> {
-  const { supabase } = await enforceSession();
-  const { data, error } = await supabase
-    .from("salaries")
-    .select("*")
-    .order("nom_prenom");
+  try {
+    const { supabase } = await enforceSession();
+    const { data, error } = await supabase
+      .from("salaries")
+      .select("*")
+      .order("nom_prenom");
 
-  if (error) throw new Error(error.message);
-  return data ?? [];
+    if (error) {
+      console.error("Erreur listerSalaries:", error.message);
+      return [];
+    }
+    return data ?? [];
+  } catch (err) {
+    console.error("Exception listerSalaries:", err);
+    return [];
+  }
 }
 
 export interface ListerSalariesParams {
@@ -344,46 +356,62 @@ export interface RubriqueAssignee extends RubriqueCatalogue {
  * par les champs V1 du formulaire de bulletin (CODES_GERES_NATIVEMENT dans paieCalcul.ts).
  */
 export async function listerCatalogueRubriques(): Promise<RubriqueCatalogue[]> {
-  const { supabase } = await enforceSession();
-  const { data, error } = await supabase
-    .from("rubriques_catalogue")
-    .select("code, libelle, type_valeur, cotisable, imposable")
-    .in("type_valeur", ["Gain (+)", "Retenue (-)"])
-    .order("code");
+  try {
+    const { supabase } = await enforceSession();
+    const { data, error } = await supabase
+      .from("rubriques_catalogue")
+      .select("code, libelle, type_valeur, cotisable, imposable")
+      .in("type_valeur", ["Gain (+)", "Retenue (-)"])
+      .order("code");
 
-  if (error) throw new Error(error.message);
+    if (error) {
+      console.error("Erreur listerCatalogueRubriques:", error.message);
+      return [];
+    }
 
-  return (data ?? [])
-    .filter((r: any) => !CODES_GERES_NATIVEMENT.has(r.code))
-    .map((r: any) => ({ ...r, categorie: categorieRubrique(r.code) }));
+    return (data ?? [])
+      .filter((r: any) => !CODES_GERES_NATIVEMENT.has(r.code))
+      .map((r: any) => ({ ...r, categorie: categorieRubrique(r.code) }));
+  } catch (err) {
+    console.error("Exception listerCatalogueRubriques:", err);
+    return [];
+  }
 }
 
 /** Rubriques du catalogue actuellement cochées/assignées à un salarié donné. */
 export async function listerRubriquesSalarie(salarieId: number): Promise<RubriqueAssignee[]> {
-  const { supabase } = await enforceSession();
-  const { data, error } = await supabase
-    .from("salarie_rubriques")
-    .select("rubrique_code, valeur_defaut, rubriques_catalogue(code, libelle, type_valeur, cotisable, imposable)")
-    .eq("salarie_id", salarieId);
+  try {
+    const { supabase } = await enforceSession();
+    const { data, error } = await supabase
+      .from("salarie_rubriques")
+      .select("rubrique_code, valeur_defaut, rubriques_catalogue(code, libelle, type_valeur, cotisable, imposable)")
+      .eq("salarie_id", salarieId);
 
-  if (error) throw new Error(error.message);
+    if (error) {
+      console.error("Erreur listerRubriquesSalarie:", error.message);
+      return [];
+    }
 
-  return (data ?? [])
-    .map((r: any) => {
-      const cat = Array.isArray(r.rubriques_catalogue) ? r.rubriques_catalogue[0] : r.rubriques_catalogue;
-      if (!cat) return null;
-      return {
-        code: cat.code,
-        libelle: cat.libelle,
-        type_valeur: cat.type_valeur,
-        cotisable: cat.cotisable,
-        imposable: cat.imposable,
-        valeur_defaut: r.valeur_defaut ?? 0,
-        categorie: categorieRubrique(cat.code),
-      };
-    })
-    .filter((r): r is RubriqueAssignee => r !== null)
-    .sort((a: any, b: any) => a.code.localeCompare(b.code));
+    return (data ?? [])
+      .map((r: any) => {
+        const cat = Array.isArray(r.rubriques_catalogue) ? r.rubriques_catalogue[0] : r.rubriques_catalogue;
+        if (!cat) return null;
+        return {
+          code: cat.code,
+          libelle: cat.libelle,
+          type_valeur: cat.type_valeur,
+          cotisable: cat.cotisable,
+          imposable: cat.imposable,
+          valeur_defaut: r.valeur_defaut ?? 0,
+          categorie: categorieRubrique(cat.code),
+        };
+      })
+      .filter((r): r is RubriqueAssignee => r !== null)
+      .sort((a: any, b: any) => a.code.localeCompare(b.code));
+  } catch (err) {
+    console.error("Exception listerRubriquesSalarie:", err);
+    return [];
+  }
 }
 
 /**
@@ -1275,14 +1303,22 @@ export interface ContratGlobalRow extends ContratRow {
 }
 
 export async function listerTousContrats(): Promise<ContratGlobalRow[]> {
-  const { supabase } = await enforceSession();
-  const { data, error } = await supabase
-    .from("contrats")
-    .select("*, salaries(id, nom_prenom, matricule, fonction)")
-    .order("date_debut", { ascending: false });
+  try {
+    const { supabase } = await enforceSession();
+    const { data, error } = await supabase
+      .from("contrats")
+      .select("*, salaries(id, nom_prenom, matricule, fonction)")
+      .order("date_debut", { ascending: false });
 
-  if (error) throw new Error(error.message);
-  return data ?? [];
+    if (error) {
+      console.error("Erreur listerTousContrats:", error.message);
+      return [];
+    }
+    return data ?? [];
+  } catch (err) {
+    console.error("Exception listerTousContrats:", err);
+    return [];
+  }
 }
 
 export async function changerStatutContratGlobal(contratId: number, statut: string): Promise<void> {
