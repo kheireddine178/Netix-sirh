@@ -293,3 +293,44 @@ samp {
   box-shadow: -8px 0 24px rgba(17, 19, 21, 0.08);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* ==========================================================================
+   STYLES D'IMPRESSION A4 STRICTS & SUPPRESSION DES EN-TÊTES/PIEDS CHROME
+   ========================================================================== */
+@page {
+  size: A4 portrait;
+  margin: 0mm;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0mm;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #FFFFFF !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Masquer tous les éléments parasites du navigateur */
+  header, nav, .print-hidden {
+    display: none !important;
+  }
+
+  .a4-sheet {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 auto !important;
+    padding: 10mm 12mm !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    min-height: 0 !important;
+    height: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
