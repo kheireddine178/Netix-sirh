@@ -1,6 +1,6 @@
 import React from "react";
-import SpreadsheetClient from "./spreadsheet-client";
-import { chargerDonneesSpreadsheet } from "./actions";
+import CockpitClient from "./cockpit-client";
+import { chargerDonneesCockpit } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -11,17 +11,23 @@ interface Props {
   }>;
 }
 
-export default async function PaieSpreadsheetPage({ searchParams }: Props) {
+export default async function PaieCockpitPage({ searchParams }: Props) {
   const params = await searchParams;
   const now = new Date();
   const annee = params.annee ? parseInt(params.annee, 10) : now.getFullYear();
   const mois = params.mois ? parseInt(params.mois, 10) : now.getMonth() + 1;
 
-  const { rows } = await chargerDonneesSpreadsheet(annee, mois);
+  const data = await chargerDonneesCockpit(annee, mois);
 
   return (
     <div className="w-full">
-      <SpreadsheetClient initialRows={rows} annee={annee} mois={mois} />
+      <CockpitClient
+        initialSalaries={data.salaries}
+        initialVariables={data.initialVariables}
+        catalogue={data.catalogue}
+        annee={data.annee}
+        mois={data.mois}
+      />
     </div>
   );
 }
