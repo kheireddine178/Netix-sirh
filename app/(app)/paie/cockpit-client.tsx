@@ -35,8 +35,8 @@ import {
   Calculator,
   PanelLeftClose,
   PanelLeftOpen,
-} from "lucide-react";
 import { useSidebar } from "@/lib/sidebarContext";
+import { cn } from "@/lib/utils";
 import {
   calculerBulletinComplet,
   round2,
