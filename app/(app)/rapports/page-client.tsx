@@ -44,7 +44,7 @@ export default function PageClient({ catalogue }: { catalogue: RubriqueCatalogue
   const now = new Date();
   const [annee, setAnnee] = useState(now.getFullYear());
   const [mois, setMois] = useState(now.getMonth() + 1);
-  const [onglet, setOnglet] = useState<"centralisateur" | "nominatif" | "g50" | "virement">("centralisateur");
+  const [onglet, setOnglet] = useState<"centralisateur" | "cnas" | "g50" | "virement" | "nominatif">("centralisateur");
   const [selectedRubrique, setSelectedRubrique] = useState("R030");
 
   const [recap, setRecap] = useState<RecapCentralisateur | null>(null);
@@ -119,7 +119,7 @@ export default function PageClient({ catalogue }: { catalogue: RubriqueCatalogue
     setErreur(null);
     startTransition(async () => {
       try {
-        if (onglet === "centralisateur" || onglet === "g50") {
+        if (onglet === "centralisateur" || onglet === "g50" || onglet === "cnas") {
           const res = await getCentralisateur(annee, mois);
           setRecap(res);
         } else if (onglet === "virement") {
@@ -183,10 +183,11 @@ export default function PageClient({ catalogue }: { catalogue: RubriqueCatalogue
             <span className="text-sm font-medium text-[#64748B]">Rapport</span>
             <select value={onglet} onChange={e => { setOnglet(e.target.value as any); setRecap(null); setNominatifList([]); setVirementList([]); }}
               className="p-2 rounded-md border border-[#E2E8F0] text-sm bg-white focus:ring-1 focus:ring-[#4F46E5] focus:outline-none font-medium">
-              <option value="centralisateur">Centralisateur Général (Mois)</option>
-              <option value="nominatif">État nominatif par rubrique</option>
-              <option value="g50">Synthèse G50 (IRG Salariés)</option>
+              <option value="centralisateur">Centralisateur Général (Grand Livre)</option>
+              <option value="cnas">Bordereau CNAS (DAC 34,5%)</option>
+              <option value="g50">Synthèse G50 (IRG Salariés Art. 104)</option>
               <option value="virement">Ordres de Virement de Masse</option>
+              <option value="nominatif">État nominatif par rubrique</option>
             </select>
           </div>
 
@@ -367,6 +368,104 @@ export default function PageClient({ catalogue }: { catalogue: RubriqueCatalogue
               </tr>
             </tbody>
           </table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 2.5 BORDEREAU CNAS (DAC 34,5% - LOI 83-11) */}
+      {onglet === "cnas" && recap && (
+        (() => {
+          const cnasSalarialeLine = recap.lignes.find(l => l.code === "R950");
+          const assietteCotisable = cnasSalarialeLine?.n_base ?? 0;
+          const montantCnasSalariale = cnasSalarialeLine?.retenue ?? (assietteCotisable * 0.09);
+          const montantCnasPatronale = assietteCotisable * 0.25;
+          const montantCnasOeuvres = assietteCotisable * 0.005;
+          const totalDAC = montantCnasSalariale + montantCnasPatronale + montantCnasOeuvres;
+
+          return (
+            <Card className="print-report-box">
+              <CardContent className="p-6">
+                <div style={{ borderBottom: "2px solid var(--text)", paddingBottom: "var(--s3)", marginBottom: "var(--s4)" }}>
+                  <h3 style={{ fontSize: "var(--tlg)", textAlign: "center", fontWeight: "bold" }}>RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE</h3>
+                  <h4 style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "var(--tsm)", marginTop: 4 }}>CAISSE NATIONALE DES ASSURANCES SOCIALES DES TRAVAILLEURS SALARIÉS (CNAS)</h4>
+                  <h3 style={{ fontSize: "var(--tlg)", textAlign: "center", marginTop: "var(--s3)", color: "var(--accent)", fontWeight: "bold" }}>BORDEREAU RÉCAPITULATIF DE COTISATIONS — DAC (34,5%)</h3>
+                  <p style={{ textAlign: "center", fontSize: "var(--tsm)", color: "var(--text-muted)", marginTop: 4 }}>
+                    Période : <strong>{MOIS[mois - 1].toUpperCase()} {annee}</strong>
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6" style={{ marginBottom: "var(--s4)", marginTop: "var(--s4)" }}>
+                  <div className="card" style={{ background: "var(--surface-2)" }}>
+                    <span style={{ fontSize: "var(--t2xs)", color: "var(--text-muted)", textTransform: "uppercase" }}>Nombre de Cotisants</span>
+                    <p style={{ fontSize: "var(--txl)", fontWeight: "bold" }}>{recap.nombreSalaries}</p>
+                  </div>
+                  <div className="card" style={{ background: "var(--surface-2)" }}>
+                    <span style={{ fontSize: "var(--t2xs)", color: "var(--text-muted)", textTransform: "uppercase" }}>Assiette Cotisable Déclarée</span>
+                    <p style={{ fontSize: "var(--txl)", fontWeight: "bold" }}>{formatDA(assietteCotisable)}</p>
+                  </div>
+                  <div className="card" style={{ background: "var(--surface-2)" }}>
+                    <span style={{ fontSize: "var(--t2xs)", color: "var(--text-muted)", textTransform: "uppercase" }}>Total DAC Exigible (34,5%)</span>
+                    <p style={{ fontSize: "var(--txl)", fontWeight: "bold", color: "var(--teal)" }}>{formatDA(totalDAC)}</p>
+                  </div>
+                </div>
+
+                <table className="table" style={{ width: "100%", fontSize: "var(--txs)" }}>
+                  <thead>
+                    <tr style={{ background: "var(--surface-2)" }}>
+                      <th style={{ padding: "10px", textAlign: "left" }}>NATURE DE LA COTISATION</th>
+                      <th style={{ padding: "10px", textAlign: "center" }}>COTISANTS</th>
+                      <th style={{ padding: "10px", textAlign: "right" }}>ASSIETTE SOUMISE</th>
+                      <th style={{ padding: "10px", textAlign: "center" }}>TAUX</th>
+                      <th style={{ padding: "10px", textAlign: "right" }}>MONTANT EXIGIBLE</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ padding: "10px", fontWeight: "bold" }}>Part Salariale (Précomptée sur bulletins)</td>
+                      <td style={{ padding: "10px", textAlign: "center" }}>{recap.nombreSalaries}</td>
+                      <td style={{ padding: "10px", textAlign: "right" }}>{formatDA(assietteCotisable)}</td>
+                      <td style={{ padding: "10px", textAlign: "center", fontWeight: "bold", color: "var(--red)" }}>9,00 %</td>
+                      <td style={{ padding: "10px", textAlign: "right", fontWeight: "bold", color: "var(--red)" }}>{formatDA(montantCnasSalariale)}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: "10px", fontWeight: "bold" }}>Part Patronale Employeur (Sécurité Sociale)</td>
+                      <td style={{ padding: "10px", textAlign: "center" }}>{recap.nombreSalaries}</td>
+                      <td style={{ padding: "10px", textAlign: "right" }}>{formatDA(assietteCotisable)}</td>
+                      <td style={{ padding: "10px", textAlign: "center", fontWeight: "bold" }}>25,00 %</td>
+                      <td style={{ padding: "10px", textAlign: "right", fontWeight: "bold" }}>{formatDA(montantCnasPatronale)}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: "10px", fontWeight: "bold" }}>Quote-part Fonds des Œuvres Sociales (DAC)</td>
+                      <td style={{ padding: "10px", textAlign: "center" }}>{recap.nombreSalaries}</td>
+                      <td style={{ padding: "10px", textAlign: "right" }}>{formatDA(assietteCotisable)}</td>
+                      <td style={{ padding: "10px", textAlign: "center", fontWeight: "bold" }}>0,50 %</td>
+                      <td style={{ padding: "10px", textAlign: "right", fontWeight: "bold" }}>{formatDA(montantCnasOeuvres)}</td>
+                    </tr>
+                    <tr style={{ background: "var(--surface-2)", fontWeight: "bold", borderTop: "2px solid var(--text)" }}>
+                      <td style={{ padding: "12px" }}>TOTAL GÉNÉRAL EXIGIBLE AU TITRE DE LA DAC</td>
+                      <td style={{ padding: "12px", textAlign: "center" }}>{recap.nombreSalaries}</td>
+                      <td style={{ padding: "12px", textAlign: "right" }}>{formatDA(assietteCotisable)}</td>
+                      <td style={{ padding: "12px", textAlign: "center", fontSize: "var(--tsm)" }}>34,50 %</td>
+                      <td style={{ padding: "12px", textAlign: "right", color: "var(--teal)", fontSize: "var(--tsm)" }}>{formatDA(totalDAC)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div style={{ marginTop: "var(--s4)", padding: "var(--s3)", background: "var(--blue-50)", borderLeft: "4px solid var(--blue-500)", borderRadius: "var(--radius-sm)", color: "var(--blue-900)" }} className="no-print">
+                  <p style={{ fontSize: "var(--txs)", margin: 0 }}>
+                    💡 <strong>Conformité CNAS (Ord. 95-01 Art. 1) :</strong> L'assiette déclarée ci-dessus exclut strictement les indemnités de panier et de transport. Le versement des cotisations doit être effectué auprès de la CNAS avant le 15 du mois suivant.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()
+      )}
+
+      {onglet === "cnas" && !recap && !isPending && (
+        <Card>
+          <CardContent className="p-12 text-center text-sm text-[#94A3B8]">
+            Aucune donnée chargée. Cliquez sur "Obtenir l'état" pour générer le bordereau CNAS (34,5%).
           </CardContent>
         </Card>
       )}
