@@ -429,7 +429,7 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
           <div className="flex items-center gap-2.5">
             <h1 className="text-xl font-bold tracking-tight text-[#111315] flex items-center gap-2">
               <TableProperties className="w-5 h-5 text-[#0D3B2E]" />
-              Spreadsheet 2026 — Saisie Mensuelle de Paie
+              Saisie de Paie — Saisie Mensuelle des Collaborateurs
             </h1>
             <span className="text-[11px] font-bold uppercase tracking-wider text-[#0D3B2E] bg-[#E6F3EE] px-2 py-0.5 rounded border border-[#A7F3D0]">
               200 Collaborateurs

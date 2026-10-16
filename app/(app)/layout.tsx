@@ -1,10 +1,8 @@
 import React from "react";
-import Sidebar from "@/components/Sidebar";
-import { NavbarMobile } from "@/components/NavbarMobile";
-import Footer from "@/components/Footer";
 import { checkAdminAccess } from "@/lib/authHelper";
 import { AuthProvider } from "@/lib/authContext";
 import { ToastProvider } from "@/components/ui/Toast";
+import { AppShell } from "@/components/AppShell";
 
 export default async function AppLayout({
   children,
@@ -16,21 +14,7 @@ export default async function AppLayout({
   return (
     <AuthProvider>
       <ToastProvider>
-        <div className="flex flex-col md:flex-row min-h-screen bg-[#F8F7F4] text-[#111315]">
-          {/* Header Mobile avec Drawer fluide */}
-          <NavbarMobile />
-
-          {/* Sidebar Desktop 2026 */}
-          <Sidebar />
-
-          {/* Zone de contenu principale haute lisibilité */}
-          <main className="flex-1 flex flex-col min-w-0 p-3 sm:p-5 lg:p-6 max-w-[1700px] mx-auto w-full">
-            <div className="flex-1 w-full animate-in fade-in-50 duration-200">
-              {children}
-            </div>
-            <Footer />
-          </main>
-        </div>
+        <AppShell>{children}</AppShell>
       </ToastProvider>
     </AuthProvider>
   );

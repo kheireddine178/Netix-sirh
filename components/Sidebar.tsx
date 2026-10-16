@@ -15,9 +15,11 @@ import {
   ChevronRight,
   ShieldCheck,
   Calendar,
+  PanelLeftClose,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/authContext";
+import { useSidebar } from "@/lib/sidebarContext";
 
 interface NavItem {
   label: string;
@@ -36,6 +38,7 @@ interface NavSection {
 export default function Sidebar() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
+  const { isOpen, toggleSidebar } = useSidebar();
 
   const NAV_SECTIONS: NavSection[] = [
     {
@@ -52,7 +55,7 @@ export default function Sidebar() {
       title: "Moteur de Paie",
       items: [
         {
-          label: "Spreadsheet 2026",
+          label: "Saisie de Paie",
           href: "/paie",
           icon: TableProperties,
           badge: "200 SALARIÉS",
@@ -109,14 +112,19 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-[#F8F7F4] border-r border-[#E6E4DD] h-screen sticky top-0 shrink-0 select-none z-30">
+    <aside
+      className={cn(
+        "hidden md:flex flex-col bg-[#F8F7F4] border-r border-[#E6E4DD] h-screen sticky top-0 shrink-0 select-none z-30 transition-all duration-300 ease-in-out overflow-hidden",
+        isOpen ? "w-64 opacity-100" : "w-0 opacity-0 border-r-0 pointer-events-none"
+      )}
+    >
       {/* Brand Header */}
-      <div className="p-4 border-b border-[#E6E4DD] flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-[#0D3B2E] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
+      <div className="p-4 border-b border-[#E6E4DD] flex items-center justify-between gap-2 min-w-[256px]">
+        <Link href="/dashboard" className="flex items-center gap-2.5 group min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-[#0D3B2E] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform shrink-0">
             <span className="font-bold text-sm tracking-tight font-mono">N</span>
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-sm tracking-tight text-[#111315]">
                 NETIX
@@ -125,15 +133,24 @@ export default function Sidebar() {
                 SIRH 2.0
               </span>
             </div>
-            <span className="text-[11px] text-[#5A6065] font-medium">
+            <span className="text-[11px] text-[#5A6065] font-medium truncate">
               Standard Fintech Haut de Gamme
             </span>
           </div>
         </Link>
+
+        {/* Bouton pour masquer la barre latérale */}
+        <button
+          onClick={toggleSidebar}
+          title="Masquer la navigation (Ctrl+B) pour agrandir l'espace de travail"
+          className="p-1.5 rounded-lg text-[#5A6065] hover:text-[#111315] hover:bg-[#E6E4DD] transition-colors cursor-pointer shrink-0"
+        >
+          <PanelLeftClose className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Navigation Sections */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 min-w-[256px]">
         {NAV_SECTIONS.map((section, idx) => (
           <div key={idx}>
             <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-[#5A6065]">
@@ -195,7 +212,7 @@ export default function Sidebar() {
       </div>
 
       {/* User Footer Profile */}
-      <div className="p-3 border-t border-[#E6E4DD] bg-[#F2F0EC]/50">
+      <div className="p-3 border-t border-[#E6E4DD] bg-[#F2F0EC]/50 min-w-[256px]">
         <div className="flex items-center justify-between p-2 rounded-md bg-white border border-[#E6E4DD]">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-7 h-7 rounded-md bg-[#0D3B2E]/10 text-[#0D3B2E] font-bold text-xs flex items-center justify-center shrink-0">

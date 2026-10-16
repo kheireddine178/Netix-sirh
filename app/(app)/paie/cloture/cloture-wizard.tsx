@@ -217,7 +217,7 @@ export default function ClotureWizard({
             <Link
               href="/paie"
               className="p-1 rounded-md text-[#5A6065] hover:text-[#111315] hover:bg-[#F2F0EC] transition-colors"
-              title="Retourner au tableur Spreadsheet 2026"
+              title="Retourner à la Saisie de Paie"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
@@ -249,7 +249,7 @@ export default function ClotureWizard({
         <div className="flex items-center gap-2">
           <Link href="/paie" className="btn-fintech-secondary text-xs">
             <FileText className="w-3.5 h-3.5" />
-            Modifier dans le Spreadsheet
+            Modifier dans la Saisie de Paie
           </Link>
 
           {isLocked ? (

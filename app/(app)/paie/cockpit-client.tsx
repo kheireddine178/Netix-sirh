@@ -33,7 +33,10 @@ import {
   Check,
   FileText,
   Calculator,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
+import { useSidebar } from "@/lib/sidebarContext";
 import {
   calculerBulletinComplet,
   round2,
@@ -106,6 +109,7 @@ export default function CockpitClient({
 
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
+  const { isOpen: isSidebarOpen, toggleSidebar } = useSidebar();
 
   // Modale d'assignation de rubrique fixe
   const [isAddFixedModalOpen, setIsAddFixedModalOpen] = useState<boolean>(false);
@@ -584,6 +588,32 @@ export default function CockpitClient({
             <ShieldCheck className="w-3.5 h-3.5 text-[#0D3B2E]" />
             <span>Clôture & Déclarations</span>
           </Link>
+
+          {/* Bouton Agrandir Espace / Masquer Navigation */}
+          <button
+            onClick={toggleSidebar}
+            className={cn(
+              "btn-fintech-secondary text-xs flex items-center gap-1.5 py-1 px-2.5 transition-all cursor-pointer font-medium",
+              !isSidebarOpen && "bg-[#E6F3EE] text-[#0D3B2E] border-[#A7F3D0]"
+            )}
+            title={
+              isSidebarOpen
+                ? "Masquer la navigation latérale pour agrandir l'espace de travail (Ctrl+B)"
+                : "Afficher la navigation latérale (Ctrl+B)"
+            }
+          >
+            {isSidebarOpen ? (
+              <>
+                <PanelLeftClose className="w-3.5 h-3.5 text-[#5A6065]" />
+                <span className="hidden xl:inline">Agrandir l'espace</span>
+              </>
+            ) : (
+              <>
+                <PanelLeftOpen className="w-3.5 h-3.5 text-[#0D3B2E]" />
+                <span className="hidden xl:inline font-bold">Afficher Menu</span>
+              </>
+            )}
+          </button>
 
           {/* Raccourci rappel */}
           <span className="hidden sm:inline-block text-[11px] font-mono text-[#5A6065] bg-[#F2F0EC] px-2 py-0.5 rounded border border-[#E6E4DD]">

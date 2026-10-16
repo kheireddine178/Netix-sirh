@@ -27,14 +27,13 @@ export function NavbarMobile() {
 
   const NAV_LINKS = [
     { label: "Tableau de Bord", href: "/dashboard", icon: LayoutDashboard },
-    { label: "Saisie Live 2026", href: "/saisie", icon: Wallet, badge: "LIVE" },
+    { label: "Saisie de Paie", href: "/paie", icon: Wallet, badge: "200" },
     { label: "Clôture Période", href: "/paie/cloture", icon: Sparkles },
-    { label: "Saisie Collective", href: "/saisie/collective", icon: SlidersHorizontal },
     { label: "Journal & Déclarations", href: "/rapports", icon: FileText },
     { label: "Collaborateurs", href: "/salaries", icon: Users },
     { label: "Contrats & Documents", href: "/contrats", icon: Briefcase },
     { label: "Congés & Absences", href: "/conges", icon: Calendar },
-    { label: "Guide Juridique RH", href: "/guide", icon: BookOpen },
+    { label: "Guide RH & Barèmes", href: "/guide", icon: BookOpen },
   ];
 
   return (
