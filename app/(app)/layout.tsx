@@ -16,7 +16,7 @@ export default async function AppLayout({
   return (
     <AuthProvider>
       <ToastProvider>
-        <div className="flex flex-col md:flex-row min-h-screen bg-slate-50/70 text-slate-900 bg-mesh-subtle">
+        <div className="flex flex-col md:flex-row min-h-screen bg-[#F8F7F4] text-[#111315]">
           {/* Header Mobile avec Drawer fluide */}
           <NavbarMobile />
 
@@ -24,7 +24,7 @@ export default async function AppLayout({
           <Sidebar />
 
           {/* Zone de contenu principale haute lisibilité */}
-          <main className="flex-1 flex flex-col min-w-0 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+          <main className="flex-1 flex flex-col min-w-0 p-3 sm:p-5 lg:p-6 max-w-[1700px] mx-auto w-full">
             <div className="flex-1 w-full animate-in fade-in-50 duration-200">
               {children}
             </div>

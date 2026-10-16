@@ -1,48 +1,57 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   NETIX SIRH 2026 — DESIGN SYSTEM & VISUAL ENGINE
-   Aesthetic: Aerospace-grade B2B / Spatial Glass / Tactile Micro-Interactions
-   Palette: Rich Slate (#090D16 / #0F172A) + Electric Indigo (#4F46E5, #6366F1)
+   NETIX SIRH 2.0 — CHARTE VISUELLE & DESIGN SYSTEM ("FINTECH ALABASTER")
+   Standards: Ramp, Mercury, Stripe, Linear
+   Palette: Alabaster Stone (#F8F7F4) + Deep Emerald (#0D3B2E) + Carbon (#111315)
    ========================================================================== */
 
 :root {
-  /* Surface Tokens */
-  --bg-app: #F8FAFC;
-  --bg-canvas: #FFFFFF;
-  --bg-card: #FFFFFF;
-  --bg-muted: #F1F5F9;
-  --bg-subtle: #F8FAFC;
+  /* 1. Surfaces & Fonds */
+  --bg-canvas: #F8F7F4;       /* Pierre chaude / Albâtre très doux pour l'application */
+  --bg-surface: #FFFFFF;      /* Blanc pur pour les zones de travail actives */
+  --bg-subtle: #F2F0EC;       /* Gris-sable très léger pour en-têtes et cellules calculées */
+  --bg-row-hover: #F8FAF9;    /* Survol discret d'une ligne */
+  --bg-row-selected: #EEF4F0; /* Ligne sélectionnée avec subtile teinte émeraude */
 
-  /* Border Tokens */
-  --border-subtle: #E2E8F0;
-  --border-active: #CBD5E1;
-  --border-glass: rgba(226, 232, 240, 0.8);
+  /* 2. Bordures Hairline Ultra-Précises */
+  --border-subtle: #E6E4DD;   /* 1px solid partout, net et précis */
+  --border-focus: #0D3B2E;    /* Bordure active focus clavier */
+  --border-active: #D1CFBF;
 
-  /* Typography Colors */
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-tertiary: #64748B;
-  --text-muted: #94A3B8;
+  /* 3. Typographie */
+  --text-primary: #111315;    /* Noir carbone profond */
+  --text-secondary: #5A6065;  /* En-têtes de colonnes, labels secondaires */
+  --text-muted: #94A3B8;      /* Unités DA, h, et tirets de valeur nulle */
 
-  /* Brand Accents */
-  --brand-primary: #4F46E5;
-  --brand-hover: #4338CA;
-  --brand-glow: rgba(79, 70, 229, 0.15);
-  --brand-gradient: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  /* 4. Accent Institutionnel Fintech */
+  --accent-primary: #0D3B2E;  /* Vert Émeraude Institutionnel profond */
+  --accent-hover: #08261E;
+  --accent-light: #E6F3EE;
+  --accent-ring: rgba(13, 59, 46, 0.15);
 
-  /* Status Colors */
-  --status-success: #10B981;
-  --status-warning: #F59E0B;
-  --status-danger: #EF4444;
-  --status-info: #06B6D4;
+  /* 5. Statuts Sémantiques */
+  --status-success-text: #065F46;
+  --status-success-bg: #D1FAE5;
+  --status-success-border: #A7F3D0;
 
-  /* Font stacks */
-  --font-sans: var(--font-dmsans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --status-warning-text: #92400E;
+  --status-warning-bg: #FEF3C7;
+  --status-warning-border: #FDE68A;
+
+  --status-danger-text: #991B1B;
+  --status-danger-bg: #FEE2E2;
+  --status-danger-border: #FECACA;
+
+  /* 6. Polices */
+  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "Geist Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-/* Base Body Styles */
+/* ==========================================================================
+   RESET & FONDAMENTAUX TYPOGRAPHIQUES
+   ========================================================================== */
+
 *, *::before, *::after, input, button, select, textarea {
   box-sizing: border-box;
   font-feature-settings: "zero" 0;
@@ -50,13 +59,16 @@
 
 html {
   scroll-behavior: smooth;
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
   font-feature-settings: "zero" 0;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--bg-app);
+  background-color: var(--bg-canvas);
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-feature-settings: "zero" 0;
@@ -65,86 +77,207 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Tabular figures for payroll and currency numbers (chiffres tabulaires avec zéros normaux ronds non barrés) */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "zero" 0;
-  letter-spacing: -0.01em;
+/* ==========================================================================
+   DISCIPLINE DES CHIFFRES TABULAIRES (OBLIGATOIRE FINTECH)
+   Bannit formellement les zéros barrés et aligne les décimales au centime
+   ========================================================================== */
+
+.num-fintech {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1, "zero" 0;
+  text-align: right;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
 }
 
-/* Glassmorphism & Visual Polish */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+/* ==========================================================================
+   COMPOSANTS FINTECH DU SPREADSHEET 2026
+   ========================================================================== */
+
+/* Grille financière haute performance */
+.spreadsheet-grid {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(17, 19, 21, 0.04), 0 4px 12px -2px rgba(17, 19, 21, 0.02);
 }
 
-.glass-card {
-  background: #FFFFFF;
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+/* Cellule de calcul automatique */
+.cell-computed {
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
-.glass-card:hover {
-  border-color: rgba(203, 213, 225, 0.9);
-  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 10px 24px -4px rgba(15, 23, 42, 0.05);
+/* Cellule active sélectionnée au clavier */
+.cell-focus {
+  outline: 2px solid var(--accent-primary) !important;
+  outline-offset: -1px;
+  background-color: #FFFFFF !important;
+  z-index: 10;
+  position: relative;
 }
 
-.dark-glass-card {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
-}
-
-/* Subtle glow effects */
-.glow-brand {
-  box-shadow: 0 0 24px -4px rgba(79, 70, 229, 0.35);
-}
-
-.glow-emerald {
-  box-shadow: 0 0 20px -4px rgba(16, 185, 129, 0.3);
-}
-
-/* Mesh gradients for ambient backgrounds */
-.bg-mesh-subtle {
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.04) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(124, 58, 237, 0.04) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.03) 0px, transparent 50%);
-}
-
-.bg-mesh-dark {
-  background-image: 
-    radial-gradient(at 10% 20%, rgba(79, 70, 229, 0.25) 0px, transparent 40%),
-    radial-gradient(at 90% 10%, rgba(124, 58, 237, 0.2) 0px, transparent 40%),
-    radial-gradient(at 50% 90%, rgba(14, 165, 233, 0.15) 0px, transparent 50%);
-}
-
-/* Refined custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
+/* Input transparent haute vélocité dans cellule */
+.cell-input {
+  width: 100%;
+  height: 100%;
   background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1, "zero" 0;
+  text-align: right;
+  padding: 0 8px;
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 9999px;
+.cell-input:focus {
+  background: #FFFFFF;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+/* En-tête de colonne compact et élégant */
+.th-fintech {
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  white-space: nowrap;
+  user-select: none;
 }
 
-/* Selection */
-::selection {
-  background-color: #4F46E5;
+/* Ligne de données du grand livre comptable */
+.tr-fintech {
+  height: 38px;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background-color 0.1s ease;
+}
+
+.tr-fintech:hover {
+  background-color: var(--bg-row-hover);
+}
+
+.tr-fintech.is-selected {
+  background-color: var(--bg-row-selected);
+}
+
+.td-fintech {
+  padding: 0 8px;
+  font-size: 0.8125rem;
+  border-right: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+
+/* Boutons Fintech Alabaster */
+.btn-fintech-primary {
+  background-color: var(--accent-primary);
   color: #FFFFFF;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(13, 59, 46, 0.12);
+}
+
+.btn-fintech-primary:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 2px 4px rgba(13, 59, 46, 0.2);
+}
+
+.btn-fintech-secondary {
+  background-color: #FFFFFF;
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-fintech-secondary:hover {
+  background-color: var(--bg-subtle);
+  border-color: var(--border-active);
+}
+
+/* Barre de synthèse financière en pied de page (Sticky Footer) */
+.fintech-summary-footer {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border-subtle);
+  box-shadow: 0 -4px 16px rgba(17, 19, 21, 0.05);
+}
+
+/* Badge de statut comptable */
+.badge-status-valide {
+  color: var(--status-success-text);
+  background-color: var(--status-success-bg);
+  border: 1px solid var(--status-success-border);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-status-brouillon {
+  color: var(--status-warning-text);
+  background-color: var(--status-warning-bg);
+  border: 1px solid var(--status-warning-border);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-status-cloture {
+  color: #1E3A8A;
+  background-color: #DBEAFE;
+  border: 1px solid #BFDBFE;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Volet d'inspection latéral coulissant */
+.drawer-backdrop {
+  background-color: rgba(17, 19, 21, 0.35);
+  backdrop-filter: blur(3px);
+  transition: opacity 0.2s ease;
+}
+
+.drawer-panel {
+  background: #FFFFFF;
+  border-left: 1px solid var(--border-subtle);
+  box-shadow: -8px 0 24px rgba(17, 19, 21, 0.08);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
