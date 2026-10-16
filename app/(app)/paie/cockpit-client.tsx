@@ -21,7 +21,6 @@ import {
   Layers,
   Sparkles,
   Info,
-  Sliders,
   X,
   RotateCcw,
   Download,
