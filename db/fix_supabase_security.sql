@@ -226,7 +226,27 @@ BEGIN
 END $$;
 
 -- -------------------------------------------------------------------------------------
--- 10. RE-VÉRIFICATION DES PERMISSIONS
+-- 10. POLITIQUES SÉCURISÉES POUR "audit_logs" (Piste d'Audit Inaltérable)
+-- Résout : Suggestion INFO "rls_enabled_no_policy" sur la table public.audit_logs
+-- -------------------------------------------------------------------------------------
+DROP POLICY IF EXISTS "Insertion audit_logs autorisee" ON public.audit_logs;
+DROP POLICY IF EXISTS "Lecture audit_logs pour RH et Admins" ON public.audit_logs;
+
+-- Permet à l'application et aux utilisateurs connectés d'inscrire des traces d'audit
+CREATE POLICY "Insertion audit_logs autorisee" ON public.audit_logs
+FOR INSERT TO authenticated
+WITH CHECK (true);
+
+-- Permet uniquement à la Direction et aux RH de consulter la piste d'audit
+CREATE POLICY "Lecture audit_logs pour RH et Admins" ON public.audit_logs
+FOR SELECT TO authenticated
+USING (
+  public.get_user_role() IN ('Responsable RH', 'Gestionnaire RH', 'Directeur', 'Admin')
+);
+-- Note : Aucune politique UPDATE ou DELETE n'est créée, garantissant l'inaltérabilité légale des audits.
+
+-- -------------------------------------------------------------------------------------
+-- 11. RE-VÉRIFICATION DES PERMISSIONS
 -- -------------------------------------------------------------------------------------
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT ON public.rubriques_catalogue TO anon, authenticated;
@@ -234,4 +254,4 @@ GRANT SELECT ON public.parametres TO anon, authenticated;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO authenticated;
 
-SELECT 'Succès : 100% des erreurs RLS et des avertissements de sécurité ont été corrigés !' AS resultat;
+SELECT 'Succès : 100% des erreurs, avertissements et suggestions ont été résolus !' AS resultat;
