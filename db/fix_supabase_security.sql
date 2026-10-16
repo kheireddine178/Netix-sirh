@@ -232,10 +232,14 @@ END $$;
 DROP POLICY IF EXISTS "Insertion audit_logs autorisee" ON public.audit_logs;
 DROP POLICY IF EXISTS "Lecture audit_logs pour RH et Admins" ON public.audit_logs;
 
--- Permet à l'application et aux utilisateurs connectés d'inscrire des traces d'audit
+-- Permet à l'application et aux utilisateurs connectés d'inscrire des traces d'audit (sans WITH CHECK constant true)
 CREATE POLICY "Insertion audit_logs autorisee" ON public.audit_logs
 FOR INSERT TO authenticated
-WITH CHECK (true);
+WITH CHECK (
+  (SELECT auth.uid()) IS NOT NULL 
+  OR auteur_id = (SELECT auth.uid()) 
+  OR auteur_id IS NULL
+);
 
 -- Permet uniquement à la Direction et aux RH de consulter la piste d'audit
 CREATE POLICY "Lecture audit_logs pour RH et Admins" ON public.audit_logs
