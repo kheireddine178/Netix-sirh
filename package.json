@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:paie": "node scripts/test-paie-golden.js"
+    "test:paie": "node scripts/test-paie-golden.js",
+    "test:engine": "node --experimental-strip-types scripts/test-payroll-engine.js"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.0.0",
