@@ -1,10 +1,9 @@
 @import "tailwindcss";
 
-/* ==========================================================================
-   NETIX SIRH 2.0 — CHARTE VISUELLE & DESIGN SYSTEM ("FINTECH ALABASTER")
-   Standards: Ramp, Mercury, Stripe, Linear
-   Palette: Alabaster Stone (#F8F7F4) + Deep Emerald (#0D3B2E) + Carbon (#111315)
-   ========================================================================== */
+@theme {
+  --font-sans: var(--font-dmsans), "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-dmsans), "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
 
 :root {
   /* 1. Surfaces & Fonds */
@@ -43,18 +42,20 @@
   --status-danger-bg: #FEE2E2;
   --status-danger-border: #FECACA;
 
-  /* 6. Polices */
-  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "JetBrains Mono", "Geist Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* 6. Polices (Zéro barré formellement banni : DM Sans / Sans moderne tabulaire) */
+  --font-sans: var(--font-dmsans), "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-dmsans), "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 /* ==========================================================================
-   RESET & FONDAMENTAUX TYPOGRAPHIQUES
+   RESET & FONDAMENTAUX TYPOGRAPHIQUES — ZÉROS RONDS PURS (100% GARANTI)
+   Bannit les zéros barrés (0̸) sur l'intégralité de la Paie et du Guide RH.
    ========================================================================== */
 
 *, *::before, *::after, input, button, select, textarea {
   box-sizing: border-box;
-  font-feature-settings: "zero" 0;
+  font-variant-numeric: tabular-nums lining-nums normal;
+  font-feature-settings: "tnum" 1, "lnum" 1, "zero" 0;
 }
 
 html {
@@ -62,7 +63,8 @@ html {
   background-color: var(--bg-canvas);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-feature-settings: "zero" 0;
+  font-variant-numeric: tabular-nums lining-nums normal;
+  font-feature-settings: "tnum" 1, "lnum" 1, "zero" 0;
 }
 
 body {
@@ -71,21 +73,31 @@ body {
   background-color: var(--bg-canvas);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-feature-settings: "zero" 0;
+  font-variant-numeric: tabular-nums lining-nums normal;
+  font-feature-settings: "tnum" 1, "lnum" 1, "zero" 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
 /* ==========================================================================
-   DISCIPLINE DES CHIFFRES TABULAIRES (OBLIGATOIRE FINTECH)
-   Bannit formellement les zéros barrés et aligne les décimales au centime
+   DISCIPLINE DES CHIFFRES TABULAIRES (ZÉROS RONDS & ALIGNEMENT AU CENTIME)
+   Neutralise Consolas / polices monospaces à zéros barrés pour toute classe
    ========================================================================== */
 
+.font-mono,
+[class*="font-mono"],
+.num-fintech,
+.cell-input,
+code,
+kbd,
+samp {
+  font-family: var(--font-sans) !important;
+  font-variant-numeric: tabular-nums lining-nums normal !important;
+  font-feature-settings: "tnum" 1, "lnum" 1, "zero" 0 !important;
+}
+
 .num-fintech {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums lining-nums;
-  font-feature-settings: "tnum" 1, "lnum" 1, "zero" 0;
   text-align: right;
   letter-spacing: -0.015em;
   white-space: nowrap;

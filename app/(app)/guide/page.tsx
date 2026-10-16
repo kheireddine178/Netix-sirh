@@ -207,7 +207,7 @@ export default function GuidePage() {
           <div className="bg-white border border-slate-200/90 rounded-2xl p-3 shadow-xs">
             <div className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between border-b border-slate-100 mb-2">
               <span>{currentPole.title}</span>
-              <span className="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+              <span className="tabular-nums text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
                 {currentPole.items.length}
               </span>
             </div>

@@ -512,15 +512,15 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
             <Sliders className="w-3.5 h-3.5 text-[#0D3B2E]" />
             Clavier :
           </span>
-          <span className="bg-white border border-[#E6E4DD] px-1.5 py-0.5 rounded text-[#111315] font-mono">
+          <span className="bg-white border border-[#E6E4DD] px-1.5 py-0.5 rounded text-[#111315] tabular-nums">
             ↑ ↓ ← →
           </span>
           <span>Naviguer</span>
-          <span className="bg-white border border-[#E6E4DD] px-1.5 py-0.5 rounded text-[#111315] font-mono">
+          <span className="bg-white border border-[#E6E4DD] px-1.5 py-0.5 rounded text-[#111315] tabular-nums">
             Tab / Entrée
           </span>
           <span>Saisir cellule</span>
-          <span className="bg-white border border-[#E6E4DD] px-1.5 py-0.5 rounded text-[#111315] font-mono">
+          <span className="bg-white border border-[#E6E4DD] px-1.5 py-0.5 rounded text-[#111315] tabular-nums">
             Espace
           </span>
           <span>Inspecter Bulletin</span>
@@ -675,7 +675,7 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
                   className={`tr-fintech ${isRowActive ? "is-selected" : ""}`}
                 >
                   {/* Matricule (Sticky gauche) */}
-                  <td className="td-fintech sticky left-0 z-10 bg-white font-mono text-center text-xs font-semibold text-[#5A6065]">
+                  <td className="td-fintech sticky left-0 z-10 bg-white tabular-nums text-center text-xs font-semibold text-[#5A6065]">
                     {row.matricule}
                   </td>
 
@@ -1001,7 +1001,7 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
 
             <div>
               <span className="text-[#5A6065]">Masse Brute : </span>
-              <span className="font-semibold font-mono text-[#111315]">
+              <span className="font-semibold tabular-nums text-[#111315]">
                 {formatDA(totals.brutTotal)}
               </span>
             </div>
@@ -1010,7 +1010,7 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
 
             <div>
               <span className="text-[#5A6065]">CNAS 9% (Salariés) : </span>
-              <span className="font-semibold font-mono text-[#991B1B]">
+              <span className="font-semibold tabular-nums text-[#991B1B]">
                 {formatDA(totals.cnas9)}
               </span>
             </div>
@@ -1019,7 +1019,7 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
 
             <div>
               <span className="text-[#5A6065]">CNAS 25% (Patronale) : </span>
-              <span className="font-semibold font-mono text-[#111315]">
+              <span className="font-semibold tabular-nums text-[#111315]">
                 {formatDA(totals.cnas25)}
               </span>
             </div>
@@ -1028,7 +1028,7 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
 
             <div>
               <span className="text-[#5A6065]">Œuvres Soc. 0,5% : </span>
-              <span className="font-semibold font-mono text-[#111315]">
+              <span className="font-semibold tabular-nums text-[#111315]">
                 {formatDA(totals.cnasOeuvres)}
               </span>
             </div>
@@ -1037,7 +1037,7 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
 
             <div className="bg-[#E6F3EE] px-2 py-0.5 rounded border border-[#A7F3D0]">
               <span className="text-[#0D3B2E] font-medium">Total DAC (34,5%) : </span>
-              <span className="font-bold font-mono text-[#0D3B2E]">
+              <span className="font-bold tabular-nums text-[#0D3B2E]">
                 {formatDA(totals.totalDAC)}
               </span>
             </div>
@@ -1046,7 +1046,7 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
 
             <div>
               <span className="text-[#5A6065]">IRG Reversé (G50) : </span>
-              <span className="font-semibold font-mono text-[#991B1B]">
+              <span className="font-semibold tabular-nums text-[#991B1B]">
                 {formatDA(totals.irgTotal)}
               </span>
             </div>
@@ -1058,7 +1058,7 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
               <span className="text-[10px] uppercase font-bold tracking-wider text-[#5A6065]">
                 Net Global des Salaires
               </span>
-              <span className="text-lg font-extrabold font-mono text-[#0D3B2E] tracking-tight">
+              <span className="text-lg font-extrabold tabular-nums text-[#0D3B2E] tracking-tight">
                 {formatDA(totals.netTotal)}
               </span>
             </div>
@@ -1144,20 +1144,20 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
                   <div className="p-3 rounded-md bg-white border border-[#E6E4DD] space-y-1 text-xs">
                     <div className="flex justify-between">
                       <span className="text-[#5A6065]">Salaire de Base Mensuel :</span>
-                      <span className="font-mono font-semibold">{formatDA(drawerRow.salaireBase)}</span>
+                      <span className="tabular-nums font-semibold">{formatDA(drawerRow.salaireBase)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#5A6065]">Taux Horaire (sur 173,33h) :</span>
-                      <span className="font-mono">{formatDA(activeEmployeeCalc.tauxHoraire)}/h</span>
+                      <span className="tabular-nums">{formatDA(activeEmployeeCalc.tauxHoraire)}/h</span>
                     </div>
                     <div className="flex justify-between text-[#991B1B]">
                       <span>Retenue Absence ({drawerRow.heuresAbsence}h) :</span>
-                      <span className="font-mono">-{formatDA(activeEmployeeCalc.retenueAbsence)}</span>
+                      <span className="tabular-nums">-{formatDA(activeEmployeeCalc.retenueAbsence)}</span>
                     </div>
                     {activeEmployeeCalc.totalHeuresSup > 0 && (
                       <div className="flex justify-between text-[#065F46]">
                         <span>Total Heures Supplémentaires :</span>
-                        <span className="font-mono">+{formatDA(activeEmployeeCalc.totalHeuresSup)}</span>
+                        <span className="tabular-nums">+{formatDA(activeEmployeeCalc.totalHeuresSup)}</span>
                       </div>
                     )}
                   </div>
@@ -1171,23 +1171,23 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
                   <div className="p-3 rounded-md bg-white border border-[#E6E4DD] space-y-1 text-xs">
                     <div className="flex justify-between font-semibold">
                       <span className="text-[#111315]">Salaire de Poste (Cotisable) :</span>
-                      <span className="font-mono">{formatDA(activeEmployeeCalc.salaireDePoste)}</span>
+                      <span className="tabular-nums">{formatDA(activeEmployeeCalc.salaireDePoste)}</span>
                     </div>
                     <div className="flex justify-between text-[#991B1B]">
                       <span className="text-[#5A6065]">Retenue CNAS Salariale (9%) :</span>
-                      <span className="font-mono">-{formatDA(activeEmployeeCalc.cnasSalariale)}</span>
+                      <span className="tabular-nums">-{formatDA(activeEmployeeCalc.cnasSalariale)}</span>
                     </div>
                     <div className="flex justify-between text-[#5A6065] pt-1 border-t border-[#E6E4DD]">
                       <span>Part Patronale CNAS (25%) :</span>
-                      <span className="font-mono">{formatDA(activeEmployeeCalc.cnasPatronale)}</span>
+                      <span className="tabular-nums">{formatDA(activeEmployeeCalc.cnasPatronale)}</span>
                     </div>
                     <div className="flex justify-between text-[#5A6065]">
                       <span>Fonds Œuvres Sociales (0,5%) :</span>
-                      <span className="font-mono">{formatDA(activeEmployeeCalc.cnasOeuvresSociales)}</span>
+                      <span className="tabular-nums">{formatDA(activeEmployeeCalc.cnasOeuvresSociales)}</span>
                     </div>
                     <div className="flex justify-between font-bold text-[#0D3B2E] pt-1 border-t border-[#E6E4DD]">
                       <span>Total Enveloppe DAC CNAS (34,5%) :</span>
-                      <span className="font-mono">{formatDA(activeEmployeeCalc.totalDAC)}</span>
+                      <span className="tabular-nums">{formatDA(activeEmployeeCalc.totalDAC)}</span>
                     </div>
                   </div>
                 </div>
@@ -1200,15 +1200,15 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
                   <div className="p-3 rounded-md bg-white border border-[#E6E4DD] space-y-1 text-xs">
                     <div className="flex justify-between">
                       <span className="text-[#5A6065]">Indemnité Panier ({drawerRow.joursPanier}j) :</span>
-                      <span className="font-mono font-semibold">{formatDA(activeEmployeeCalc.montantPanier)}</span>
+                      <span className="tabular-nums font-semibold">{formatDA(activeEmployeeCalc.montantPanier)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#5A6065]">Indemnité Transport (Proratisée) :</span>
-                      <span className="font-mono font-semibold">{formatDA(activeEmployeeCalc.montantTransport)}</span>
+                      <span className="tabular-nums font-semibold">{formatDA(activeEmployeeCalc.montantTransport)}</span>
                     </div>
                     <div className="flex justify-between font-bold text-[#111315] pt-1 border-t border-[#E6E4DD]">
                       <span>Salaire Brut Total :</span>
-                      <span className="font-mono">{formatDA(activeEmployeeCalc.salaireBrutTotal)}</span>
+                      <span className="tabular-nums">{formatDA(activeEmployeeCalc.salaireBrutTotal)}</span>
                     </div>
                   </div>
                 </div>
@@ -1221,29 +1221,29 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
                   <div className="p-3 rounded-md bg-[#F2F0EC]/70 border border-[#E6E4DD] space-y-1 text-xs">
                     <div className="flex justify-between">
                       <span className="text-[#5A6065]">Assiette Imposable Brute :</span>
-                      <span className="font-mono">{formatDA(activeEmployeeCalc.baseIrg)}</span>
+                      <span className="tabular-nums">{formatDA(activeEmployeeCalc.baseIrg)}</span>
                     </div>
                     <div className="flex justify-between font-semibold">
                       <span className="text-[#5A6065]">Troncature Réglementaire à 10 DA (R) :</span>
-                      <span className="font-mono">{formatDA(activeEmployeeCalc.rTronqueIrg)}</span>
+                      <span className="tabular-nums">{formatDA(activeEmployeeCalc.rTronqueIrg)}</span>
                     </div>
                     <div className="flex justify-between text-[#5A6065]">
                       <span>IRG Brut Progressif :</span>
-                      <span className="font-mono">{formatDA(activeEmployeeCalc.detailIrg.irgBrut)}</span>
+                      <span className="tabular-nums">{formatDA(activeEmployeeCalc.detailIrg.irgBrut)}</span>
                     </div>
                     <div className="flex justify-between text-[#065F46]">
                       <span>1er Abattement 40% (plafonné 1 000 - 1 500 DA) :</span>
-                      <span className="font-mono">-{formatDA(activeEmployeeCalc.detailIrg.abattement40)}</span>
+                      <span className="tabular-nums">-{formatDA(activeEmployeeCalc.detailIrg.abattement40)}</span>
                     </div>
                     {activeEmployeeCalc.rTronqueIrg > 30000 && activeEmployeeCalc.rTronqueIrg < 35000 && (
                       <div className="flex justify-between text-[#0D3B2E] text-[11px] font-medium bg-[#E6F3EE] p-1 rounded">
                         <span>Lissage Dégressif DGI (137/51 - 27925/8) :</span>
-                        <span className="font-mono">Appliqué</span>
+                        <span className="tabular-nums">Appliqué</span>
                       </div>
                     )}
                     <div className="flex justify-between font-bold text-[#991B1B] pt-1 border-t border-[#E6E4DD]">
                       <span>IRG Retenu Officiel (Arrondi au 1/10e) :</span>
-                      <span className="font-mono">{formatDA(activeEmployeeCalc.irgRetenu)}</span>
+                      <span className="tabular-nums">{formatDA(activeEmployeeCalc.irgRetenu)}</span>
                     </div>
                   </div>
                 </div>
@@ -1254,13 +1254,13 @@ export default function SpreadsheetClient({ initialRows, annee, mois }: Props) {
                     <span className="text-xs uppercase font-bold tracking-wider text-[#0D3B2E]">
                       Net à Payer (Centime Exact)
                     </span>
-                    <span className="text-xl font-black font-mono text-[#0D3B2E]">
+                    <span className="text-xl font-black tabular-nums text-[#0D3B2E]">
                       {formatDA(activeEmployeeCalc.netAPayer)}
                     </span>
                   </div>
                   <div className="flex justify-between text-xs text-[#065F46] pt-1 border-t border-[#A7F3D0]/60">
                     <span>Coût Total Employeur :</span>
-                    <span className="font-mono font-semibold">
+                    <span className="tabular-nums font-semibold">
                       {formatDA(activeEmployeeCalc.coutTotalEmployeur)}
                     </span>
                   </div>

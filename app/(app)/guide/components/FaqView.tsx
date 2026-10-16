@@ -155,7 +155,7 @@ export function FaqView() {
                         {item.theme}
                       </span>
                       {item.ref && (
-                        <span className="text-[11px] font-medium text-slate-500 font-mono hidden sm:inline">
+                        <span className="text-[11px] font-medium text-slate-500 tabular-nums hidden sm:inline">
                           • {item.ref}
                         </span>
                       )}
@@ -185,7 +185,7 @@ export function FaqView() {
                       <div className="flex items-center gap-1.5 text-slate-600 font-medium">
                         <Scale className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                         <span>Source légale :</span>
-                        <span className="font-mono text-slate-800 font-semibold">{item.ref}</span>
+                        <span className="tabular-nums text-slate-800 font-semibold">{item.ref}</span>
                       </div>
                       <div className="text-[11px] text-slate-400">
                         Réponse consolidée Netix SIRH

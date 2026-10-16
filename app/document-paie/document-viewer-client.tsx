@@ -182,7 +182,7 @@ export default function DocumentViewerClient({
               <span className="text-xs font-bold text-[#111315]">
                 Netix SIRH • Édition Documents de Paie
               </span>
-              <span className="font-mono text-[10px] bg-[#E6F3EE] text-[#0D3B2E] px-1.5 py-0.2 rounded font-bold border border-[#A7F3D0]">
+              <span className="tabular-nums text-[10px] bg-[#E6F3EE] text-[#0D3B2E] px-1.5 py-0.2 rounded font-bold border border-[#A7F3D0]">
                 {MOIS_FR[mois - 1]} {annee}
               </span>
             </div>
@@ -255,7 +255,7 @@ export default function DocumentViewerClient({
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="font-mono text-xs px-1 font-semibold text-[#5A6065]">
+            <span className="tabular-nums text-xs px-1 font-semibold text-[#5A6065]">
               {currentIdx + 1}/{salaries.length}
             </span>
             <button
@@ -334,7 +334,7 @@ export default function DocumentViewerClient({
                   </div>
                   <div>
                     <span className="text-[#5A6065]">Matricule : </span>
-                    <span className="font-mono font-bold text-[#0D3B2E]">{currentSalarie.matricule}</span>
+                    <span className="tabular-nums font-bold text-[#0D3B2E]">{currentSalarie.matricule}</span>
                   </div>
                   <div>
                     <span className="text-[#5A6065]">Fonction / Emploi : </span>
@@ -349,7 +349,7 @@ export default function DocumentViewerClient({
                 <div className="space-y-1 text-right sm:text-left">
                   <div>
                     <span className="text-[#5A6065]">N° Sécurité Sociale : </span>
-                    <span className="font-mono font-semibold">{currentSalarie.num_ss}</span>
+                    <span className="tabular-nums font-semibold">{currentSalarie.num_ss}</span>
                   </div>
                   <div>
                     <span className="text-[#5A6065]">Situation & Enfants : </span>
@@ -361,7 +361,7 @@ export default function DocumentViewerClient({
                   </div>
                   <div>
                     <span className="text-[#5A6065]">Mode de paiement : </span>
-                    <span className="font-mono text-[11px]">{currentSalarie.mode_paiement} ({currentSalarie.ccp_rib})</span>
+                    <span className="tabular-nums text-[11px]">{currentSalarie.mode_paiement} ({currentSalarie.ccp_rib})</span>
                   </div>
                 </div>
               </div>
@@ -379,7 +379,7 @@ export default function DocumentViewerClient({
                       <th className="py-1.5 px-2.5 text-right font-bold uppercase w-28">Retenues (-)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#E6E4DD] font-mono text-[11px]">
+                  <tbody className="divide-y divide-[#E6E4DD] tabular-nums text-[11px]">
                     {/* Salaire de base */}
                     <tr>
                       <td className="py-1 px-2.5 text-[#5A6065]">R030</td>
@@ -546,7 +546,7 @@ export default function DocumentViewerClient({
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-black font-mono text-[#0D3B2E]">
+                    <span className="text-2xl font-black tabular-nums text-[#0D3B2E]">
                       {formatDA(calc.netAPayer)}
                     </span>
                   </div>
@@ -557,19 +557,19 @@ export default function DocumentViewerClient({
               <div className="grid grid-cols-4 gap-2 text-[10px] bg-[#F8F7F4] p-2.5 rounded border border-[#E6E4DD]">
                 <div>
                   <span className="text-[#5A6065] block">Brut fiscal cumulé :</span>
-                  <span className="font-mono font-bold">{formatDA(calc.salaireBrutTotal * mois)}</span>
+                  <span className="tabular-nums font-bold">{formatDA(calc.salaireBrutTotal * mois)}</span>
                 </div>
                 <div>
                   <span className="text-[#5A6065] block">Cotisable CNAS cumulé :</span>
-                  <span className="font-mono font-bold">{formatDA(calc.salaireDePoste * mois)}</span>
+                  <span className="tabular-nums font-bold">{formatDA(calc.salaireDePoste * mois)}</span>
                 </div>
                 <div>
                   <span className="text-[#5A6065] block">Retenue IRG cumulée :</span>
-                  <span className="font-mono font-bold text-[#991B1B]">{formatDA(calc.irgRetenu * mois)}</span>
+                  <span className="tabular-nums font-bold text-[#991B1B]">{formatDA(calc.irgRetenu * mois)}</span>
                 </div>
                 <div>
                   <span className="text-[#5A6065] block">Heures travaillées :</span>
-                  <span className="font-mono font-bold">{calc.heuresTravaillees} h</span>
+                  <span className="tabular-nums font-bold">{calc.heuresTravaillees} h</span>
                 </div>
               </div>
             </div>
@@ -591,7 +591,7 @@ export default function DocumentViewerClient({
                 <p>
                   Dans votre intérêt et pour faire valoir vos droits, conservez ce bulletin de paie sans limitation de durée.
                 </p>
-                <p className="font-mono text-[9px] text-[#94A3B8]">
+                <p className="tabular-nums text-[9px] text-[#94A3B8]">
                   Document généré le {new Date().toLocaleDateString("fr-DZ")} par Netix SIRH 2.0 • Conforme Loi 90-11 & Décret Exécutif 22-01
                 </p>
               </div>
@@ -608,7 +608,7 @@ export default function DocumentViewerClient({
               {/* En-tête */}
               <div className="flex items-start justify-between pb-4 border-b-2 border-[#0D3B2E]">
                 <div>
-                  <span className="text-[10px] font-mono font-bold text-[#0D3B2E] uppercase tracking-wider block">
+                  <span className="text-[10px] tabular-nums font-bold text-[#0D3B2E] uppercase tracking-wider block">
                     TRANSPARENCE RH & PÉDAGOGIE FISCALE
                   </span>
                   <h2 className="text-lg font-black text-[#111315]">
@@ -641,7 +641,7 @@ export default function DocumentViewerClient({
                   <p className="text-[#5A6065] leading-relaxed">
                     Selon la législation du travail algérienne, le volume mensuel légal est de <strong>173,33 heures</strong> (40 heures par semaine × 52 semaines / 12 mois).
                   </p>
-                  <div className="p-2.5 rounded bg-white border border-[#E6E4DD] font-mono text-[11px] space-y-1">
+                  <div className="p-2.5 rounded bg-white border border-[#E6E4DD] tabular-nums text-[11px] space-y-1">
                     <div className="flex justify-between">
                       <span>• Taux horaire de base :</span>
                       <span className="font-bold">{formatDA(currentSalarie.salaire_base_theorique, false)} DA ÷ 173,33h = {formatDA(calc.tauxHoraire, false)} DA/h</span>
@@ -677,7 +677,7 @@ export default function DocumentViewerClient({
                   <p className="text-[#5A6065] leading-relaxed">
                     Le <strong>Salaire de Poste</strong> correspond à la somme du salaire de base (net d'absences) et de toutes les indemnités liées aux conditions de travail et au rendement. La cotisation salariale prélevée à la source est de <strong>9,00%</strong>.
                   </p>
-                  <div className="p-2.5 rounded bg-white border border-[#E6E4DD] font-mono text-[11px] space-y-1">
+                  <div className="p-2.5 rounded bg-white border border-[#E6E4DD] tabular-nums text-[11px] space-y-1">
                     <div className="flex justify-between">
                       <span>• Salaire de Poste cotisable (Assiette CNAS) :</span>
                       <span className="font-bold text-[#0D3B2E]">{formatDA(calc.salaireDePoste)}</span>
@@ -703,7 +703,7 @@ export default function DocumentViewerClient({
                   <p className="text-[#5A6065] leading-relaxed">
                     L'Impôt sur le Revenu Global (IRG) est calculé sur le montant brut diminué de la cotisation CNAS. La loi impose une <strong>troncature à la dizaine de dinar inférieure</strong> avant application du barème progressif et des deux abattements légaux.
                   </p>
-                  <div className="p-2.5 rounded bg-white border border-[#E6E4DD] font-mono text-[11px] space-y-1.5">
+                  <div className="p-2.5 rounded bg-white border border-[#E6E4DD] tabular-nums text-[11px] space-y-1.5">
                     <div className="flex justify-between">
                       <span>• Base imposable brute :</span>
                       <span>{formatDA(calc.baseIrg)} (R tronqué officiel: {formatDA(calc.rTronqueIrg)})</span>
@@ -737,7 +737,7 @@ export default function DocumentViewerClient({
                       Passage Synthétique au Salaire Net à Payer
                     </h3>
                   </div>
-                  <div className="p-2.5 rounded bg-white border border-[#A7F3D0] font-mono text-xs space-y-1">
+                  <div className="p-2.5 rounded bg-white border border-[#A7F3D0] tabular-nums text-xs space-y-1">
                     <div className="flex justify-between text-[#111315]">
                       <span>(+) Salaire Brut Total Rémunéré :</span>
                       <span className="font-bold">{formatDA(calc.salaireBrutTotal)}</span>
@@ -780,7 +780,7 @@ export default function DocumentViewerClient({
               {/* En-tête */}
               <div className="flex items-start justify-between pb-4 border-b-2 border-[#1E3A8A]">
                 <div>
-                  <span className="text-[10px] font-mono font-bold text-[#1E3A8A] uppercase tracking-wider block">
+                  <span className="text-[10px] tabular-nums font-bold text-[#1E3A8A] uppercase tracking-wider block">
                     DIRECTION FINANCIÈRE & RESSOURCES HUMAINES
                   </span>
                   <h2 className="text-lg font-black text-[#111315]">
@@ -804,28 +804,28 @@ export default function DocumentViewerClient({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 <div className="p-3 rounded-lg bg-[#F8F7F4] border border-[#E6E4DD]">
                   <span className="text-[10px] text-[#5A6065] block">Salaire Net Salarié :</span>
-                  <span className="text-sm font-black font-mono text-[#0D3B2E]">
+                  <span className="text-sm font-black tabular-nums text-[#0D3B2E]">
                     {formatDA(calc.netAPayer)}
                   </span>
                 </div>
 
                 <div className="p-3 rounded-lg bg-[#F8F7F4] border border-[#E6E4DD]">
                   <span className="text-[10px] text-[#5A6065] block">Salaire de Poste (CNAS) :</span>
-                  <span className="text-sm font-bold font-mono text-[#111315]">
+                  <span className="text-sm font-bold tabular-nums text-[#111315]">
                     {formatDA(calc.salaireDePoste)}
                   </span>
                 </div>
 
                 <div className="p-3 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
                   <span className="text-[10px] text-[#1E3A8A] block">Charges Patronales (25,5%) :</span>
-                  <span className="text-sm font-black font-mono text-[#1E3A8A]">
+                  <span className="text-sm font-black tabular-nums text-[#1E3A8A]">
                     {formatDA(calc.cnasPatronale + calc.cnasOeuvresSociales)}
                   </span>
                 </div>
 
                 <div className="p-3 rounded-lg bg-[#E6F3EE] border border-[#A7F3D0]">
                   <span className="text-[10px] text-[#065F46] block">Coût Global Entreprise :</span>
-                  <span className="text-sm font-black font-mono text-[#0D3B2E]">
+                  <span className="text-sm font-black tabular-nums text-[#0D3B2E]">
                     {formatDA(calc.coutTotalEmployeur)}
                   </span>
                 </div>
@@ -837,7 +837,7 @@ export default function DocumentViewerClient({
                   <h3 className="text-xs font-bold uppercase tracking-wider text-[#111315]">
                     Ventilation Légale du Bordereau CNAS — Déclaration DAC 34,5%
                   </h3>
-                  <span className="text-[11px] font-mono text-[#5A6065]">
+                  <span className="text-[11px] tabular-nums text-[#5A6065]">
                     Assiette soumise : <strong>{formatDA(calc.salaireDePoste)}</strong>
                   </span>
                 </div>
@@ -852,7 +852,7 @@ export default function DocumentViewerClient({
                         <th className="py-2 px-3 text-right font-bold uppercase w-32">Montant (DA)</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#E6E4DD] font-mono text-[11px]">
+                    <tbody className="divide-y divide-[#E6E4DD] tabular-nums text-[11px]">
                       <tr>
                         <td className="py-1.5 px-3 font-sans">Assurances Sociales (Maladie, Maternité, Invalidité, Décès)</td>
                         <td className="py-1.5 px-3 font-sans text-[#5A6065]">CNAS</td>

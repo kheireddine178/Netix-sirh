@@ -149,7 +149,7 @@ export function ModelesView() {
                 <div className="p-5 sm:px-6 bg-slate-50/70 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="inline-block px-2 py-0.5 text-[11px] font-semibold rounded bg-slate-200/70 text-slate-700 font-mono">
+                      <span className="inline-block px-2 py-0.5 text-[11px] font-semibold rounded bg-slate-200/70 text-slate-700 tabular-nums">
                         {doc.id.toUpperCase()}
                       </span>
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-500">
@@ -193,7 +193,7 @@ export function ModelesView() {
 
                 {/* Content Document Paper */}
                 <div className="p-5 sm:p-6 bg-white">
-                  <div className="bg-[#FAFBFD] border border-slate-200/60 rounded-xl p-5 font-mono text-xs text-slate-800 whitespace-pre-wrap leading-relaxed overflow-x-auto selection:bg-indigo-100 selection:text-indigo-900">
+                  <div className="bg-[#FAFBFD] border border-slate-200/60 rounded-xl p-5 tabular-nums text-xs text-slate-800 whitespace-pre-wrap leading-relaxed overflow-x-auto selection:bg-indigo-100 selection:text-indigo-900">
                     {doc.content}
                   </div>
                 </div>

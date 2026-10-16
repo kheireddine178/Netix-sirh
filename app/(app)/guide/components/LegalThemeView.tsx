@@ -56,7 +56,7 @@ export function LegalThemeView({
                   {legalRefs.map((ref, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-slate-100 text-slate-700 border border-slate-200"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] tabular-nums font-medium bg-slate-100 text-slate-700 border border-slate-200"
                     >
                       <Scale className="w-3 h-3 text-slate-500" />
                       {ref}

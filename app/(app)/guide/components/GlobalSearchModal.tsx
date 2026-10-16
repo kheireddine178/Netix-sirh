@@ -340,7 +340,7 @@ export function GlobalSearchModal({ isOpen, onClose, onSelect }: GlobalSearchMod
             <span>•</span>
             <span>Indexé sur 13 thèmes, 47 rubriques, 48 définitions, 24 questions</span>
           </div>
-          <div className="flex items-center gap-1 font-mono text-[11px]">
+          <div className="flex items-center gap-1 tabular-nums text-[11px]">
             <span>Appuyez sur</span>
             <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-semibold shadow-2xs">ESC</kbd>
             <span>pour fermer</span>

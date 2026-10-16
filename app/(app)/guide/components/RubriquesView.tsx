@@ -215,7 +215,7 @@ export function RubriquesView() {
                       className="hover:bg-slate-50/60 transition-colors group"
                     >
                       {/* Number */}
-                      <td className="py-3.5 px-4 text-center font-mono text-xs text-slate-400 font-medium">
+                      <td className="py-3.5 px-4 text-center tabular-nums text-xs text-slate-400 font-medium">
                         {item.n?.toString().padStart(2, "0")}
                       </td>
 
@@ -263,7 +263,7 @@ export function RubriquesView() {
 
                       {/* Legal Reference */}
                       <td className="py-3.5 px-4 text-xs font-medium text-slate-700">
-                        <span className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[11px] border border-slate-200">
+                        <span className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 tabular-nums text-[11px] border border-slate-200">
                           {item.base || "Réglementation"}
                         </span>
                       </td>

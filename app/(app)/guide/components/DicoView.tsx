@@ -197,7 +197,7 @@ export function DicoView() {
                   {item.ref && (
                     <div className="flex items-center gap-1.5 text-slate-700 font-medium">
                       <Scale className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                      <span className="font-mono text-[10.5px] truncate">{item.ref}</span>
+                      <span className="tabular-nums text-[10.5px] truncate">{item.ref}</span>
                     </div>
                   )}
                 </div>

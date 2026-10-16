@@ -48,7 +48,7 @@ export function GuideHeader({ currentPoleTitle, currentViewLabel, onOpenSearch }
             <span className="flex-1 text-left text-xs font-medium text-slate-400">
               Rechercher (loi, prime, FAQ)...
             </span>
-            <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+            <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[10px] tabular-nums font-semibold bg-slate-100 text-slate-500 border border-slate-200">
               Ctrl K
             </kbd>
           </button>

@@ -152,7 +152,7 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
             <div className="bg-[#F8FAFC] p-4 rounded-lg border border-[#E2E8F0] space-y-2">
               <div className="flex justify-between items-center text-sm font-medium">
                 <label htmlFor="sb-range" className="text-[#0F172A]">Salaire de base brut</label>
-                <span className="font-mono font-bold text-indigo-700 text-base">{fmt(sb)}</span>
+                <span className="tabular-nums font-bold text-indigo-700 text-base">{fmt(sb)}</span>
               </div>
               <input
                 id="sb-range"
@@ -184,7 +184,7 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
                       max="30"
                       value={iepPct}
                       onChange={(e) => setIepPct(Number(e.target.value))}
-                      className="w-full font-mono text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium"
+                      className="w-full tabular-nums text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium"
                     />
                     <span className="text-xs text-[#64748B]">%</span>
                   </div>
@@ -200,7 +200,7 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
                       max="50"
                       value={nuisPct}
                       onChange={(e) => setNuisPct(Number(e.target.value))}
-                      className="w-full font-mono text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium"
+                      className="w-full tabular-nums text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium"
                     />
                     <span className="text-xs text-[#64748B]">%</span>
                   </div>
@@ -216,7 +216,7 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
                       max="100"
                       value={respPct}
                       onChange={(e) => setRespPct(Number(e.target.value))}
-                      className="w-full font-mono text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium"
+                      className="w-full tabular-nums text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium"
                     />
                     <span className="text-xs text-[#64748B]">%</span>
                   </div>
@@ -232,7 +232,7 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
                       max="100"
                       value={autresPct}
                       onChange={(e) => setAutresPct(Number(e.target.value))}
-                      className="w-full font-mono text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium"
+                      className="w-full tabular-nums text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium"
                     />
                     <span className="text-xs text-[#64748B]">%</span>
                   </div>
@@ -252,7 +252,7 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
                     min="0"
                     value={icr}
                     onChange={(e) => setIcr(Number(e.target.value))}
-                    className="w-full font-mono text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium"
+                    className="w-full tabular-nums text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium"
                   />
                 </div>
 
@@ -267,7 +267,7 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
                     min="0"
                     value={panier}
                     onChange={(e) => setPanier(Number(e.target.value))}
-                    className="w-full font-mono text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium"
+                    className="w-full tabular-nums text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium"
                   />
                 </div>
 
@@ -279,7 +279,7 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
                     min="0"
                     value={mutuelle}
                     onChange={(e) => setMutuelle(Number(e.target.value))}
-                    className="w-full font-mono text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium text-red-600"
+                    className="w-full tabular-nums text-sm border border-[#E2E8F0] rounded p-1.5 text-right font-medium text-red-600"
                   />
                 </div>
               </div>
@@ -305,7 +305,7 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
                     <div className="font-semibold text-[#0F172A]">① Salaire Brut Total</div>
                     <div className="text-xs text-[#64748B]">Base ({fmt(sb)}) + Primes ({fmt(calcResults.primesPct + icr)}) + Panier</div>
                   </div>
-                  <span className="font-mono font-bold text-base text-[#0F172A]">{fmt(calcResults.totalGains)}</span>
+                  <span className="tabular-nums font-bold text-base text-[#0F172A]">{fmt(calcResults.totalGains)}</span>
                 </div>
 
                 {/* ② CNAS */}
@@ -314,7 +314,7 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
                     <div className="font-semibold text-[#0F172A]">② Retenue CNAS Salarié (9%)</div>
                     <div className="text-xs text-[#64748B]">Assiette cotisable : {fmt(calcResults.baseCnas)} (panier exclu)</div>
                   </div>
-                  <span className="font-mono font-bold text-red-600">− {fmt(calcResults.cnasSal)}</span>
+                  <span className="tabular-nums font-bold text-red-600">− {fmt(calcResults.cnasSal)}</span>
                 </div>
 
                 {/* ③ IRG */}
@@ -338,13 +338,13 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
                         Assiette IRG : {fmt(calcResults.baseIrg)} · Abattement 40% : {fmt(calcResults.abat)} ({calcResults.abatNote})
                       </div>
                     </div>
-                    <span className="font-mono font-bold text-red-600">− {fmt(calcResults.irgNet)}</span>
+                    <span className="tabular-nums font-bold text-red-600">− {fmt(calcResults.irgNet)}</span>
                   </div>
 
                   {/* Tranches breakdown */}
                   <div className="pt-2 border-t border-[#E2E8F0] text-xs">
                     <div className="text-[11px] font-semibold text-[#64748B] mb-1">Détail des tranches du barème progressif :</div>
-                    <div className="grid grid-cols-2 gap-1 font-mono text-[11px] text-[#334155]">
+                    <div className="grid grid-cols-2 gap-1 tabular-nums text-[11px] text-[#334155]">
                       {calcResults.tranchesDetaillées.map((t, idx) => (
                         <div key={idx} className={`flex justify-between py-0.5 px-1 rounded ${t.active ? "bg-indigo-50 font-semibold text-indigo-900" : ""}`}>
                           <span>{t.label} ({(t.rate * 100).toFixed(0)}%)</span>
@@ -359,7 +359,7 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
                 {mutuelle > 0 && (
                   <div className="flex justify-between items-center p-2.5 bg-white rounded-lg border border-[#E2E8F0] text-xs">
                     <span className="text-[#64748B]">Cotisation Mutuelle Salariale</span>
-                    <span className="font-mono font-bold text-red-600">− {fmt(mutuelle)}</span>
+                    <span className="tabular-nums font-bold text-red-600">− {fmt(mutuelle)}</span>
                   </div>
                 )}
               </div>
@@ -372,7 +372,7 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
                   <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Net à Payer Salarié</div>
                   <div className="text-[11px] text-slate-400 mt-0.5">Virement bancaire / chèque</div>
                 </div>
-                <div className="font-mono text-2xl font-extrabold text-emerald-400">
+                <div className="tabular-nums text-2xl font-extrabold text-emerald-400">
                   {fmt(calcResults.net)}
                 </div>
               </div>
@@ -383,7 +383,7 @@ Coût total employeur (avec CNAS 26%) : ${fmt(calcResults.coutTotal)}`;
                   <span className="font-semibold text-amber-900">Coût Total Entreprise</span>
                   <span className="text-amber-700 block text-[11px]">Brut ({fmt(calcResults.totalGains)}) + CNAS Patronale 26% ({fmt(calcResults.cnasPat)})</span>
                 </div>
-                <span className="font-mono font-bold text-amber-950 text-base">
+                <span className="tabular-nums font-bold text-amber-950 text-base">
                   {fmt(calcResults.coutTotal)}
                 </span>
               </div>
