@@ -1245,8 +1245,8 @@ export default function CockpitClient({
                     )}
 
                     {/* Sous-total Salaire de Poste */}
-                    <tr className="bg-[#F8F7F4] font-bold text-[#111315]">
-                      <td className="py-1 px-2.5 font-sans">SALAIRE DE POSTE (CNAS)</td>
+                    <tr className="bg-[#F4F3F0] font-bold text-[#0D3B2E] border-t border-b border-[#E6E4DD]">
+                      <td className="py-1 px-2.5 font-sans">Salaire de Poste (CNAS)</td>
                       <td className="py-1 px-2.5 text-right">
                         {formatDA(currentBulletinCalc.salaireDePoste, false)}
                       </td>
@@ -1257,7 +1257,7 @@ export default function CockpitClient({
                     <tr>
                       <td className="py-1 px-2.5 font-sans">R950 Sécurité Sociale (9%)</td>
                       <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
-                      <td className="py-1 px-2.5 text-right text-[#991B1B]">
+                      <td className="py-1 px-2.5 text-right font-semibold text-[#991B1B]">
                         {formatDA(currentBulletinCalc.cnasSalariale, false)}
                       </td>
                     </tr>
@@ -1286,8 +1286,8 @@ export default function CockpitClient({
                     )}
 
                     {/* Salaire Brut */}
-                    <tr className="bg-[#F8F7F4] font-semibold text-[#111315]">
-                      <td className="py-1 px-2.5 font-sans">SALAIRE BRUT TOTAL</td>
+                    <tr className="bg-[#FAF9F6] font-bold text-[#111315] border-t border-b border-[#E6E4DD]">
+                      <td className="py-1 px-2.5 font-sans">Salaire Brut Total Rémunéré</td>
                       <td className="py-1 px-2.5 text-right">
                         {formatDA(currentBulletinCalc.salaireBrutTotal, false)}
                       </td>
@@ -1300,7 +1300,7 @@ export default function CockpitClient({
                         R980 IRG Barème (R: {formatDA(currentBulletinCalc.rTronqueIrg, false)})
                       </td>
                       <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
-                      <td className="py-1 px-2.5 text-right font-bold text-[#991B1B]">
+                      <td className="py-1 px-2.5 text-right font-semibold text-[#991B1B]">
                         {formatDA(currentBulletinCalc.irgRetenu, false)}
                       </td>
                     </tr>
@@ -1310,7 +1310,7 @@ export default function CockpitClient({
                       <tr className="text-[#991B1B]">
                         <td className="py-1 px-2.5 font-sans">R999 Acomptes déduits</td>
                         <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
-                        <td className="py-1 px-2.5 text-right">
+                        <td className="py-1 px-2.5 text-right font-semibold">
                           {formatDA(currentVariables.avancesAcomptes, false)}
                         </td>
                       </tr>
@@ -1319,19 +1319,19 @@ export default function CockpitClient({
                 </table>
               </div>
 
-              {/* ENCADRÉ NET À PAYER */}
-              <div className="p-4 rounded-xl bg-[#E6F3EE] border border-[#A7F3D0] space-y-1.5 shadow-xs">
+              {/* ENCADRÉ NET À PAYER MODERNE */}
+              <div className="p-4 rounded-xl bg-[#EBF7F2] border border-[#A7F3D0] space-y-1.5 shadow-2xs">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs uppercase font-black tracking-wider text-[#0D3B2E]">
-                    NET À PAYER (CENTIME EXACT)
+                  <span className="text-xs uppercase font-extrabold tracking-wider text-[#065F46]">
+                    Net à Payer au Salarié
                   </span>
-                  <span className="text-2xl font-black font-mono text-[#0D3B2E]">
+                  <span className="text-2xl font-black tabular-nums text-[#0D3B2E]">
                     {formatDA(currentBulletinCalc.netAPayer)}
                   </span>
                 </div>
                 <div className="flex justify-between text-[11px] text-[#065F46] pt-1.5 border-t border-[#A7F3D0]/70">
                   <span>Coût Total Employeur (avec 25,5% CNAS) :</span>
-                  <span className="font-mono font-bold">
+                  <span className="tabular-nums font-bold">
                     {formatDA(currentBulletinCalc.coutTotalEmployeur)}
                   </span>
                 </div>

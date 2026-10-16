@@ -15,12 +15,13 @@ import {
   Calendar,
   User,
   CreditCard,
-  Download,
-  Info,
-  CheckCircle2,
-  DollarSign,
   Briefcase,
-  Award,
+  CheckCircle2,
+  TrendingUp,
+  ArrowRight,
+  Clock,
+  Sparkles,
+  PieChart,
 } from "lucide-react";
 import {
   calculerBulletinComplet,
@@ -166,15 +167,21 @@ export default function DocumentViewerClient({
   // Montant en toutes lettres
   const netEnLettres = montantEnLettresDA(calc.netAPayer);
 
+  // Pourcentages pour le graphique des charges
+  const pctNet = Math.round((calc.netAPayer / calc.coutTotalEmployeur) * 100);
+  const pctCnasPatronale = Math.round(((calc.cnasPatronale + calc.cnasOeuvresSociales) / calc.coutTotalEmployeur) * 100);
+  const pctIrg = Math.round((calc.irgRetenu / calc.coutTotalEmployeur) * 100);
+  const pctCnasSalariale = 100 - pctNet - pctCnasPatronale - pctIrg;
+
   return (
-    <div className="min-h-screen bg-[#F0EDE8] text-[#111315] font-sans flex flex-col items-center">
+    <div className="min-h-screen bg-[#F4F3F0] text-[#111315] font-sans flex flex-col items-center">
       {/* ====================================================================
           BARRE SUPÉRIEURE FLOTTANTE (PRINT:HIDDEN)
           ==================================================================== */}
-      <header className="sticky top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-[#E6E4DD] px-4 py-2.5 shadow-sm print:hidden w-full flex flex-col md:flex-row items-center justify-between gap-3">
+      <header className="sticky top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-[#E6E4DD] px-4 py-2.5 shadow-xs print:hidden w-full flex flex-col md:flex-row items-center justify-between gap-3">
         {/* Titre et collaborateur */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+          <div className="w-8 h-8 rounded-lg bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-xs shadow-xs font-mono">
             N
           </div>
           <div>
@@ -182,7 +189,7 @@ export default function DocumentViewerClient({
               <span className="text-xs font-bold text-[#111315]">
                 Netix SIRH • Édition Documents de Paie
               </span>
-              <span className="tabular-nums text-[10px] bg-[#E6F3EE] text-[#0D3B2E] px-1.5 py-0.2 rounded font-bold border border-[#A7F3D0]">
+              <span className="tabular-nums text-[10px] bg-[#E6F3EE] text-[#0D3B2E] px-2 py-0.5 rounded-full font-bold border border-[#A7F3D0]">
                 {MOIS_FR[mois - 1]} {annee}
               </span>
             </div>
@@ -193,12 +200,12 @@ export default function DocumentViewerClient({
         </div>
 
         {/* Sélecteur des 4 types de documents */}
-        <div className="flex items-center bg-[#F2F0EC] p-0.5 rounded-lg border border-[#E6E4DD] text-xs">
+        <div className="flex items-center bg-[#F2F0EC] p-1 rounded-lg border border-[#E6E4DD] text-xs">
           <button
             onClick={() => setDocType("bulletin")}
             className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               docType === "bulletin"
-                ? "bg-white text-[#0D3B2E] shadow-2xs"
+                ? "bg-white text-[#0D3B2E] shadow-xs"
                 : "text-[#5A6065] hover:text-[#111315]"
             }`}
           >
@@ -210,7 +217,7 @@ export default function DocumentViewerClient({
             onClick={() => setDocType("calcul")}
             className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               docType === "calcul"
-                ? "bg-white text-[#0D3B2E] shadow-2xs"
+                ? "bg-white text-[#0D3B2E] shadow-xs"
                 : "text-[#5A6065] hover:text-[#111315]"
             }`}
           >
@@ -222,7 +229,7 @@ export default function DocumentViewerClient({
             onClick={() => setDocType("charges")}
             className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               docType === "charges"
-                ? "bg-white text-[#0D3B2E] shadow-2xs"
+                ? "bg-white text-[#0D3B2E] shadow-xs"
                 : "text-[#5A6065] hover:text-[#111315]"
             }`}
           >
@@ -234,7 +241,7 @@ export default function DocumentViewerClient({
             onClick={() => setDocType("complet")}
             className={`px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               docType === "complet"
-                ? "bg-[#0D3B2E] text-white shadow-2xs"
+                ? "bg-[#0D3B2E] text-white shadow-xs"
                 : "text-[#5A6065] hover:text-[#111315]"
             }`}
           >
@@ -243,25 +250,25 @@ export default function DocumentViewerClient({
           </button>
         </div>
 
-        {/* Navigation collaborateur & Boutons Impression / Fermer */}
+        {/* Contrôles de navigation et d'impression */}
         <div className="flex items-center gap-2">
           {/* Navigation Précédent / Suivant */}
-          <div className="flex items-center gap-1 bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg p-0.5">
+          <div className="flex items-center border border-[#E6E4DD] rounded-lg bg-white px-1 py-0.5">
             <button
               onClick={handleSelectPrev}
               disabled={currentIdx <= 0}
-              className="p-1 rounded text-[#5A6065] hover:text-[#111315] disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-1 rounded text-[#5A6065] hover:text-[#111315] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
               title="Salarié précédent"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="tabular-nums text-xs px-1 font-semibold text-[#5A6065]">
+            <span className="tabular-nums text-xs px-2 font-semibold text-[#5A6065]">
               {currentIdx + 1}/{salaries.length}
             </span>
             <button
               onClick={handleSelectNext}
               disabled={currentIdx >= salaries.length - 1}
-              className="p-1 rounded text-[#5A6065] hover:text-[#111315] disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-1 rounded text-[#5A6065] hover:text-[#111315] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
               title="Salarié suivant"
             >
               <ChevronRight className="w-4 h-4" />
@@ -271,7 +278,7 @@ export default function DocumentViewerClient({
           {/* Bouton Imprimer */}
           <button
             onClick={() => window.print()}
-            className="btn-fintech-primary text-xs py-1.5 px-3 flex items-center gap-1.5 cursor-pointer shadow-sm"
+            className="btn-fintech-primary text-xs py-1.5 px-3 flex items-center gap-1.5 cursor-pointer shadow-xs"
             title="Lancer l'impression ou l'export PDF du document affiché"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -281,7 +288,7 @@ export default function DocumentViewerClient({
           {/* Bouton Fermer */}
           <button
             onClick={() => window.close()}
-            className="p-1.5 rounded-lg border border-[#E6E4DD] hover:bg-[#F2F0EC] text-[#5A6065] transition-colors"
+            className="p-1.5 rounded-lg border border-[#E6E4DD] hover:bg-[#F2F0EC] text-[#5A6065] transition-colors cursor-pointer"
             title="Fermer cet onglet"
           >
             <X className="w-4 h-4" />
@@ -292,330 +299,425 @@ export default function DocumentViewerClient({
       {/* ====================================================================
           CORPS DU DOCUMENT : FORMAT A4 RÉALISTE & STYLES PRINT
           ==================================================================== */}
-      <main className="py-6 px-4 w-full flex flex-col items-center gap-8 print:p-0 print:gap-0">
+      <main className="py-8 px-4 w-full flex flex-col items-center gap-10 print:p-0 print:gap-0">
         {/* ==================================================================
-            DOCUMENT 1 : BULLETIN DE PAIE OFFICIEL DE L'EMPLOYÉ
+            DOCUMENT 1 : BULLETIN DE SALAIRE ÉPURÉ ET MODERNE (SANS SIGNATURE)
             ================================================================== */}
         {(docType === "bulletin" || docType === "complet") && (
-          <article className="a4-sheet bg-white border border-[#D9D6CE] shadow-lg rounded-sm w-full max-w-[210mm] min-h-[297mm] p-8 sm:p-10 flex flex-col justify-between text-[#111315] print:border-none print:shadow-none print:p-8 print:max-w-none print:m-0 print:break-after-page">
-            <div className="space-y-5">
-              {/* En-tête de l'entreprise */}
-              <div className="flex items-start justify-between pb-4 border-b-2 border-[#111315]">
-                <div className="space-y-1">
-                  <h1 className="text-lg font-black tracking-tight text-[#111315]">
-                    SARL ENTREPRISE ALGER
-                  </h1>
-                  <p className="text-[11px] text-[#5A6065] leading-tight">
+          <article className="a4-sheet bg-white border border-[#E2E0D8] shadow-md rounded-lg w-full max-w-[210mm] min-h-[297mm] p-8 sm:p-11 flex flex-col justify-between text-[#111315] print:border-none print:shadow-none print:p-8 print:max-w-none print:m-0 print:break-after-page">
+            <div className="space-y-6">
+              {/* En-tête Entreprise & Période */}
+              <div className="flex items-start justify-between pb-5 border-b border-[#E6E4DD]">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-md bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-xs font-mono">
+                      N
+                    </div>
+                    <h1 className="text-base font-extrabold tracking-tight text-[#111315]">
+                      SARL ENTREPRISE ALGER
+                    </h1>
+                  </div>
+                  <p className="text-[11px] text-[#5A6065] leading-relaxed">
                     Zone Industrielle Oued Smar, Lot N° 42, Alger<br />
-                    N.I.F : 001916012345678 • N.I.S : 19801234567 • R.C : 16/00-1234567B19<br />
-                    N° Adhérent CNAS : 16-98765432-10
+                    <span className="text-[#71777D]">
+                      NIF: 001916012345678 • NIS: 19801234567 • RC: 16/00-1234567B19 • Adhérent CNAS: 16-98765432-10
+                    </span>
                   </p>
                 </div>
 
                 <div className="text-right space-y-1">
-                  <div className="inline-block bg-[#0D3B2E] text-white px-3 py-1 rounded text-xs font-black tracking-wider uppercase">
-                    BULLETIN DE PAIE
+                  <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-[#065F46] bg-[#E6F3EE] border border-[#A7F3D0] px-2.5 py-0.5 rounded-full">
+                    Bulletin de Paie
+                  </span>
+                  <div className="text-sm font-extrabold text-[#111315] tracking-tight">
+                    {MOIS_FR[mois - 1]} {annee}
                   </div>
-                  <p className="text-xs font-bold text-[#111315]">
-                    Période : {MOIS_FR[mois - 1]} {annee}
-                  </p>
                   <p className="text-[10px] text-[#5A6065]">
-                    Date de paiement : 31/{mois.toString().padStart(2, "0")}/{annee}
+                    Paiement : 31/{mois.toString().padStart(2, "0")}/{annee} • Virement bancaire
                   </p>
                 </div>
               </div>
 
-              {/* Fiche d'identification du salarié */}
-              <div className="grid grid-cols-2 gap-4 text-xs bg-[#F8F7F4] p-3.5 rounded border border-[#E6E4DD]">
-                <div className="space-y-1">
-                  <div>
-                    <span className="text-[#5A6065]">Nom & Prénom : </span>
-                    <span className="font-bold text-[#111315]">{currentSalarie.nom_prenom}</span>
+              {/* Fiche d'identification du salarié (3 colonnes claires) */}
+              <div className="bg-[#FAF9F6] border border-[#EBE8E1] rounded-xl p-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Col 1 : Identité */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#5A6065] block">
+                      Collaborateur
+                    </span>
+                    <div className="font-bold text-sm text-[#111315]">
+                      {currentSalarie.nom_prenom}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[11px] text-[#5A6065]">
+                      <span>Matricule :</span>
+                      <span className="font-semibold text-[#0D3B2E] bg-white px-1.5 py-0.5 rounded border border-[#E6E4DD]">
+                        {currentSalarie.matricule}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-[#5A6065]">
+                      <span>N° Sécurité Sociale : </span>
+                      <strong className="text-[#111315] font-mono">{currentSalarie.num_ss}</strong>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[#5A6065]">Matricule : </span>
-                    <span className="tabular-nums font-bold text-[#0D3B2E]">{currentSalarie.matricule}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#5A6065]">Fonction / Emploi : </span>
-                    <span className="font-semibold text-[#111315]">{currentSalarie.fonction}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#5A6065]">Service / Département : </span>
-                    <span>{currentSalarie.departement}</span>
-                  </div>
-                </div>
 
-                <div className="space-y-1 text-right sm:text-left">
-                  <div>
-                    <span className="text-[#5A6065]">N° Sécurité Sociale : </span>
-                    <span className="tabular-nums font-semibold">{currentSalarie.num_ss}</span>
+                  {/* Col 2 : Poste & Organisation */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#5A6065] block">
+                      Poste & Contrat
+                    </span>
+                    <div className="font-semibold text-[#111315]">
+                      {currentSalarie.fonction}
+                    </div>
+                    <div className="text-[11px] text-[#5A6065]">
+                      Service : <span className="text-[#111315]">{currentSalarie.departement}</span>
+                    </div>
+                    <div className="text-[11px] text-[#5A6065]">
+                      Contrat : <strong className="text-[#111315]">{currentSalarie.type_contrat}</strong> • 173,33 h/mois
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[#5A6065]">Situation & Enfants : </span>
-                    <span>{currentSalarie.situation_familiale} • {currentSalarie.enfants_a_charge} enfant(s)</span>
-                  </div>
-                  <div>
-                    <span className="text-[#5A6065]">Contrat : </span>
-                    <span className="font-semibold">{currentSalarie.type_contrat}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#5A6065]">Mode de paiement : </span>
-                    <span className="tabular-nums text-[11px]">{currentSalarie.mode_paiement} ({currentSalarie.ccp_rib})</span>
+
+                  {/* Col 3 : Règlement & Situation */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#5A6065] block">
+                      Paiement & Situation
+                    </span>
+                    <div className="text-[11px] text-[#111315]">
+                      Virement Bancaire : <span className="font-mono text-[10px] text-[#5A6065]">{currentSalarie.ccp_rib}</span>
+                    </div>
+                    <div className="text-[11px] text-[#5A6065]">
+                      Situation : {currentSalarie.situation_familiale} ({currentSalarie.enfants_a_charge} enfant(s))
+                    </div>
+                    <div className="text-[11px] text-[#5A6065]">
+                      Régime fiscal : <span className="text-[#111315] font-medium">{currentSalarie.regime_irg}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Tableau officiel des rubriques */}
-              <div className="border border-[#111315] rounded overflow-hidden">
+              {/* TABLEAU DES RUBRIQUES — ULTRA-LÉGER, STRUCTURÉ EN 2 SECTIONS CLAIRES */}
+              <div className="border border-[#E6E4DD] rounded-xl overflow-hidden shadow-2xs">
                 <table className="w-full text-xs">
-                  <thead className="bg-[#F2F0EC] border-b border-[#111315] text-[10px] text-[#111315]">
+                  <thead className="bg-[#F8F7F4] border-b border-[#E6E4DD] text-[10px] text-[#5A6065] uppercase tracking-wider">
                     <tr>
-                      <th className="py-1.5 px-2.5 text-left font-bold uppercase w-16">Code</th>
-                      <th className="py-1.5 px-2.5 text-left font-bold uppercase">Désignation de la Rubrique</th>
-                      <th className="py-1.5 px-2.5 text-right font-bold uppercase w-20">Base</th>
-                      <th className="py-1.5 px-2.5 text-right font-bold uppercase w-16">Taux</th>
-                      <th className="py-1.5 px-2.5 text-right font-bold uppercase w-28">Gains (+)</th>
-                      <th className="py-1.5 px-2.5 text-right font-bold uppercase w-28">Retenues (-)</th>
+                      <th className="py-2 px-3 text-left font-bold w-16">Code</th>
+                      <th className="py-2 px-3 text-left font-bold">Désignation de la Rubrique</th>
+                      <th className="py-2 px-3 text-right font-bold w-20">Base</th>
+                      <th className="py-2 px-3 text-right font-bold w-20">Taux</th>
+                      <th className="py-2 px-3 text-right font-bold w-28">Gains (+)</th>
+                      <th className="py-2 px-3 text-right font-bold w-28">Retenues (-)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#E6E4DD] tabular-nums text-[11px]">
+                  <tbody className="divide-y divide-[#F0EDE8] tabular-nums text-[11px]">
+                    {/* SECTION 1 : RÉMUNÉRATION BRUTE */}
+                    <tr className="bg-[#FAF9F6]">
+                      <td colSpan={6} className="py-1.5 px-3 font-bold text-[10px] uppercase tracking-wider text-[#5A6065]">
+                        1. Éléments de Rémunération Brute
+                      </td>
+                    </tr>
+
                     {/* Salaire de base */}
-                    <tr>
-                      <td className="py-1 px-2.5 text-[#5A6065]">R030</td>
-                      <td className="py-1 px-2.5 font-sans font-medium">Salaire de Base Conventionnel</td>
-                      <td className="py-1 px-2.5 text-right text-[#5A6065]">173.33 h</td>
-                      <td className="py-1 px-2.5 text-right text-[#5A6065]">—</td>
-                      <td className="py-1 px-2.5 text-right font-semibold text-[#111315]">
+                    <tr className="hover:bg-[#FAF9F6] transition-colors">
+                      <td className="py-1.5 px-3 text-[#5A6065] font-mono">R030</td>
+                      <td className="py-1.5 px-3 font-medium text-[#111315]">Salaire de Base Conventionnel</td>
+                      <td className="py-1.5 px-3 text-right text-[#5A6065]">173,33 h</td>
+                      <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                      <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
                         {formatDA(currentSalarie.salaire_base_theorique, false)}
                       </td>
-                      <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                      <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
                     </tr>
 
                     {/* Retenue absence */}
                     {calc.retenueAbsence > 0 && (
-                      <tr className="text-[#991B1B]">
-                        <td className="py-1 px-2.5">R100</td>
-                        <td className="py-1 px-2.5 font-sans">Retenue Absence non rémunérée</td>
-                        <td className="py-1 px-2.5 text-right">{currentVariables.heuresAbsence} h</td>
-                        <td className="py-1 px-2.5 text-right">{formatDA(calc.tauxHoraire, false)}</td>
-                        <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
-                        <td className="py-1 px-2.5 text-right font-semibold">
+                      <tr className="bg-[#FEF2F2]/60 text-[#991B1B]">
+                        <td className="py-1.5 px-3 font-mono">R100</td>
+                        <td className="py-1.5 px-3">Retenue Absence non rémunérée</td>
+                        <td className="py-1.5 px-3 text-right">{currentVariables.heuresAbsence} h</td>
+                        <td className="py-1.5 px-3 text-right">{formatDA(calc.tauxHoraire, false)}</td>
+                        <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                        <td className="py-1.5 px-3 text-right font-semibold">
                           {formatDA(calc.retenueAbsence, false)}
                         </td>
                       </tr>
                     )}
 
-                    {/* Primes fixes contractuelles */}
+                    {/* Primes fixes cotisables */}
                     {currentSalarie.rubriquesFixes
-                      .filter((r) => r.type_valeur === "Gain (+)")
+                      .filter((r) => r.type_valeur === "Gain (+)" && r.cotisable === "OUI")
                       .map((rub) => (
-                        <tr key={rub.code}>
-                          <td className="py-1 px-2.5 text-[#5A6065]">{rub.code}</td>
-                          <td className="py-1 px-2.5 font-sans">{rub.libelle}</td>
-                          <td className="py-1 px-2.5 text-right text-[#5A6065]">—</td>
-                          <td className="py-1 px-2.5 text-right text-[#5A6065]">—</td>
-                          <td className="py-1 px-2.5 text-right font-semibold text-[#111315]">
+                        <tr key={rub.code} className="hover:bg-[#FAF9F6] transition-colors">
+                          <td className="py-1.5 px-3 text-[#5A6065] font-mono">{rub.code}</td>
+                          <td className="py-1.5 px-3 text-[#111315]">{rub.libelle}</td>
+                          <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                          <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                          <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
                             {formatDA(rub.valeur_defaut, false)}
                           </td>
-                          <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                          <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                        </tr>
+                      ))}
+
+                    {/* Primes variables cotisables */}
+                    {currentVariables.primesVariables
+                      .filter((p) => p.cotisable)
+                      .map((p) => (
+                        <tr key={p.id} className="hover:bg-[#FAF9F6] transition-colors">
+                          <td className="py-1.5 px-3 text-[#5A6065] font-mono">{p.code}</td>
+                          <td className="py-1.5 px-3 text-[#111315]">{p.libelle}</td>
+                          <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                          <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                          <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
+                            {formatDA(p.montant, false)}
+                          </td>
+                          <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
                         </tr>
                       ))}
 
                     {/* Heures supplémentaires */}
                     {calc.totalHeuresSup > 0 && (
-                      <tr>
-                        <td className="py-1 px-2.5 text-[#5A6065]">R120</td>
-                        <td className="py-1 px-2.5 font-sans">
+                      <tr className="hover:bg-[#FAF9F6] transition-colors">
+                        <td className="py-1.5 px-3 text-[#5A6065] font-mono">R120</td>
+                        <td className="py-1.5 px-3 text-[#111315]">
                           Heures Supplémentaires (+50%: {currentVariables.hs50}h, +75%: {currentVariables.hs75}h, +100%: {currentVariables.hs100}h)
                         </td>
-                        <td className="py-1 px-2.5 text-right text-[#5A6065]">—</td>
-                        <td className="py-1 px-2.5 text-right text-[#5A6065]">—</td>
-                        <td className="py-1 px-2.5 text-right font-semibold text-[#111315]">
+                        <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                        <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                        <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
                           {formatDA(calc.totalHeuresSup, false)}
                         </td>
-                        <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                        <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
                       </tr>
                     )}
 
-                    {/* SOUS-TOTAL : SALAIRE DE POSTE (ASSIETTE CNAS) */}
-                    <tr className="bg-[#F8F7F4] font-bold text-[#111315] border-t-2 border-b border-[#111315]">
-                      <td colSpan={2} className="py-1.5 px-2.5 font-sans uppercase">
+                    {/* SOUS-TOTAL 1 : SALAIRE DE POSTE (ASSIETTE CNAS) */}
+                    <tr className="bg-[#F4F3F0] font-bold text-[#0D3B2E] border-t border-b border-[#E6E4DD]">
+                      <td colSpan={2} className="py-1.5 px-3 text-xs">
                         Salaire de Poste (Assiette Cotisable Sécurité Sociale)
                       </td>
-                      <td colSpan={2} className="py-1.5 px-2.5 text-right text-[#5A6065]">
-                        Cotisable
+                      <td colSpan={2} className="py-1.5 px-3 text-right text-[10px] text-[#5A6065] font-normal uppercase">
+                        Assiette cotisable
                       </td>
-                      <td className="py-1.5 px-2.5 text-right text-[#0D3B2E]">
+                      <td className="py-1.5 px-3 text-right text-xs">
                         {formatDA(calc.salaireDePoste, false)}
                       </td>
-                      <td className="py-1.5 px-2.5 text-right text-[#94A3B8]">—</td>
+                      <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
                     </tr>
 
-                    {/* Cotisation CNAS 9% */}
-                    <tr>
-                      <td className="py-1 px-2.5 text-[#5A6065]">R950</td>
-                      <td className="py-1 px-2.5 font-sans">Cotisation Sécurité Sociale (Part Ouvrière)</td>
-                      <td className="py-1 px-2.5 text-right">{formatDA(calc.salaireDePoste, false)}</td>
-                      <td className="py-1 px-2.5 text-right">9,00 %</td>
-                      <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
-                      <td className="py-1 px-2.5 text-right font-bold text-[#991B1B]">
-                        {formatDA(calc.cnasSalariale, false)}
-                      </td>
-                    </tr>
-
-                    {/* Panier & Transport */}
+                    {/* Indemnités non cotisables : Panier & Transport */}
                     {calc.montantPanier > 0 && (
-                      <tr>
-                        <td className="py-1 px-2.5 text-[#5A6065]">R250</td>
-                        <td className="py-1 px-2.5 font-sans">Indemnité de Panier (Restauration)</td>
-                        <td className="py-1 px-2.5 text-right">{currentVariables.joursPanier} j</td>
-                        <td className="py-1 px-2.5 text-right">300 DA</td>
-                        <td className="py-1 px-2.5 text-right font-semibold text-[#111315]">
+                      <tr className="hover:bg-[#FAF9F6] transition-colors">
+                        <td className="py-1.5 px-3 text-[#5A6065] font-mono">R250</td>
+                        <td className="py-1.5 px-3 text-[#111315]">Indemnité de Panier (Restauration)</td>
+                        <td className="py-1.5 px-3 text-right text-[#5A6065]">{currentVariables.joursPanier} j</td>
+                        <td className="py-1.5 px-3 text-right text-[#5A6065]">300 DA</td>
+                        <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
                           {formatDA(calc.montantPanier, false)}
                         </td>
-                        <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                        <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
                       </tr>
                     )}
 
                     {calc.montantTransport > 0 && (
-                      <tr>
-                        <td className="py-1 px-2.5 text-[#5A6065]">R280</td>
-                        <td className="py-1 px-2.5 font-sans">Indemnité Forfaitaire de Transport</td>
-                        <td className="py-1 px-2.5 text-right">173.33 h</td>
-                        <td className="py-1 px-2.5 text-right">—</td>
-                        <td className="py-1 px-2.5 text-right font-semibold text-[#111315]">
+                      <tr className="hover:bg-[#FAF9F6] transition-colors">
+                        <td className="py-1.5 px-3 text-[#5A6065] font-mono">R280</td>
+                        <td className="py-1.5 px-3 text-[#111315]">Indemnité Forfaitaire de Transport</td>
+                        <td className="py-1.5 px-3 text-right text-[#5A6065]">173,33 h</td>
+                        <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                        <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
                           {formatDA(calc.montantTransport, false)}
                         </td>
-                        <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                        <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
                       </tr>
                     )}
 
-                    {/* SOUS-TOTAL : SALAIRE BRUT TOTAL */}
-                    <tr className="bg-[#F8F7F4] font-semibold text-[#111315] border-t border-b border-[#E6E4DD]">
-                      <td colSpan={2} className="py-1 px-2.5 font-sans">
-                        SALAIRE BRUT TOTAL (Gains Imposables + Exonérés)
+                    {/* Autres primes non cotisables */}
+                    {currentSalarie.rubriquesFixes
+                      .filter((r) => r.type_valeur === "Gain (+)" && r.cotisable === "NON")
+                      .map((rub) => (
+                        <tr key={rub.code} className="hover:bg-[#FAF9F6] transition-colors">
+                          <td className="py-1.5 px-3 text-[#5A6065] font-mono">{rub.code}</td>
+                          <td className="py-1.5 px-3 text-[#111315]">{rub.libelle}</td>
+                          <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                          <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                          <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
+                            {formatDA(rub.valeur_defaut, false)}
+                          </td>
+                          <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                        </tr>
+                      ))}
+
+                    {/* SOUS-TOTAL 2 : SALAIRE BRUT TOTAL */}
+                    <tr className="bg-[#FAF9F6] font-bold text-[#111315] border-t border-b border-[#E6E4DD]">
+                      <td colSpan={2} className="py-1.5 px-3 text-xs">
+                        Salaire Brut Total Rémunéré
                       </td>
-                      <td colSpan={2} className="py-1 px-2.5 text-right text-[#5A6065]">Brut</td>
-                      <td className="py-1 px-2.5 text-right font-bold">
+                      <td colSpan={2} className="py-1.5 px-3 text-right text-[10px] text-[#5A6065] font-normal uppercase">
+                        Total gains
+                      </td>
+                      <td className="py-1.5 px-3 text-right text-xs">
                         {formatDA(calc.salaireBrutTotal, false)}
                       </td>
-                      <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                      <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
                     </tr>
 
-                    {/* Retenue IRG Barème 2022 */}
-                    <tr>
-                      <td className="py-1 px-2.5 text-[#5A6065]">R980</td>
-                      <td className="py-1 px-2.5 font-sans">
-                        I.R.G Barème Officiel LF 2022 (Assiette R tronquée: {formatDA(calc.rTronqueIrg, false)})
+                    {/* SECTION 2 : COTISATIONS ET RETENUES LÉGALES */}
+                    <tr className="bg-[#FAF9F6]">
+                      <td colSpan={6} className="py-1.5 px-3 font-bold text-[10px] uppercase tracking-wider text-[#5A6065]">
+                        2. Cotisations Sociales & Retenues Fiscales
                       </td>
-                      <td className="py-1 px-2.5 text-right">{formatDA(calc.baseIrg, false)}</td>
-                      <td className="py-1 px-2.5 text-right">Barème</td>
-                      <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
-                      <td className="py-1 px-2.5 text-right font-bold text-[#991B1B]">
+                    </tr>
+
+                    {/* Cotisation CNAS 9% */}
+                    <tr className="hover:bg-[#FAF9F6] transition-colors">
+                      <td className="py-1.5 px-3 text-[#5A6065] font-mono">R950</td>
+                      <td className="py-1.5 px-3 text-[#111315]">Cotisation Sécurité Sociale (Part Ouvrière 9%)</td>
+                      <td className="py-1.5 px-3 text-right text-[#5A6065]">{formatDA(calc.salaireDePoste, false)}</td>
+                      <td className="py-1.5 px-3 text-right text-[#5A6065]">9,00 %</td>
+                      <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                      <td className="py-1.5 px-3 text-right font-semibold text-[#991B1B]">
+                        {formatDA(calc.cnasSalariale, false)}
+                      </td>
+                    </tr>
+
+                    {/* Retenue IRG Barème LF 2022 */}
+                    <tr className="hover:bg-[#FAF9F6] transition-colors">
+                      <td className="py-1.5 px-3 text-[#5A6065] font-mono">R980</td>
+                      <td className="py-1.5 px-3 text-[#111315]">
+                        Impôt sur le Revenu Global — IRG Barème LF 2022 (R: {formatDA(calc.rTronqueIrg, false)})
+                      </td>
+                      <td className="py-1.5 px-3 text-right text-[#5A6065]">{formatDA(calc.baseIrg, false)}</td>
+                      <td className="py-1.5 px-3 text-right text-[#5A6065]">Barème</td>
+                      <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                      <td className="py-1.5 px-3 text-right font-semibold text-[#991B1B]">
                         {formatDA(calc.irgRetenu, false)}
                       </td>
                     </tr>
 
-                    {/* Acomptes & Retenues */}
+                    {/* Acomptes ou avances */}
                     {currentVariables.avancesAcomptes > 0 && (
-                      <tr className="text-[#991B1B]">
-                        <td className="py-1 px-2.5 text-[#5A6065]">R999</td>
-                        <td className="py-1 px-2.5 font-sans">Acomptes et avances sur salaire</td>
-                        <td className="py-1 px-2.5 text-right">—</td>
-                        <td className="py-1 px-2.5 text-right">—</td>
-                        <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
-                        <td className="py-1 px-2.5 text-right font-bold">
+                      <tr className="text-[#991B1B] hover:bg-[#FAF9F6] transition-colors">
+                        <td className="py-1.5 px-3 font-mono">R999</td>
+                        <td className="py-1.5 px-3">Acomptes et avances sur salaire déduits</td>
+                        <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                        <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                        <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                        <td className="py-1.5 px-3 text-right font-semibold">
                           {formatDA(currentVariables.avancesAcomptes, false)}
                         </td>
                       </tr>
                     )}
+
+                    {/* Retenues fixes diverses */}
+                    {currentSalarie.rubriquesFixes
+                      .filter((r) => r.type_valeur === "Retenue (-)")
+                      .map((rub) => (
+                        <tr key={rub.code} className="text-[#991B1B] hover:bg-[#FAF9F6] transition-colors">
+                          <td className="py-1.5 px-3 font-mono">{rub.code}</td>
+                          <td className="py-1.5 px-3">{rub.libelle}</td>
+                          <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                          <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                          <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                          <td className="py-1.5 px-3 text-right font-semibold">
+                            {formatDA(rub.valeur_defaut, false)}
+                          </td>
+                        </tr>
+                      ))}
+
+                    {/* SOUS-TOTAL 3 : TOTAL DES RETENUES */}
+                    <tr className="bg-[#FAF9F6] font-bold text-[#991B1B] border-t border-b border-[#E6E4DD]">
+                      <td colSpan={2} className="py-1.5 px-3 text-xs">
+                        Total des Retenues Salariales
+                      </td>
+                      <td colSpan={2} className="py-1.5 px-3 text-right text-[10px] text-[#5A6065] font-normal uppercase">
+                        Total retenues
+                      </td>
+                      <td className="py-1.5 px-3 text-right text-[#94A3B8]">—</td>
+                      <td className="py-1.5 px-3 text-right text-xs">
+                        {formatDA(calc.totalRetenues, false)}
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
 
-              {/* ENCADRÉ NET À PAYER EN GRAND & EN TOUTES LETTRES */}
-              <div className="bg-[#E6F3EE] border-2 border-[#0D3B2E] rounded p-4 space-y-2">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-[#065F46] block">
-                      NET À PAYER AU SALARIÉ (VIREMENT BANCAIRE)
+              {/* ENCADRÉ MODERNE : NET À PAYER AU SALARIÉ (INSPIRÉ PAYFIT / LUCCA) */}
+              <div className="bg-[#EBF7F2] border border-[#A7F3D0] rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black uppercase tracking-wider text-[#065F46]">
+                      Net à Payer au Salarié
                     </span>
-                    <span className="text-xs text-[#0D3B2E] font-medium italic">
-                      Arrêté à la somme de : <strong>{netEnLettres}</strong>
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-2xl font-black tabular-nums text-[#0D3B2E]">
-                      {formatDA(calc.netAPayer)}
+                    <span className="text-[10px] font-semibold text-[#0D3B2E] bg-white px-2 py-0.5 rounded-full border border-[#A7F3D0]">
+                      Virement Bancaire
                     </span>
                   </div>
+                  <p className="text-xs text-[#0D3B2E] font-medium leading-relaxed">
+                    Arrêté à la somme de : <strong>{netEnLettres}</strong>
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-3xl font-black tabular-nums text-[#0D3B2E] tracking-tight">
+                    {formatDA(calc.netAPayer)}
+                  </span>
                 </div>
               </div>
 
-              {/* Cumuls annuels */}
-              <div className="grid grid-cols-4 gap-2 text-[10px] bg-[#F8F7F4] p-2.5 rounded border border-[#E6E4DD]">
-                <div>
-                  <span className="text-[#5A6065] block">Brut fiscal cumulé :</span>
-                  <span className="tabular-nums font-bold">{formatDA(calc.salaireBrutTotal * mois)}</span>
+              {/* Compteurs Annuels Cumulés */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                <div className="p-2.5 rounded-lg bg-[#FAF9F6] border border-[#EBE8E1]">
+                  <span className="text-[10px] text-[#5A6065] block">Brut fiscal cumulé :</span>
+                  <span className="tabular-nums font-bold text-[#111315]">{formatDA(calc.salaireBrutTotal * mois)}</span>
                 </div>
-                <div>
-                  <span className="text-[#5A6065] block">Cotisable CNAS cumulé :</span>
-                  <span className="tabular-nums font-bold">{formatDA(calc.salaireDePoste * mois)}</span>
+                <div className="p-2.5 rounded-lg bg-[#FAF9F6] border border-[#EBE8E1]">
+                  <span className="text-[10px] text-[#5A6065] block">Cotisable CNAS cumulé :</span>
+                  <span className="tabular-nums font-bold text-[#111315]">{formatDA(calc.salaireDePoste * mois)}</span>
                 </div>
-                <div>
-                  <span className="text-[#5A6065] block">Retenue IRG cumulée :</span>
+                <div className="p-2.5 rounded-lg bg-[#FAF9F6] border border-[#EBE8E1]">
+                  <span className="text-[10px] text-[#5A6065] block">Retenue IRG cumulée :</span>
                   <span className="tabular-nums font-bold text-[#991B1B]">{formatDA(calc.irgRetenu * mois)}</span>
                 </div>
-                <div>
-                  <span className="text-[#5A6065] block">Heures travaillées :</span>
-                  <span className="tabular-nums font-bold">{calc.heuresTravaillees} h</span>
+                <div className="p-2.5 rounded-lg bg-[#FAF9F6] border border-[#EBE8E1]">
+                  <span className="text-[10px] text-[#5A6065] block">Heures travaillées :</span>
+                  <span className="tabular-nums font-bold text-[#111315]">{calc.heuresTravaillees} h</span>
                 </div>
               </div>
             </div>
 
-            {/* Pied de page et signatures légales */}
-            <div className="pt-6 border-t border-[#E6E4DD] space-y-4">
-              <div className="grid grid-cols-2 gap-8 text-xs text-center">
-                <div className="border border-dashed border-[#CBD5E1] p-4 rounded h-24 flex flex-col justify-between">
-                  <span className="font-bold text-[#5A6065]">Cachet & Signature de l'Employeur</span>
-                  <span className="text-[9px] text-[#94A3B8]">Pour la Direction des Ressources Humaines</span>
-                </div>
-                <div className="border border-dashed border-[#CBD5E1] p-4 rounded h-24 flex flex-col justify-between">
-                  <span className="font-bold text-[#5A6065]">Signature & Émargement du Salarié</span>
-                  <span className="text-[9px] text-[#94A3B8]">Précédé de la mention « Lu et approuvé »</span>
-                </div>
-              </div>
-
-              <div className="text-center text-[10px] text-[#5A6065] space-y-0.5">
-                <p>
-                  Dans votre intérêt et pour faire valoir vos droits, conservez ce bulletin de paie sans limitation de durée.
-                </p>
-                <p className="tabular-nums text-[9px] text-[#94A3B8]">
-                  Document généré le {new Date().toLocaleDateString("fr-DZ")} par Netix SIRH 2.0 • Conforme Loi 90-11 & Décret Exécutif 22-01
-                </p>
+            {/* Pied de page Légal Moderne — ZÉRO CADRE DE SIGNATURE (DÉMATÉRIALISÉ CONFORME) */}
+            <div className="pt-6 border-t border-[#E6E4DD] space-y-1 text-center text-[10px] text-[#5A6065]">
+              <p className="font-medium text-[#111315]">
+                Bulletin de paie certifié conforme aux dispositions de la Loi 90-11 relative aux relations de travail et au Décret Exécutif 22-01 (Barème IRG).
+              </p>
+              <p className="text-[9px] text-[#71777D]">
+                Document numérique dématérialisé à valeur probante conformément à la réglementation en vigueur • À conserver sans limitation de durée.
+              </p>
+              <div className="pt-1 flex items-center justify-center gap-2 text-[9px] font-mono text-[#94A3B8]">
+                <span>ID Document : NX-{annee}{mois.toString().padStart(2, "0")}-{currentSalarie.matricule}</span>
+                <span>•</span>
+                <span>Généré le {new Date().toLocaleDateString("fr-DZ")} par Netix SIRH 2.0</span>
               </div>
             </div>
           </article>
         )}
 
         {/* ==================================================================
-            DOCUMENT 2 : FICHE EXPLICATIVE DU CALCUL DE PAIE
+            DOCUMENT 2 : NOTE D'EXPLICATION DU CALCUL (PÉDAGOGIQUE & MODERNE)
             ================================================================== */}
         {(docType === "calcul" || docType === "complet") && (
-          <article className="a4-sheet bg-white border border-[#D9D6CE] shadow-lg rounded-sm w-full max-w-[210mm] min-h-[297mm] p-8 sm:p-10 flex flex-col justify-between text-[#111315] print:border-none print:shadow-none print:p-8 print:max-w-none print:m-0 print:break-after-page">
-            <div className="space-y-5">
+          <article className="a4-sheet bg-white border border-[#E2E0D8] shadow-md rounded-lg w-full max-w-[210mm] min-h-[297mm] p-8 sm:p-11 flex flex-col justify-between text-[#111315] print:border-none print:shadow-none print:p-8 print:max-w-none print:m-0 print:break-after-page">
+            <div className="space-y-6">
               {/* En-tête */}
-              <div className="flex items-start justify-between pb-4 border-b-2 border-[#0D3B2E]">
-                <div>
-                  <span className="text-[10px] tabular-nums font-bold text-[#0D3B2E] uppercase tracking-wider block">
-                    TRANSPARENCE RH & PÉDAGOGIE FISCALE
+              <div className="flex items-start justify-between pb-5 border-b border-[#E6E4DD]">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-[#065F46] uppercase tracking-wider bg-[#E6F3EE] px-2 py-0.5 rounded-full border border-[#A7F3D0]">
+                    Pédagogie & Transparence RH
                   </span>
-                  <h2 className="text-lg font-black text-[#111315]">
-                    NOTE D'EXPLICATION DU CALCUL DE SALAIRE
+                  <h2 className="text-base font-extrabold text-[#111315] tracking-tight">
+                    Comprendre Votre Fiche de Paie
                   </h2>
                   <p className="text-xs text-[#5A6065]">
-                    Décomposition mathématique et juridique des formules de rémunération appliquées.
+                    Décomposition pas à pas des règles légales et formules mathématiques appliquées ce mois-ci.
                   </p>
                 </div>
                 <div className="text-right">
@@ -628,166 +730,156 @@ export default function DocumentViewerClient({
                 </div>
               </div>
 
-              {/* 4 Blocs explicatifs clairs */}
+              {/* FRISE VISUELLE EN 4 ÉTAPES CLAIRES */}
               <div className="space-y-4 text-xs">
-                {/* 1. Temps de travail et absences */}
-                <div className="p-4 rounded-lg bg-[#F8F7F4] border border-[#E6E4DD] space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-xs">1</span>
-                    <h3 className="font-bold text-sm text-[#111315]">
-                      Temps de Travail Légal, Taux Horaire & Absences (Loi 90-11)
-                    </h3>
-                  </div>
-                  <p className="text-[#5A6065] leading-relaxed">
-                    Selon la législation du travail algérienne, le volume mensuel légal est de <strong>173,33 heures</strong> (40 heures par semaine × 52 semaines / 12 mois).
-                  </p>
-                  <div className="p-2.5 rounded bg-white border border-[#E6E4DD] tabular-nums text-[11px] space-y-1">
-                    <div className="flex justify-between">
-                      <span>• Taux horaire de base :</span>
-                      <span className="font-bold">{formatDA(currentSalarie.salaire_base_theorique, false)} DA ÷ 173,33h = {formatDA(calc.tauxHoraire, false)} DA/h</span>
+                {/* ÉTAPE 1 : TEMPS ET BASE */}
+                <div className="p-4 rounded-xl bg-[#FAF9F6] border border-[#EBE8E1] space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-[10px]">
+                        1
+                      </span>
+                      <h3 className="font-bold text-xs text-[#111315]">
+                        Temps de Travail Légal & Salaire de Base (Loi 90-11)
+                      </h3>
                     </div>
-                    {currentVariables.heuresAbsence > 0 ? (
-                      <div className="flex justify-between text-[#991B1B]">
-                        <span>• Déduction pour absence ({currentVariables.heuresAbsence} h) :</span>
-                        <span className="font-bold">{currentVariables.heuresAbsence}h × {formatDA(calc.tauxHoraire, false)} DA = - {formatDA(calc.retenueAbsence)}</span>
-                      </div>
-                    ) : (
-                      <div className="flex justify-between text-[#065F46]">
-                        <span>• Heures travaillées :</span>
-                        <span>173,33 h (Aucune absence déduite)</span>
-                      </div>
-                    )}
-                    {calc.totalHeuresSup > 0 && (
-                      <div className="flex justify-between text-[#0D3B2E]">
-                        <span>• Majoration Heures Supplémentaires :</span>
-                        <span>+ {formatDA(calc.totalHeuresSup)} (+50%, +75%, +100%)</span>
-                      </div>
-                    )}
+                    <span className="text-[10px] text-[#5A6065] font-mono">173,33 h/mois</span>
+                  </div>
+                  <p className="text-[11px] text-[#5A6065] leading-relaxed">
+                    Le mois de travail légal en Algérie est fixé à <strong>173,33 heures</strong> (40 heures par semaine × 52 semaines ÷ 12 mois). Le taux horaire sert de base pour déduire les absences ou rémunérer les heures supplémentaires.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1">
+                    <div className="p-2.5 rounded-lg bg-white border border-[#E6E4DD]">
+                      <span className="text-[#5A6065] block text-[10px]">Taux horaire de base :</span>
+                      <span className="font-bold text-[#111315]">{formatDA(calc.tauxHoraire)} / heure</span>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-white border border-[#E6E4DD]">
+                      <span className="text-[#5A6065] block text-[10px]">Heures payées :</span>
+                      <span className="font-bold text-[#0D3B2E]">
+                        {calc.heuresTravaillees} h {currentVariables.heuresAbsence > 0 ? `(-${currentVariables.heuresAbsence}h absence)` : "(Temps plein)"}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* 2. Assiette cotisable CNAS */}
-                <div className="p-4 rounded-lg bg-[#F8F7F4] border border-[#E6E4DD] space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-xs">2</span>
-                    <h3 className="font-bold text-sm text-[#111315]">
-                      Assiette Cotisable de Sécurité Sociale (Loi 83-11 & Ord. 95-01)
-                    </h3>
+                {/* ÉTAPE 2 : ASSIETTE COTISABLE CNAS */}
+                <div className="p-4 rounded-xl bg-[#FAF9F6] border border-[#EBE8E1] space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-[10px]">
+                        2
+                      </span>
+                      <h3 className="font-bold text-xs text-[#111315]">
+                        L'Assiette de Sécurité Sociale — Salaire de Poste & CNAS (9%)
+                      </h3>
+                    </div>
+                    <span className="text-[10px] font-bold text-[#065F46] bg-[#D1FAE5] px-2 py-0.5 rounded-full">
+                      Taux légal 9,00%
+                    </span>
                   </div>
-                  <p className="text-[#5A6065] leading-relaxed">
-                    Le <strong>Salaire de Poste</strong> correspond à la somme du salaire de base (net d'absences) et de toutes les indemnités liées aux conditions de travail et au rendement. La cotisation salariale prélevée à la source est de <strong>9,00%</strong>.
+                  <p className="text-[11px] text-[#5A6065] leading-relaxed">
+                    La Sécurité Sociale est calculée sur le <strong>Salaire de Poste</strong> (salaire de base + primes de poste cotisables). Les indemnités de Panier ({formatDA(calc.montantPanier)}) et de Transport ({formatDA(calc.montantTransport)}) constituent des remboursements de frais réels et sont <strong>exonérées de cotisation CNAS</strong>.
                   </p>
-                  <div className="p-2.5 rounded bg-white border border-[#E6E4DD] tabular-nums text-[11px] space-y-1">
+                  <div className="p-3 rounded-lg bg-white border border-[#E6E4DD] space-y-1.5 text-[11px]">
                     <div className="flex justify-between">
-                      <span>• Salaire de Poste cotisable (Assiette CNAS) :</span>
-                      <span className="font-bold text-[#0D3B2E]">{formatDA(calc.salaireDePoste)}</span>
+                      <span className="text-[#5A6065]">Salaire de Poste (Assiette CNAS) :</span>
+                      <strong className="text-[#111315]">{formatDA(calc.salaireDePoste)}</strong>
                     </div>
                     <div className="flex justify-between text-[#991B1B]">
-                      <span>• Prélèvement CNAS Part Ouvrière (9%) :</span>
-                      <span className="font-bold">{formatDA(calc.salaireDePoste, false)} × 9% = - {formatDA(calc.cnasSalariale)}</span>
-                    </div>
-                    <div className="text-[10px] text-[#5A6065] pt-1 border-t border-[#E6E4DD]">
-                      * Note légale : Les indemnités de Panier ({formatDA(calc.montantPanier)}) et de Transport ({formatDA(calc.montantTransport)}) sont des remboursements de frais réels et sont <strong>exonérées de cotisations CNAS</strong>.
+                      <span>Cotisation CNAS Part Salariale (9,00%) :</span>
+                      <strong>- {formatDA(calc.cnasSalariale)}</strong>
                     </div>
                   </div>
                 </div>
 
-                {/* 3. Barème IRG 2022 */}
-                <div className="p-4 rounded-lg bg-[#F8F7F4] border border-[#E6E4DD] space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-xs">3</span>
-                    <h3 className="font-bold text-sm text-[#111315]">
-                      Barème d'Imposition Fiscale IRG (CIDTA Art. 104 / LF 2022)
-                    </h3>
-                  </div>
-                  <p className="text-[#5A6065] leading-relaxed">
-                    L'Impôt sur le Revenu Global (IRG) est calculé sur le montant brut diminué de la cotisation CNAS. La loi impose une <strong>troncature à la dizaine de dinar inférieure</strong> avant application du barème progressif et des deux abattements légaux.
-                  </p>
-                  <div className="p-2.5 rounded bg-white border border-[#E6E4DD] tabular-nums text-[11px] space-y-1.5">
-                    <div className="flex justify-between">
-                      <span>• Base imposable brute :</span>
-                      <span>{formatDA(calc.baseIrg)} (R tronqué officiel: {formatDA(calc.rTronqueIrg)})</span>
+                {/* ÉTAPE 3 : BARÈME IRG 2022 */}
+                <div className="p-4 rounded-xl bg-[#FAF9F6] border border-[#EBE8E1] space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-[10px]">
+                        3
+                      </span>
+                      <h3 className="font-bold text-xs text-[#111315]">
+                        L'Impôt sur le Revenu Global — IRG Barème LF 2022 (Décret 22-01)
+                      </h3>
                     </div>
+                    <span className="text-[10px] text-[#5A6065] font-mono">Troncature légale (R)</span>
+                  </div>
+                  <p className="text-[11px] text-[#5A6065] leading-relaxed">
+                    L'IRG est retenu à la source selon le barème progressif officiel. L'assiette imposable est <strong>tronquée à la dizaine de dinar inférieure</strong> (ex: {formatDA(calc.baseIrg, false)} ➔ {formatDA(calc.rTronqueIrg, false)}). Un abattement légal de 40% (plafonné à 1 500 DA) et un abattement dégressif (zone 30 000 - 35 000 DA) sont appliqués.
+                  </p>
+                  <div className="p-3 rounded-lg bg-white border border-[#E6E4DD] space-y-1.5 text-[11px]">
                     <div className="flex justify-between">
-                      <span>• IRG Brut progressif par tranches :</span>
-                      <span>{formatDA(calc.detailIrg.irgBrut)}</span>
+                      <span className="text-[#5A6065]">Base Imposable Brute (R tronqué) :</span>
+                      <strong className="text-[#111315]">{formatDA(calc.rTronqueIrg)}</strong>
                     </div>
                     <div className="flex justify-between text-[#065F46]">
-                      <span>• 1er Abattement légal (40% plafonné entre 1 000 et 1 500 DA) :</span>
-                      <span>- {formatDA(calc.detailIrg.abattement40)}</span>
+                      <span>Abattements fiscaux appliqués :</span>
+                      <span>- {formatDA(calc.detailIrg.abattement40 + calc.detailIrg.abattementDegressif)}</span>
                     </div>
-                    {calc.rTronqueIrg > 30000 && calc.rTronqueIrg < 35000 && (
-                      <div className="flex justify-between text-[#0D3B2E]">
-                        <span>• 2e Abattement Dégressif (Zone 30 000 - 35 000 DA : Formule 137/51) :</span>
-                        <span>Appliqué</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between font-bold text-[#991B1B] pt-1 border-t border-[#E6E4DD]">
-                      <span>• IRG Net Retenu au bulletin (Arrondi DGI au dixième) :</span>
-                      <span>- {formatDA(calc.irgRetenu)}</span>
+                    <div className="flex justify-between text-[#991B1B] pt-1 border-t border-[#E6E4DD]">
+                      <span className="font-semibold">IRG Net Retenu au Bulletin :</span>
+                      <strong>- {formatDA(calc.irgRetenu)}</strong>
                     </div>
                   </div>
                 </div>
 
-                {/* 4. Arbre vers le Net à Payer */}
-                <div className="p-4 rounded-lg bg-[#E6F3EE] border border-[#A7F3D0] space-y-2">
+                {/* ÉTAPE 4 : SYNTHÈSE VERS LE NET FINAL */}
+                <div className="p-4 rounded-xl bg-[#EBF7F2] border border-[#A7F3D0] space-y-3">
                   <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-xs">4</span>
-                    <h3 className="font-bold text-sm text-[#0D3B2E]">
-                      Passage Synthétique au Salaire Net à Payer
+                    <span className="w-5 h-5 rounded-full bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-[10px]">
+                      4
+                    </span>
+                    <h3 className="font-bold text-xs text-[#0D3B2E]">
+                      Synthèse de Calcul : Du Salaire Brut au Net Versé
                     </h3>
                   </div>
-                  <div className="p-2.5 rounded bg-white border border-[#A7F3D0] tabular-nums text-xs space-y-1">
-                    <div className="flex justify-between text-[#111315]">
-                      <span>(+) Salaire Brut Total Rémunéré :</span>
-                      <span className="font-bold">{formatDA(calc.salaireBrutTotal)}</span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-center text-xs">
+                    <div className="p-2.5 rounded-lg bg-white border border-[#A7F3D0]">
+                      <span className="text-[10px] text-[#5A6065] block">Salaire Brut Total</span>
+                      <span className="font-bold text-[#111315]">{formatDA(calc.salaireBrutTotal)}</span>
                     </div>
-                    <div className="flex justify-between text-[#991B1B]">
-                      <span>(-) Cotisation Sécurité Sociale (9%) :</span>
-                      <span>- {formatDA(calc.cnasSalariale)}</span>
+                    <div className="p-2.5 rounded-lg bg-white border border-[#A7F3D0]">
+                      <span className="text-[10px] text-[#991B1B] block">Retenue CNAS 9%</span>
+                      <span className="font-bold text-[#991B1B]">- {formatDA(calc.cnasSalariale)}</span>
                     </div>
-                    <div className="flex justify-between text-[#991B1B]">
-                      <span>(-) Retenue Fiscale IRG Barème :</span>
-                      <span>- {formatDA(calc.irgRetenu)}</span>
+                    <div className="p-2.5 rounded-lg bg-white border border-[#A7F3D0]">
+                      <span className="text-[10px] text-[#991B1B] block">Retenue IRG</span>
+                      <span className="font-bold text-[#991B1B]">- {formatDA(calc.irgRetenu)}</span>
                     </div>
-                    {currentVariables.avancesAcomptes > 0 && (
-                      <div className="flex justify-between text-[#991B1B]">
-                        <span>(-) Acomptes & Avances déduits :</span>
-                        <span>- {formatDA(currentVariables.avancesAcomptes)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between text-[#0D3B2E] font-black text-sm pt-2 border-t-2 border-[#0D3B2E]">
-                      <span>(=) SALAIRE NET À PAYER :</span>
-                      <span>{formatDA(calc.netAPayer)}</span>
+                    <div className="p-2.5 rounded-lg bg-[#0D3B2E] text-white">
+                      <span className="text-[10px] text-white/80 block">Net à Payer</span>
+                      <span className="font-black text-sm">{formatDA(calc.netAPayer)}</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#E6E4DD] text-center text-[10px] text-[#5A6065]">
+            <div className="pt-6 border-t border-[#E6E4DD] text-center text-[10px] text-[#5A6065]">
               Document d'assistance et de transparence édité par le Service RH • SARL ENTREPRISE ALGER
             </div>
           </article>
         )}
 
         {/* ==================================================================
-            DOCUMENT 3 : FICHE DES CHARGES PATRONALES & COÛT GLOBAL
+            DOCUMENT 3 : NOTE DES CHARGES PATRONALES & COÛT GLOBAL (CFO VIEW)
             ================================================================== */}
         {(docType === "charges" || docType === "complet") && (
-          <article className="a4-sheet bg-white border border-[#D9D6CE] shadow-lg rounded-sm w-full max-w-[210mm] min-h-[297mm] p-8 sm:p-10 flex flex-col justify-between text-[#111315] print:border-none print:shadow-none print:p-8 print:max-w-none print:m-0 print:break-after-page">
-            <div className="space-y-5">
+          <article className="a4-sheet bg-white border border-[#E2E0D8] shadow-md rounded-lg w-full max-w-[210mm] min-h-[297mm] p-8 sm:p-11 flex flex-col justify-between text-[#111315] print:border-none print:shadow-none print:p-8 print:max-w-none print:m-0 print:break-after-page">
+            <div className="space-y-6">
               {/* En-tête */}
-              <div className="flex items-start justify-between pb-4 border-b-2 border-[#1E3A8A]">
-                <div>
-                  <span className="text-[10px] tabular-nums font-bold text-[#1E3A8A] uppercase tracking-wider block">
-                    DIRECTION FINANCIÈRE & RESSOURCES HUMAINES
+              <div className="flex items-start justify-between pb-5 border-b border-[#E6E4DD]">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-[#1E3A8A] uppercase tracking-wider bg-[#EFF6FF] px-2 py-0.5 rounded-full border border-[#BFDBFE]">
+                    Direction Financière & RH
                   </span>
-                  <h2 className="text-lg font-black text-[#111315]">
-                    ANALYSE DES CHARGES PATRONALES & COÛT SALARIAL
+                  <h2 className="text-base font-extrabold text-[#111315] tracking-tight">
+                    Analyse des Charges Patronales & Coût Global
                   </h2>
                   <p className="text-xs text-[#5A6065]">
-                    Ventilation des cotisations employeur et de l'enveloppe globale DAC (34,5%).
+                    Ventilation des cotisations employeur et de l'enveloppe légale DAC (34,50%).
                   </p>
                 </div>
                 <div className="text-right">
@@ -800,111 +892,163 @@ export default function DocumentViewerClient({
                 </div>
               </div>
 
-              {/* 1. Synthèse financière */}
+              {/* 1. TOP 4 KPI CARDS */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                <div className="p-3 rounded-lg bg-[#F8F7F4] border border-[#E6E4DD]">
-                  <span className="text-[10px] text-[#5A6065] block">Salaire Net Salarié :</span>
-                  <span className="text-sm font-black tabular-nums text-[#0D3B2E]">
+                <div className="p-3.5 rounded-xl bg-[#FAF9F6] border border-[#EBE8E1]">
+                  <span className="text-[10px] text-[#5A6065] block font-medium">Net Salarié Versé :</span>
+                  <span className="text-base font-black tabular-nums text-[#0D3B2E]">
                     {formatDA(calc.netAPayer)}
                   </span>
                 </div>
 
-                <div className="p-3 rounded-lg bg-[#F8F7F4] border border-[#E6E4DD]">
-                  <span className="text-[10px] text-[#5A6065] block">Salaire de Poste (CNAS) :</span>
-                  <span className="text-sm font-bold tabular-nums text-[#111315]">
+                <div className="p-3.5 rounded-xl bg-[#FAF9F6] border border-[#EBE8E1]">
+                  <span className="text-[10px] text-[#5A6065] block font-medium">Salaire de Poste (CNAS) :</span>
+                  <span className="text-base font-bold tabular-nums text-[#111315]">
                     {formatDA(calc.salaireDePoste)}
                   </span>
                 </div>
 
-                <div className="p-3 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
-                  <span className="text-[10px] text-[#1E3A8A] block">Charges Patronales (25,5%) :</span>
-                  <span className="text-sm font-black tabular-nums text-[#1E3A8A]">
+                <div className="p-3.5 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE]">
+                  <span className="text-[10px] text-[#1E3A8A] block font-medium">Charges Patronales (25,5%) :</span>
+                  <span className="text-base font-black tabular-nums text-[#1E3A8A]">
                     {formatDA(calc.cnasPatronale + calc.cnasOeuvresSociales)}
                   </span>
                 </div>
 
-                <div className="p-3 rounded-lg bg-[#E6F3EE] border border-[#A7F3D0]">
-                  <span className="text-[10px] text-[#065F46] block">Coût Global Entreprise :</span>
-                  <span className="text-sm font-black tabular-nums text-[#0D3B2E]">
+                <div className="p-3.5 rounded-xl bg-[#EBF7F2] border border-[#A7F3D0]">
+                  <span className="text-[10px] text-[#065F46] block font-medium">Coût Global Entreprise :</span>
+                  <span className="text-base font-black tabular-nums text-[#0D3B2E]">
                     {formatDA(calc.coutTotalEmployeur)}
                   </span>
                 </div>
               </div>
 
-              {/* 2. Tableau de ventilation officiel de la DAC CNAS (34,5%) */}
+              {/* BARRE VISUELLE DE RÉPARTITION DES COÛTS */}
+              <div className="p-4 rounded-xl bg-[#FAF9F6] border border-[#EBE8E1] space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-[#111315]">Répartition Globale du Coût Employeur</span>
+                  <span className="text-[11px] text-[#5A6065] font-mono">100% = {formatDA(calc.coutTotalEmployeur)}</span>
+                </div>
+
+                {/* Barre segmentée */}
+                <div className="h-3.5 w-full bg-[#E2E8F0] rounded-full overflow-hidden flex shadow-inner">
+                  <div
+                    style={{ width: `${pctNet}%` }}
+                    className="bg-[#0D3B2E] h-full"
+                    title={`Net Salarié: ${pctNet}%`}
+                  />
+                  <div
+                    style={{ width: `${pctCnasPatronale}%` }}
+                    className="bg-[#2563EB] h-full"
+                    title={`Charges Patronales: ${pctCnasPatronale}%`}
+                  />
+                  <div
+                    style={{ width: `${pctIrg}%` }}
+                    className="bg-[#DC2626] h-full"
+                    title={`Impôt IRG: ${pctIrg}%`}
+                  />
+                  <div
+                    style={{ width: `${pctCnasSalariale}%` }}
+                    className="bg-[#10B981] h-full"
+                    title={`CNAS Salariale: ${pctCnasSalariale}%`}
+                  />
+                </div>
+
+                {/* Légende */}
+                <div className="flex flex-wrap items-center justify-between text-[10px] text-[#5A6065] pt-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#0D3B2E]" />
+                    <span>Net Salarié ({pctNet}%)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />
+                    <span>Charges Patronales ({pctCnasPatronale}%)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#DC2626]" />
+                    <span>Impôt IRG G50 ({pctIrg}%)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
+                    <span>CNAS Salarié ({pctCnasSalariale}%)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* TABLEAU DE VENTILATION DAC CNAS (34,50%) — DESIGN ÉPURÉ */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#111315]">
-                    Ventilation Légale du Bordereau CNAS — Déclaration DAC 34,5%
+                  <h3 className="text-xs font-bold text-[#111315]">
+                    Ventilation Légale du Bordereau CNAS — Déclaration DAC 34,50%
                   </h3>
-                  <span className="text-[11px] tabular-nums text-[#5A6065]">
-                    Assiette soumise : <strong>{formatDA(calc.salaireDePoste)}</strong>
+                  <span className="text-[11px] text-[#5A6065]">
+                    Assiette soumise : <strong className="text-[#111315]">{formatDA(calc.salaireDePoste)}</strong>
                   </span>
                 </div>
 
-                <div className="border border-[#111315] rounded overflow-hidden text-xs">
-                  <table className="w-full">
-                    <thead className="bg-[#F2F0EC] border-b border-[#111315] text-[10px] text-[#111315]">
+                <div className="border border-[#E6E4DD] rounded-xl overflow-hidden shadow-2xs">
+                  <table className="w-full text-xs">
+                    <thead className="bg-[#F8F7F4] border-b border-[#E6E4DD] text-[10px] text-[#5A6065] uppercase tracking-wider">
                       <tr>
-                        <th className="py-2 px-3 text-left font-bold uppercase">Branche de Sécurité Sociale</th>
-                        <th className="py-2 px-3 text-left font-bold uppercase">Organisme Bénéficiaire</th>
-                        <th className="py-2 px-3 text-right font-bold uppercase w-20">Taux</th>
-                        <th className="py-2 px-3 text-right font-bold uppercase w-32">Montant (DA)</th>
+                        <th className="py-2 px-3 text-left font-bold">Branche de Sécurité Sociale</th>
+                        <th className="py-2 px-3 text-left font-bold w-28">Organisme</th>
+                        <th className="py-2 px-3 text-right font-bold w-20">Taux</th>
+                        <th className="py-2 px-3 text-right font-bold w-32">Montant (DA)</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#E6E4DD] tabular-nums text-[11px]">
-                      <tr>
-                        <td className="py-1.5 px-3 font-sans">Assurances Sociales (Maladie, Maternité, Invalidité, Décès)</td>
-                        <td className="py-1.5 px-3 font-sans text-[#5A6065]">CNAS</td>
+                    <tbody className="divide-y divide-[#F0EDE8] tabular-nums text-[11px]">
+                      <tr className="hover:bg-[#FAF9F6] transition-colors">
+                        <td className="py-1.5 px-3 text-[#111315]">Assurances Sociales (Maladie, Maternité, Invalidité, Décès)</td>
+                        <td className="py-1.5 px-3 text-[#5A6065]">CNAS</td>
                         <td className="py-1.5 px-3 text-right">12,50 %</td>
-                        <td className="py-1.5 px-3 text-right font-semibold">
+                        <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
                           {formatDA(calc.salaireDePoste * 0.125, false)}
                         </td>
                       </tr>
-                      <tr>
-                        <td className="py-1.5 px-3 font-sans">Accidents du Travail et Maladies Professionnelles (AT/MP)</td>
-                        <td className="py-1.5 px-3 font-sans text-[#5A6065]">CNAS</td>
+                      <tr className="hover:bg-[#FAF9F6] transition-colors">
+                        <td className="py-1.5 px-3 text-[#111315]">Accidents du Travail et Maladies Professionnelles (AT/MP)</td>
+                        <td className="py-1.5 px-3 text-[#5A6065]">CNAS</td>
                         <td className="py-1.5 px-3 text-right">1,25 %</td>
-                        <td className="py-1.5 px-3 text-right font-semibold">
+                        <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
                           {formatDA(calc.salaireDePoste * 0.0125, false)}
                         </td>
                       </tr>
-                      <tr>
-                        <td className="py-1.5 px-3 font-sans">Assurance Vieillesse & Retraite</td>
-                        <td className="py-1.5 px-3 font-sans text-[#5A6065]">CNR</td>
+                      <tr className="hover:bg-[#FAF9F6] transition-colors">
+                        <td className="py-1.5 px-3 text-[#111315]">Assurance Vieillesse & Retraite</td>
+                        <td className="py-1.5 px-3 text-[#5A6065]">CNR</td>
                         <td className="py-1.5 px-3 text-right">10,00 %</td>
-                        <td className="py-1.5 px-3 text-right font-semibold">
+                        <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
                           {formatDA(calc.salaireDePoste * 0.10, false)}
                         </td>
                       </tr>
-                      <tr>
-                        <td className="py-1.5 px-3 font-sans">Assurance Chômage des Travailleurs Salariés</td>
-                        <td className="py-1.5 px-3 font-sans text-[#5A6065]">CNAC</td>
+                      <tr className="hover:bg-[#FAF9F6] transition-colors">
+                        <td className="py-1.5 px-3 text-[#111315]">Assurance Chômage des Travailleurs Salariés</td>
+                        <td className="py-1.5 px-3 text-[#5A6065]">CNAC</td>
                         <td className="py-1.5 px-3 text-right">1,00 %</td>
-                        <td className="py-1.5 px-3 text-right font-semibold">
+                        <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
                           {formatDA(calc.salaireDePoste * 0.01, false)}
                         </td>
                       </tr>
-                      <tr>
-                        <td className="py-1.5 px-3 font-sans">Fonds de Retraite Anticipée</td>
-                        <td className="py-1.5 px-3 font-sans text-[#5A6065]">CNR</td>
+                      <tr className="hover:bg-[#FAF9F6] transition-colors">
+                        <td className="py-1.5 px-3 text-[#111315]">Fonds de Retraite Anticipée</td>
+                        <td className="py-1.5 px-3 text-[#5A6065]">CNR</td>
                         <td className="py-1.5 px-3 text-right">0,25 %</td>
-                        <td className="py-1.5 px-3 text-right font-semibold">
+                        <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
                           {formatDA(calc.salaireDePoste * 0.0025, false)}
                         </td>
                       </tr>
-                      <tr>
-                        <td className="py-1.5 px-3 font-sans">Quote-part Fonds des Œuvres Sociales (FOS)</td>
-                        <td className="py-1.5 px-3 font-sans text-[#5A6065]">Comité Entreprise</td>
+                      <tr className="hover:bg-[#FAF9F6] transition-colors">
+                        <td className="py-1.5 px-3 text-[#111315]">Quote-part Fonds des Œuvres Sociales (FOS)</td>
+                        <td className="py-1.5 px-3 text-[#5A6065]">Comité Entreprise</td>
                         <td className="py-1.5 px-3 text-right">0,50 %</td>
-                        <td className="py-1.5 px-3 text-right font-semibold">
+                        <td className="py-1.5 px-3 text-right font-semibold text-[#111315]">
                           {formatDA(calc.salaireDePoste * 0.005, false)}
                         </td>
                       </tr>
 
                       {/* Sous-total Patronal */}
                       <tr className="bg-[#EFF6FF] font-bold text-[#1E3A8A]">
-                        <td colSpan={2} className="py-2 px-3 font-sans uppercase">
+                        <td colSpan={2} className="py-2 px-3 text-xs uppercase">
                           Total Charges Patronales Entreprise (25,50%)
                         </td>
                         <td className="py-2 px-3 text-right">25,50 %</td>
@@ -914,8 +1058,8 @@ export default function DocumentViewerClient({
                       </tr>
 
                       {/* Part Salarié */}
-                      <tr>
-                        <td colSpan={2} className="py-1.5 px-3 font-sans text-[#5A6065]">
+                      <tr className="hover:bg-[#FAF9F6] transition-colors">
+                        <td colSpan={2} className="py-1.5 px-3 text-[#5A6065]">
                           Part Ouvrière Précomptée sur le Bulletin Salarié (9,00%)
                         </td>
                         <td className="py-1.5 px-3 text-right text-[#5A6065]">9,00 %</td>
@@ -925,8 +1069,8 @@ export default function DocumentViewerClient({
                       </tr>
 
                       {/* TOTAL BORDEREAU DAC 34,5% */}
-                      <tr className="bg-[#111315] font-black text-white text-xs">
-                        <td colSpan={2} className="py-2 px-3 font-sans uppercase tracking-wider">
+                      <tr className="bg-[#0D3B2E] font-extrabold text-white text-xs">
+                        <td colSpan={2} className="py-2 px-3 uppercase tracking-wider">
                           Total Global Déclaration DAC CNAS à Verser
                         </td>
                         <td className="py-2 px-3 text-right text-[#A7F3D0]">34,50 %</td>
@@ -939,32 +1083,27 @@ export default function DocumentViewerClient({
                 </div>
               </div>
 
-              {/* 3. Calendrier des obligations et échéances */}
-              <div className="p-4 rounded-lg bg-[#F8F7F4] border border-[#E6E4DD] space-y-2 text-xs">
-                <h4 className="font-bold text-[#111315] uppercase tracking-wider text-[11px]">
-                  Calendrier des Échéances Légales de Règlement (Mois Suivant M+1)
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                  <div className="p-2.5 rounded bg-white border border-[#E6E4DD]">
-                    <span className="text-[10px] text-[#5A6065] block">Échéance 1 : Fin de Mois</span>
-                    <strong className="text-xs text-[#0D3B2E]">Virement Net Salarié</strong>
-                    <p className="text-[10px] text-[#5A6065] mt-0.5">Ordre de virement bancaire / CCP</p>
-                  </div>
-                  <div className="p-2.5 rounded bg-white border border-[#E6E4DD]">
-                    <span className="text-[10px] text-[#5A6065] block">Échéance 2 : Avant le 20</span>
-                    <strong className="text-xs text-[#991B1B]">Déclaration Fiscale G50</strong>
-                    <p className="text-[10px] text-[#5A6065] mt-0.5">Versement IRG aux Impôts ({formatDA(calc.irgRetenu)})</p>
-                  </div>
-                  <div className="p-2.5 rounded bg-white border border-[#E6E4DD]">
-                    <span className="text-[10px] text-[#5A6065] block">Échéance 3 : Avant le 30</span>
-                    <strong className="text-xs text-[#1E3A8A]">Bordereau CNAS (DAC)</strong>
-                    <p className="text-[10px] text-[#5A6065] mt-0.5">Versement 34,5% à la CNAS ({formatDA(calc.totalDAC)})</p>
-                  </div>
+              {/* 3. CALENDRIER DES ÉCHÉANCES LÉGALES */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-[#FAF9F6] border border-[#EBE8E1] space-y-1">
+                  <span className="text-[10px] text-[#5A6065] block uppercase font-bold tracking-wider">Échéance 1 : Fin de Mois</span>
+                  <div className="font-bold text-xs text-[#0D3B2E]">Virement Salaire Net</div>
+                  <p className="text-[10px] text-[#71777D]">Ordre de virement bancaire ou CCP</p>
+                </div>
+                <div className="p-3 rounded-xl bg-[#FAF9F6] border border-[#EBE8E1] space-y-1">
+                  <span className="text-[10px] text-[#5A6065] block uppercase font-bold tracking-wider">Échéance 2 : Avant le 20 (M+1)</span>
+                  <div className="font-bold text-xs text-[#991B1B]">Déclaration Fiscale G50</div>
+                  <p className="text-[10px] text-[#71777D]">Versement IRG aux Impôts ({formatDA(calc.irgRetenu)})</p>
+                </div>
+                <div className="p-3 rounded-xl bg-[#FAF9F6] border border-[#EBE8E1] space-y-1">
+                  <span className="text-[10px] text-[#5A6065] block uppercase font-bold tracking-wider">Échéance 3 : Avant le 30 (M+1)</span>
+                  <div className="font-bold text-xs text-[#1E3A8A]">Bordereau DAC CNAS</div>
+                  <p className="text-[10px] text-[#71777D]">Versement 34,50% à la CNAS ({formatDA(calc.totalDAC)})</p>
                 </div>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#E6E4DD] text-center text-[10px] text-[#5A6065]">
+            <div className="pt-6 border-t border-[#E6E4DD] text-center text-[10px] text-[#5A6065]">
               Document confidentiel de gestion financière • SARL ENTREPRISE ALGER • Netix SIRH 2.0
             </div>
           </article>
