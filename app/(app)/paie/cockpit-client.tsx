@@ -31,6 +31,8 @@ import {
   Edit3,
   Layers,
   Check,
+  FileText,
+  Calculator,
 } from "lucide-react";
 import {
   calculerBulletinComplet,
@@ -1328,12 +1330,100 @@ export default function CockpitClient({
                   </button>
 
                   <button
-                    onClick={() => window.print()}
-                    className="btn-fintech-secondary text-xs px-3 py-2 cursor-pointer"
-                    title="Imprimer le bulletin officiel au format PDF"
+                    onClick={() =>
+                      window.open(
+                        `/document-paie?id=${currentSalarie.id}&annee=${selectedYear}&mois=${selectedMonth}&type=bulletin`,
+                        "_blank"
+                      )
+                    }
+                    className="btn-fintech-secondary text-xs px-3 py-2 cursor-pointer flex items-center gap-1.5"
+                    title="Ouvrir la fiche de paie dans un nouvel onglet"
                   >
                     <Printer className="w-3.5 h-3.5 text-[#5A6065]" />
+                    <span>Imprimer</span>
                   </button>
+                </div>
+
+                {/* MODULE D'ÉDITION DES 3 DOCUMENTS DE PAIE (NOUVEL ONGLET) */}
+                <div className="pt-3 border-t border-[#E6E4DD] space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-[#111315]">
+                      Fiches & Justificatifs Réglementaires :
+                    </span>
+                    <span className="text-[10px] text-[#0D3B2E] font-medium bg-[#E6F3EE] px-1.5 py-0.2 rounded border border-[#A7F3D0]">
+                      Nouvel Onglet
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <button
+                      onClick={() =>
+                        window.open(
+                          `/document-paie?id=${currentSalarie.id}&annee=${selectedYear}&mois=${selectedMonth}&type=bulletin`,
+                          "_blank"
+                        )
+                      }
+                      className="p-2 rounded-lg border border-[#E6E4DD] bg-white hover:bg-[#F4F9F6] hover:border-[#0D3B2E] hover:text-[#0D3B2E] transition-all flex items-center gap-2 cursor-pointer text-left"
+                      title="Fiche de paie officielle algérienne prête pour remise au collaborateur"
+                    >
+                      <FileText className="w-4 h-4 text-[#0D3B2E] shrink-0" />
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold truncate">1. Fiche Salarié</span>
+                        <span className="text-[9px] text-[#5A6065]">Bulletin officiel</span>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        window.open(
+                          `/document-paie?id=${currentSalarie.id}&annee=${selectedYear}&mois=${selectedMonth}&type=calcul`,
+                          "_blank"
+                        )
+                      }
+                      className="p-2 rounded-lg border border-[#E6E4DD] bg-white hover:bg-[#F4F9F6] hover:border-[#0D3B2E] hover:text-[#0D3B2E] transition-all flex items-center gap-2 cursor-pointer text-left"
+                      title="Fiche explicative détaillée du calcul (taux horaire, Loi 90-11, barème IRG)"
+                    >
+                      <Calculator className="w-4 h-4 text-[#0D3B2E] shrink-0" />
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold truncate">2. Explication Calcul</span>
+                        <span className="text-[9px] text-[#5A6065]">Formules & IRG</span>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        window.open(
+                          `/document-paie?id=${currentSalarie.id}&annee=${selectedYear}&mois=${selectedMonth}&type=charges`,
+                          "_blank"
+                        )
+                      }
+                      className="p-2 rounded-lg border border-[#E6E4DD] bg-white hover:bg-[#F4F9F6] hover:border-[#0D3B2E] hover:text-[#0D3B2E] transition-all flex items-center gap-2 cursor-pointer text-left"
+                      title="Fiche des charges patronales et coût global employeur (DAC 34,5%)"
+                    >
+                      <Building2 className="w-4 h-4 text-[#0D3B2E] shrink-0" />
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold truncate">3. Charges Patronales</span>
+                        <span className="text-[9px] text-[#5A6065]">DAC CNAS 34,5%</span>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        window.open(
+                          `/document-paie?id=${currentSalarie.id}&annee=${selectedYear}&mois=${selectedMonth}&type=complet`,
+                          "_blank"
+                        )
+                      }
+                      className="p-2 rounded-lg border border-[#A7F3D0] bg-[#E6F3EE] hover:bg-[#D1EBE2] text-[#0D3B2E] transition-all flex items-center gap-2 cursor-pointer text-left"
+                      title="Dossier complet en liasse (les 3 documents réunis prêts à imprimer)"
+                    >
+                      <Layers className="w-4 h-4 text-[#0D3B2E] shrink-0" />
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold truncate">Dossier Complet</span>
+                        <span className="text-[9px] text-[#065F46]">Liasse 3 en 1</span>
+                      </div>
+                    </button>
+                  </div>
                 </div>
               </div>
             </>
