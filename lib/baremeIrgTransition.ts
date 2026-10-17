@@ -528,19 +528,16 @@ const PAS = 10; // les points de la table sont espaces de 10 DA
  * exacte.
  */
 export function irgNetZoneTransition(baseImposable: number): number {
-  if (baseImposable <= BORNE_BASSE) {
-    return TABLE_IRG_TRANSITION[0][1];
-  }
-  if (baseImposable >= BORNE_HAUTE) {
-    return TABLE_IRG_TRANSITION[TABLE_IRG_TRANSITION.length - 1][1];
-  }
+  const rTronque = Math.floor(baseImposable / 10) * 10;
+  if (rTronque <= 30000) return 0;
 
-  const indexBas = Math.floor((baseImposable - BORNE_BASSE) / PAS);
-  const [baseBas, irgBas] = TABLE_IRG_TRANSITION[indexBas];
-  const [baseHaut, irgHaut] = TABLE_IRG_TRANSITION[Math.min(indexBas + 1, TABLE_IRG_TRANSITION.length - 1)];
+  // Tranches CIDTA Art. 104 : dans la zone 30 000 - 35 000, le taux marginal est de 23%
+  const irgBrut = (rTronque - 20000) * 0.23;
+  const abattementBrut = irgBrut * 0.40;
+  const abattement40 = Math.min(1500, Math.max(1000, abattementBrut));
+  const i1 = Math.max(0, irgBrut - abattement40);
 
-  if (baseHaut === baseBas) return irgBas;
-
-  const fraction = (baseImposable - baseBas) / (baseHaut - baseBas);
-  return irgBas + (irgHaut - irgBas) * fraction;
+  // Formule officielle DGI / Loi de Finances 2022 (régime général)
+  const irgFinal = (i1 * 137 / 51) - (27925 / 8);
+  return Math.round(Math.max(0, irgFinal) * 10) / 10;
 }

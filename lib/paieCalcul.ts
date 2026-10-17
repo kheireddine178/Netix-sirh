@@ -45,10 +45,20 @@ export const CODES_GERES_NATIVEMENT = new Set([
 
 // Catégorie A : % d'une base (base_code = null => salaire de base réel standard)
 export const RUBRIQUES_POURCENTAGE: Record<string, string | null> = {
+  // Primes conventionnelles algériennes clés calculées sur salaire de base réel
+  R110: null, R111: null, R112: null, // I.E.P (Indemnité d'Expérience Professionnelle / Ancienneté)
+  R200: null,                         // Indemnité de Nuisance
+  R201: null,                         // Prime de Responsabilité
+  R202: null,                         // Prime de Disponibilité / Astreinte
+  R203: null,                         // Prime de Rendement Individuel (P.R.I)
+  R204: null,                         // Prime de Rendement Collectif (P.R.C)
+  R206: null,                         // Prime de Risque et Danger
   R274: null, R276: null, R278: null, R280: null, R282: null,
   R286: null, R288: null, R290: null, R292: null, R294: null,
   R296: null, R298: null, R300: null, R302: null, R304: null,
   R306: null, R307: null, R318: null, R320: null,
+  R500: null,                         // Indemnité de Travail de Nuit
+  R510: null,                         // Indemnité de Travail Posté (3x8)
   R722: "salaire_base_plus_sujetion", // base = R030 + R252
   P318: null, P320: null,
 };
@@ -69,12 +79,53 @@ export type CategorieRubrique =
   | "montant_fixe"
   | "regularisation";
 
-/** Détermine la catégorie de saisie pour un code du catalogue (R*, M* ou T*). */
-export function categorieRubrique(code: string): CategorieRubrique {
+/** Détecte intelligemment la catégorie/nature de calcul d'une rubrique (Code, Libellé ou Mode forcé). */
+export function detecterModeRubrique(
+  code: string,
+  libelle?: string | null,
+  modeExplicite?: string | null
+): CategorieRubrique {
+  if (
+    modeExplicite === "pourcentage" ||
+    modeExplicite === "nombre_x_taux" ||
+    modeExplicite === "montant_fixe" ||
+    modeExplicite === "regularisation"
+  ) {
+    return modeExplicite;
+  }
   if (code.startsWith("M") || code.startsWith("T")) return "regularisation";
   if (code in RUBRIQUES_POURCENTAGE) return "pourcentage";
-  if (RUBRIQUES_NOMBRE_X_TAUX.has(code)) return "nombre_x_taux";
+  if (RUBRIQUES_NOMBRE_X_TAUX.has(code) || code.startsWith("R52")) return "nombre_x_taux";
+
+  if (libelle) {
+    const l = libelle.toLowerCase();
+    if (
+      l.includes("(%)") ||
+      l.includes("%") ||
+      l.includes("pourcent") ||
+      l.includes("taux") ||
+      /\b(i\.?e\.?p|p\.?r\.?i|p\.?r\.?c)\b/i.test(libelle) ||
+      l.includes("rendement individuel") ||
+      l.includes("rendement collectif") ||
+      l.includes("nuisance") ||
+      l.includes("toxicité") ||
+      l.includes("responsabilité") ||
+      l.includes("disponibilité") ||
+      l.includes("ancienneté")
+    ) {
+      return "pourcentage";
+    }
+    if (l.includes("nombre") || l.includes("panier") || l.includes("×") || l.includes("*")) {
+      return "nombre_x_taux";
+    }
+  }
+
   return "montant_fixe";
+}
+
+/** Détermine la catégorie de saisie pour un code du catalogue (R*, M* ou T*). */
+export function categorieRubrique(code: string, libelle?: string | null): CategorieRubrique {
+  return detecterModeRubrique(code, libelle);
 }
 
 // ------------------------------------------------------------------

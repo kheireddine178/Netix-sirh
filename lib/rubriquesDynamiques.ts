@@ -82,7 +82,8 @@ export function resoudreLigneRubrique(
     montant = Math.abs(valeur1);
   } else {
     if (categorie === "pourcentage") {
-      montant = base * valeur1;
+      const tauxFraction = Math.abs(valeur1) > 1 ? valeur1 / 100 : valeur1;
+      montant = base * tauxFraction;
     } else if (categorie === "nombre_x_taux") {
       montant = valeur1 * valeur2;
     } else {

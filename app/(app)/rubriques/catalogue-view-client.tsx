@@ -28,13 +28,16 @@ export default function CatalogueViewClient({ catalogue, salaries }: CatalogueVi
   const [affectSalarieId, setAffectSalarieId] = useState<number>(salaries[0]?.id || 1);
   const [nombre, setNombre] = useState<number>(22);
   const [taux, setTaux] = useState<number>(500);
+  const [pourcentage, setPourcentage] = useState<number>(10);
   const [montantFixe, setMontantFixe] = useState<number>(5000);
   const [isAssigning, setIsAssigning] = useState<boolean>(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   const openAffectModal = (r: RubriqueCatalogue) => {
     setSelectedRubrique(r);
-    if (r.categorie === "nombre_x_taux" || r.code.startsWith("R52")) {
+    if (r.categorie === "pourcentage") {
+      setPourcentage(r.code === "R110" ? 10 : (r.code === "R200" ? 5 : 10));
+    } else if (r.categorie === "nombre_x_taux" || r.code.startsWith("R52")) {
       setNombre(22);
       setTaux(500);
     } else {
@@ -46,11 +49,15 @@ export default function CatalogueViewClient({ catalogue, salaries }: CatalogueVi
     if (!selectedRubrique || !affectSalarieId) return;
     setIsAssigning(true);
     try {
+      const isPourcentage = selectedRubrique.categorie === "pourcentage";
       const isNombreTaux = selectedRubrique.categorie === "nombre_x_taux" || selectedRubrique.code.startsWith("R52");
-      const finalAmount = isNombreTaux ? nombre * taux : montantFixe;
+      const finalAmount = isNombreTaux ? nombre * taux : (isPourcentage ? pourcentage : montantFixe);
       await assignerRubriqueFixeSalarie(affectSalarieId, selectedRubrique.code, finalAmount);
       const sal = salaries.find(s => s.id === affectSalarieId);
-      setNotice(`✅ Rubrique ${selectedRubrique.code} (${selectedRubrique.libelle}) affectée à ${sal?.nom_prenom || "l'employé"} pour ${finalAmount.toLocaleString("fr-FR")} DA !`);
+      const detailMsg = isPourcentage
+        ? `au taux de ${pourcentage}% (soit ${Math.round((sal?.salaire_base_theorique || 50000) * (pourcentage / 100)).toLocaleString("fr-FR")} DA)`
+        : `pour ${finalAmount.toLocaleString("fr-FR")} DA`;
+      setNotice(`✅ Rubrique ${selectedRubrique.code} (${selectedRubrique.libelle}) affectée à ${sal?.nom_prenom || "l'employé"} ${detailMsg} !`);
       setSelectedRubrique(null);
       setTimeout(() => setNotice(null), 4000);
     } catch {
@@ -289,23 +296,49 @@ export default function CatalogueViewClient({ catalogue, salaries }: CatalogueVi
                   </span>
                 </div>
               </div>
+            ) : selectedRubrique.categorie === "pourcentage" ? (
+              <div className="space-y-2 p-3 rounded-lg bg-teal-50 border border-teal-200">
+                <div className="flex items-center justify-between text-xs font-bold text-teal-900">
+                  <span>Taux en pourcentage (%) :</span>
+                  <span className="text-[11px] font-normal text-teal-700">
+                    Base salariale : {(salaries.find(s => s.id === affectSalarieId)?.salaire_base_theorique || 0).toLocaleString("fr-FR")} DA
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    max="100"
+                    value={pourcentage}
+                    onChange={e => setPourcentage(parseFloat(e.target.value) || 0)}
+                    placeholder="10"
+                    className="w-full bg-white border border-teal-300 rounded-lg px-3 py-1.5 font-mono font-bold text-xs text-teal-950 outline-none focus:border-teal-600"
+                  />
+                  <span className="text-xs font-mono font-bold text-teal-800">%</span>
+                </div>
+                <div className="pt-2 border-t border-teal-200 flex items-center justify-between text-xs">
+                  <span className="text-teal-900 font-semibold">Montant calculé estimé :</span>
+                  <span className="font-mono font-bold text-teal-950 text-sm">
+                    {pourcentage}% × {(salaries.find(s => s.id === affectSalarieId)?.salaire_base_theorique || 0).toLocaleString("fr-FR")} DA = {Math.round((salaries.find(s => s.id === affectSalarieId)?.salaire_base_theorique || 0) * (pourcentage / 100)).toLocaleString("fr-FR")} DA
+                  </span>
+                </div>
+              </div>
             ) : (
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-800">
-                  {selectedRubrique.categorie === "pourcentage" ? "Pourcentage (%) :" : "Montant mensuel fixe (DA) :"}
+                  Montant mensuel fixe (DA) :
                 </label>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
-                    step={selectedRubrique.categorie === "pourcentage" ? "0.5" : "500"}
+                    step="500"
                     min="0"
                     value={montantFixe}
                     onChange={e => setMontantFixe(parseFloat(e.target.value) || 0)}
                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 font-mono font-bold text-xs outline-none focus:border-indigo-500"
                   />
-                  <span className="text-xs font-mono text-slate-500">
-                    {selectedRubrique.categorie === "pourcentage" ? "%" : "DA"}
-                  </span>
+                  <span className="text-xs font-mono text-slate-500 font-bold">DA</span>
                 </div>
               </div>
             )}

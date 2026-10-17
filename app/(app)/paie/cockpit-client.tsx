@@ -40,6 +40,7 @@ import { useSidebar } from "@/lib/sidebarContext";
 import { cn } from "@/lib/utils";
 import {
   calculerBulletinComplet,
+  calculerRetenueAbsence,
   round2,
   round1,
   BASE_HORAIRE_LEGALE,
@@ -51,6 +52,7 @@ import {
   DetailCalculIRG,
   ResultatBulletinPaie,
 } from "@/src/lib/payroll-engine";
+import { detecterModeRubrique } from "@/lib/paieCalcul";
 import {
   SalarieCockpit,
   BulletinCockpitVariables,
@@ -61,6 +63,28 @@ import {
   assignerRubriqueFixeSalarie,
   retirerRubriqueFixeSalarie,
 } from "./actions";
+import { FicheSaisieUnifiee } from "@/components/paie/FicheSaisieUnifiee";
+import { type RubriqueLigne } from "@/components/paie/LigneRubrique";
+
+/**
+ * Calcule dynamiquement le montant d'une rubrique fixe (DA ou % du Salaire de Base Réel)
+ * Conforme à la règle PC PAIE DLG : Primes % calculées sur salaire réel déduit des absences.
+ */
+export function calculerMontantRubriqueFixe(
+  rub: RubriqueFixeAssignee,
+  salaireBaseReel: number
+): number {
+  const mode = rub.mode_calcul || detecterModeRubrique(rub.code, rub.libelle);
+  if (mode === "pourcentage") {
+    // Si la valeur est <= 100, c'est un taux en % (ex: 10 pour 10%, 2.5 pour 2.5%)
+    // Si > 100, c'est un montant fixe historique en DA
+    if (rub.valeur_defaut <= 100) {
+      return round2(salaireBaseReel * (rub.valeur_defaut / 100));
+    }
+    return Math.max(0, rub.valeur_defaut);
+  }
+  return Math.max(0, rub.valeur_defaut);
+}
 
 function formatDA(num: number, withSymbol: boolean = true): string {
   if (isNaN(num) || !isFinite(num)) return withSymbol ? "0,00 DA" : "0,00";
@@ -102,8 +126,8 @@ export default function CockpitClient({
   const [isFleetDrawerOpen, setIsFleetDrawerOpen] = useState<boolean>(false);
   const [isQuickSwitcherOpen, setIsQuickSwitcherOpen] = useState<boolean>(false);
 
-  // Onglet actif du Studio Collaborateur : variables | fixes | profil
-  const [activeTab, setActiveTab] = useState<"variables" | "fixes" | "profil">("variables");
+  // Onglet actif (pour la modale profil uniquement)
+  const [showProfilModal, setShowProfilModal] = useState<boolean>(false);
 
   const [selectedMonth, setSelectedMonth] = useState<number>(mois);
   const [selectedYear, setSelectedYear] = useState<number>(annee);
@@ -111,15 +135,6 @@ export default function CockpitClient({
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const { isOpen: isSidebarOpen, toggleSidebar } = useSidebar();
-
-  // Modale d'assignation de rubrique fixe
-  const [isAddFixedModalOpen, setIsAddFixedModalOpen] = useState<boolean>(false);
-  const [rubriqueSearch, setRubriqueSearch] = useState<string>("");
-  const [selectedRubriqueCode, setSelectedRubriqueCode] = useState<string>("");
-  const [customAmount, setCustomAmount] = useState<number>(5000);
-  const [fixedNombre, setFixedNombre] = useState<number>(22);
-  const [fixedTaux, setFixedTaux] = useState<number>(500);
-  const [fixedMode, setFixedMode] = useState<"montant" | "nombre_x_taux">("montant");
 
   // Le salarié actuellement affiché au centre
   const currentSalarie = useMemo(() => {
@@ -155,10 +170,14 @@ export default function CockpitClient({
   const currentBulletinCalc = useMemo(() => {
     if (!currentSalarie || !currentVariables) return null;
 
-    // Calcul de la somme des primes fixes cotisables du salarié
+    // Calcul du salaire de base réel (déduit des heures d'absences)
+    const retenueAbsence = calculerRetenueAbsence(currentVariables.heuresAbsence, currentSalarie.salaire_base_theorique);
+    const salaireBaseReel = Math.max(0, currentSalarie.salaire_base_theorique - retenueAbsence);
+
+    // Calcul de la somme des primes fixes cotisables du salarié (en DA ou % du base réel)
     const totalPrimesFixesCotisables = currentSalarie.rubriquesFixes
       .filter((r) => r.type_valeur === "Gain (+)" && r.cotisable === "OUI")
-      .reduce((acc, r) => acc + r.valeur_defaut, 0);
+      .reduce((acc, r) => acc + calculerMontantRubriqueFixe(r, salaireBaseReel), 0);
 
     // Primes variables cotisables du mois
     const totalPrimesVariablesCotisables = currentVariables.primesVariables
@@ -170,12 +189,12 @@ export default function CockpitClient({
     // Primes non cotisables mais imposables (ex: primes de véhicule, téléphone)
     const totalPrimesNonCotisablesImposables = currentSalarie.rubriquesFixes
       .filter((r) => r.type_valeur === "Gain (+)" && r.cotisable === "NON" && (r.imposable === "OUI" || r.imposable === "IRG"))
-      .reduce((acc, r) => acc + r.valeur_defaut, 0);
+      .reduce((acc, r) => acc + calculerMontantRubriqueFixe(r, salaireBaseReel), 0);
 
     // Retenues spécifiques fixes (ex: mutuelle)
     const totalRetenuesFixes = currentSalarie.rubriquesFixes
       .filter((r) => r.type_valeur === "Retenue (-)")
-      .reduce((acc, r) => acc + r.valeur_defaut, 0);
+      .reduce((acc, r) => acc + calculerMontantRubriqueFixe(r, salaireBaseReel), 0);
 
     const result = calculerBulletinComplet({
       salaireBase: currentSalarie.salaire_base_theorique,
@@ -240,7 +259,7 @@ export default function CockpitClient({
     return {
       total: salaries.length,
       valides: countValides,
-      pourcentage: Math.round((countValides / salaries.length) * 100),
+      pourcentage: salaries.length > 0 ? Math.round((countValides / salaries.length) * 100) : 0,
     };
   }, [salaries, variablesMap]);
 
@@ -277,7 +296,7 @@ export default function CockpitClient({
           [currentSalarie.id]: updatedVars,
         }));
 
-        await sauvegarderBulletinIndividuel(
+        const res = await sauvegarderBulletinIndividuel(
           currentSalarie.id,
           selectedYear,
           selectedMonth,
@@ -285,10 +304,14 @@ export default function CockpitClient({
           updatedVars
         );
 
-        setSaveNotice(`✅ Bulletin de ${currentSalarie.nom_prenom} validé et enregistré !`);
-        setTimeout(() => setSaveNotice(null), 3000);
+        if (res.success) {
+          setSaveNotice(`✅ Bulletin de ${currentSalarie.nom_prenom} validé et enregistré !`);
+        } else {
+          setSaveNotice(`❌ Erreur enregistrement : ${res.error || "Échec de sauvegarde"}`);
+        }
+        setTimeout(() => setSaveNotice(null), 3500);
 
-        if (passerAuSuivant) {
+        if (passerAuSuivant && res.success) {
           handleSelectNext();
         }
       } finally {
@@ -300,7 +323,7 @@ export default function CockpitClient({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isAddFixedModalOpen) return;
+      if (showProfilModal) return;
 
       const targetTag = (e.target as HTMLElement)?.tagName;
       const isInput = targetTag === "INPUT" || targetTag === "TEXTAREA" || targetTag === "SELECT";
@@ -334,7 +357,7 @@ export default function CockpitClient({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleSelectNext, handleSelectPrev, handleSaveCurrentBulletin, isAddFixedModalOpen]);
+  }, [handleSelectNext, handleSelectPrev, handleSaveCurrentBulletin, showProfilModal]);
 
   // ------------------------------------------------------------------
   // 3. ACTIONS DE MODIFICATION DIRECTE SUR LE SALARIÉ FOCUS
@@ -377,18 +400,22 @@ export default function CockpitClient({
     if (!currentSalarie) return;
     setIsSaving(true);
     try {
-      await sauvegarderProfilSalarie(currentSalarie.id, currentSalarie);
-      setSaveNotice(`✅ Profil de ${currentSalarie.nom_prenom} mis à jour avec succès !`);
-      setTimeout(() => setSaveNotice(null), 3000);
+      const res = await sauvegarderProfilSalarie(currentSalarie.id, currentSalarie);
+      if (res.success) {
+        setSaveNotice(`✅ Profil de ${currentSalarie.nom_prenom} mis à jour avec succès !`);
+      } else {
+        setSaveNotice(`❌ Erreur mise à jour profil : ${res.error || "Échec"}`);
+      }
+      setTimeout(() => setSaveNotice(null), 3500);
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Assigner une rubrique fixe
-  const handleConfirmAddFixed = async () => {
-    if (!currentSalarie || !selectedRubriqueCode) return;
-    const catItem = catalogue.find((c) => c.code === selectedRubriqueCode);
+  // Assigner une rubrique fixe (depuis FicheSaisieUnifiee)
+  const handleAssignerRubriquePermanente = async (rubrique: RubriqueLigne) => {
+    if (!currentSalarie) return;
+    const catItem = catalogue.find((c) => c.code === rubrique.code);
     if (!catItem) return;
 
     const newRubrique: RubriqueFixeAssignee = {
@@ -397,26 +424,39 @@ export default function CockpitClient({
       type_valeur: catItem.type_valeur,
       cotisable: catItem.cotisable,
       imposable: catItem.imposable,
-      valeur_defaut: customAmount,
+      valeur_defaut: rubrique.valeur1,
+      mode_calcul: rubrique.mode === "heures" ? "montant_fixe" : rubrique.mode as any,
     };
 
     setSalaries((prev) =>
       prev.map((s) => {
         if (s.id === currentSalarie.id) {
-          const filtered = s.rubriquesFixes.filter((r) => r.code !== selectedRubriqueCode);
-          return {
-            ...s,
-            rubriquesFixes: [...filtered, newRubrique],
-          };
+          const filtered = s.rubriquesFixes.filter((r) => r.code !== rubrique.code);
+          // Tri par code numérique après ajout
+          const updated = [...filtered, newRubrique].sort((a, b) => {
+            const na = parseInt(a.code.replace(/\D/g, ""), 10) || 0;
+            const nb = parseInt(b.code.replace(/\D/g, ""), 10) || 0;
+            return na - nb;
+          });
+          return { ...s, rubriquesFixes: updated };
         }
         return s;
       })
     );
 
-    await assignerRubriqueFixeSalarie(currentSalarie.id, catItem.code, customAmount);
-    setIsAddFixedModalOpen(false);
-    setSaveNotice(`📌 Rubrique ${catItem.code} attachée au poste de ${currentSalarie.nom_prenom}`);
-    setTimeout(() => setSaveNotice(null), 3000);
+    const res = await assignerRubriqueFixeSalarie(
+      currentSalarie.id,
+      catItem.code,
+      rubrique.valeur1,
+      rubrique.mode,
+      rubrique.valeur2
+    );
+    if (res.success) {
+      setSaveNotice(`📌 ${catItem.code} — ${catItem.libelle} attaché(e) au profil de ${currentSalarie.nom_prenom}`);
+    } else {
+      setSaveNotice(`❌ Erreur : ${res.error || "Échec assignation"}`);
+    }
+    setTimeout(() => setSaveNotice(null), 3500);
   };
 
   // Retirer une rubrique fixe
@@ -435,9 +475,13 @@ export default function CockpitClient({
       })
     );
 
-    await retirerRubriqueFixeSalarie(currentSalarie.id, code);
-    setSaveNotice(`🗑️ Rubrique ${code} retirée du poste.`);
-    setTimeout(() => setSaveNotice(null), 3000);
+    const res = await retirerRubriqueFixeSalarie(currentSalarie.id, code);
+    if (res.success) {
+      setSaveNotice(`🗑️ Rubrique ${code} retirée du poste.`);
+    } else {
+      setSaveNotice(`❌ Erreur retrait rubrique : ${res.error || "Échec"}`);
+    }
+    setTimeout(() => setSaveNotice(null), 3500);
   };
 
   // Mettre à jour le montant d'une rubrique fixe
@@ -469,6 +513,33 @@ export default function CockpitClient({
     );
   }, [catalogue, rubriqueSearch]);
 
+  if (salaries.length === 0) {
+    return (
+      <div className="flex flex-col min-h-[calc(100vh-140px)] items-center justify-center p-6 text-center animate-in fade-in-50 duration-200">
+        <div className="max-w-md w-full bg-white border border-[#E6E4DD] rounded-2xl p-8 shadow-xs flex flex-col items-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#E6F3EE] text-[#0D3B2E] flex items-center justify-center mb-4">
+            <Users className="w-7 h-7" />
+          </div>
+          <h2 className="text-xl font-bold text-[#111315] mb-2">Aucun collaborateur enregistré</h2>
+          <p className="text-sm text-[#5A6065] mb-6 leading-relaxed">
+            Pour préparer et calculer les bulletins de paie, vous devez avoir des salariés actifs enregistrés dans votre base de données.
+          </p>
+          <Link
+            href="/salaries/nouveau"
+            className="btn-fintech-primary w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold shadow-xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Ajouter votre premier salarié</span>
+          </Link>
+          <div className="mt-4 pt-4 border-t border-[#E6E4DD] w-full text-xs text-[#5A6065] flex items-center justify-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-[#0D3B2E]" />
+            <span>Moteur conforme Loi 90-11 & barème DGI</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-[calc(100vh-70px)] pb-8 relative">
       {/* ====================================================================
@@ -477,14 +548,14 @@ export default function CockpitClient({
       <header className="bg-white border border-[#E6E4DD] rounded-xl p-3.5 shadow-xs mb-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         {/* Navigation rapide entre collaborateurs */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Bouton pour ouvrir le tiroir des 200 salariés */}
+          {/* Bouton pour ouvrir le tiroir des collaborateurs */}
           <button
             onClick={() => setIsFleetDrawerOpen(true)}
             className="btn-fintech-secondary text-xs flex items-center gap-2 py-1.5 px-3 bg-[#F8F7F4] hover:bg-[#EEF4F0] hover:border-[#A7F3D0] transition-all cursor-pointer font-semibold"
-            title="Ouvrir la liste complète des 200 collaborateurs"
+            title="Ouvrir la liste complète des collaborateurs"
           >
             <Users className="w-3.5 h-3.5 text-[#0D3B2E]" />
-            <span>Flotte (200)</span>
+            <span>Effectif ({stats.total})</span>
             <span className="text-[10px] bg-[#E6F3EE] text-[#0D3B2E] px-1.5 py-0.2 rounded font-mono font-bold">
               {stats.valides}/{stats.total}
             </span>
@@ -646,532 +717,141 @@ export default function CockpitClient({
             VOLET 1 : LE STUDIO DU COLLABORATEUR (7 COLS = ~58%)
             ================================================================== */}
         <section className="lg:col-span-7 space-y-4">
-          {currentSalarie && currentVariables && (
-            <>
-              {/* Carte Principale du Collaborateur */}
-              <div className="bg-white border border-[#E6E4DD] rounded-xl p-5 shadow-xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E6E4DD]">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-13 h-13 rounded-xl bg-gradient-to-tr from-[#0D3B2E] to-[#1E5C49] text-white flex items-center justify-center font-black text-lg shadow-sm">
-                      {currentSalarie.nom_prenom.charAt(0)}
+          {currentSalarie && currentVariables ? (
+            <FicheSaisieUnifiee
+              salaireBaseTheorique={currentSalarie.salaire_base_theorique}
+              catalogue={catalogue}
+              rubriquesFixes={currentSalarie.rubriquesFixes}
+
+              hs50Init={currentVariables.hs50}
+              hs75Init={currentVariables.hs75}
+              hs100Init={currentVariables.hs100}
+
+              maladie_hInit={currentVariables.heuresAbsence}
+              miseAPied_hInit={0}
+              retards_hInit={0}
+              absenceIrreg_hInit={0}
+              accidentTravail_hInit={0}
+
+              joursPanierInit={currentVariables.joursPanier}
+              tauxPanierInit={currentVariables.tauxPanier}
+
+              onChangeSalaireBase={handleUpdateSalaireBase}
+              onChangeHS={(hs50, hs75, hs100) => {
+                handleVariableChange("hs50", hs50);
+                handleVariableChange("hs75", hs75);
+                handleVariableChange("hs100", hs100);
+              }}
+              onChangeAbsences={(total) => handleVariableChange("heuresAbsence", total)}
+              onChangePanier={(jours, taux) => {
+                handleVariableChange("joursPanier", jours);
+                handleVariableChange("tauxPanier", taux);
+              }}
+              onAssignerRubriquePermanente={handleAssignerRubriquePermanente}
+              onRetirerRubriquePermanente={async (code) => {
+                await handleRemoveFixedRubrique(code);
+              }}
+              onUpdateRubriquePermanente={(code, v1, v2) => {
+                handleUpdateFixedRubriqueAmount(code, v1);
+              }}
+
+              isSaving={isSaving}
+              onSave={handleSaveCurrentBulletin}
+              onOpenProfil={() => setShowProfilModal(true)}
+
+              nomSalarie={currentSalarie.nom_prenom}
+              matricule={currentSalarie.matricule}
+              fonction={currentSalarie.fonction}
+              statut={currentVariables.statut}
+            />
+          ) : null}
+
+          {/* Modale Profil RH (accessible via bouton dans FicheSaisieUnifiee) */}
+          {showProfilModal && currentSalarie && (
+            <div
+              className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-[#111315]/50 backdrop-blur-sm"
+              onClick={(e) => e.target === e.currentTarget && setShowProfilModal(false)}
+            >
+              <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-[#E6E4DD] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <div className="p-4 border-b border-[#E6E4DD] flex items-center justify-between bg-[#F8F7F4]">
+                  <div>
+                    <h3 className="text-sm font-black text-[#111315]">Fiche RH — {currentSalarie.nom_prenom}</h3>
+                    <p className="text-[11px] text-[#5A6065]">{currentSalarie.matricule} • {currentSalarie.type_contrat}</p>
+                  </div>
+                  <button onClick={() => setShowProfilModal(false)} className="p-1.5 rounded-lg text-[#5A6065] hover:bg-[#E6E4DD] transition-colors cursor-pointer">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <label className="text-[11px] font-bold text-[#111315] block mb-1">Fonction / Intitulé du Poste :</label>
+                      <input type="text" value={currentSalarie.fonction} onChange={(e) => handleProfileFieldChange("fonction", e.target.value)}
+                        className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-semibold text-xs outline-none focus:border-[#0D3B2E]" />
                     </div>
                     <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-lg font-black text-[#111315]">
-                          {currentSalarie.nom_prenom}
-                        </h2>
-                        <span className="font-mono text-xs font-bold px-2 py-0.5 bg-[#F2F0EC] border border-[#E6E4DD] rounded text-[#5A6065]">
-                          {currentSalarie.matricule}
-                        </span>
-                        <span
-                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
-                            currentVariables.statut === "Validé"
-                              ? "bg-[#D1FAE5] text-[#065F46] border-[#A7F3D0]"
-                              : "bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]"
-                          }`}
-                        >
-                          {currentVariables.statut}
-                        </span>
-                      </div>
-                      <p className="text-xs text-[#5A6065] mt-0.5">
-                        <span className="font-semibold text-[#111315]">{currentSalarie.fonction}</span> • Service {currentSalarie.departement} • Contrat {currentSalarie.type_contrat}
-                      </p>
+                      <label className="text-[11px] font-bold text-[#111315] block mb-1">Service / Département :</label>
+                      <input type="text" value={currentSalarie.departement} onChange={(e) => handleProfileFieldChange("departement", e.target.value)}
+                        className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-semibold text-xs outline-none focus:border-[#0D3B2E]" />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-[#111315] block mb-1">Type de Contrat :</label>
+                      <select value={currentSalarie.type_contrat} onChange={(e) => handleProfileFieldChange("type_contrat", e.target.value)}
+                        className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-semibold text-xs outline-none focus:border-[#0D3B2E]">
+                        <option value="CDI">CDI</option>
+                        <option value="CDD">CDD</option>
+                        <option value="Stage/CTA">Stage / CTA</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-[#111315] block mb-1">Situation Familiale :</label>
+                      <select value={currentSalarie.situation_familiale} onChange={(e) => handleProfileFieldChange("situation_familiale", e.target.value)}
+                        className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-semibold text-xs outline-none focus:border-[#0D3B2E]">
+                        <option value="Célibataire">Célibataire</option>
+                        <option value="Marié(e)">Marié(e)</option>
+                        <option value="Divorcé(e)">Divorcé(e)</option>
+                        <option value="Veuf(ve)">Veuf(ve)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-[#111315] block mb-1">Enfants à charge :</label>
+                      <input type="number" min="0" max="15" value={currentSalarie.enfants_a_charge}
+                        onChange={(e) => handleProfileFieldChange("enfants_a_charge", parseInt(e.target.value, 10) || 0)}
+                        className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-semibold text-xs outline-none focus:border-[#0D3B2E]" />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-[#111315] block mb-1">Régime Fiscal IRG :</label>
+                      <select value={currentSalarie.regime_irg} onChange={(e) => handleProfileFieldChange("regime_irg", e.target.value as any)}
+                        className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-semibold text-xs outline-none focus:border-[#0D3B2E]">
+                        <option value="general">Régime Général</option>
+                        <option value="particulier">Régime Particulier</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-[#111315] block mb-1">N° Sécurité Sociale :</label>
+                      <input type="text" value={currentSalarie.num_ss} onChange={(e) => handleProfileFieldChange("num_ss", e.target.value)}
+                        className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-mono text-xs outline-none focus:border-[#0D3B2E]" />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-[#111315] block mb-1">Compte / CCP / RIB :</label>
+                      <input type="text" value={currentSalarie.ccp_rib} onChange={(e) => handleProfileFieldChange("ccp_rib", e.target.value)}
+                        className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-mono text-xs outline-none focus:border-[#0D3B2E]" />
                     </div>
                   </div>
-
-                  {/* Boîte Salaire de Base Modifiable Directement */}
-                  <div className="bg-[#F8F7F4] border border-[#E6E4DD] rounded-xl p-3 flex flex-col items-end shrink-0 sm:min-w-[200px]">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#5A6065]">
-                      Salaire de Base (R030)
-                    </span>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <input
-                        type="number"
-                        step="500"
-                        min="0"
-                        value={currentSalarie.salaire_base_theorique}
-                        onChange={(e) => handleUpdateSalaireBase(parseFloat(e.target.value) || 0)}
-                        className="w-32 bg-white border border-[#E6E4DD] rounded px-2.5 py-1 text-right font-mono font-black text-base text-[#0D3B2E] outline-none focus:border-[#0D3B2E] focus:ring-1 focus:ring-[#0D3B2E]"
-                      />
-                      <span className="text-xs font-bold font-mono text-[#0D3B2E]">DA</span>
-                    </div>
-                    <span className="text-[10px] text-[#94A3B8] mt-0.5">
-                      Base légale 173,33h
-                    </span>
+                  <div className="pt-3 border-t border-[#E6E4DD] flex justify-end gap-3">
+                    <button onClick={() => setShowProfilModal(false)}
+                      className="px-4 py-2 text-xs font-semibold border border-[#E6E4DD] rounded-xl text-[#5A6065] hover:bg-[#F2F0EC] cursor-pointer">
+                      Fermer
+                    </button>
+                    <button onClick={async () => { await handleSaveProfile(); setShowProfilModal(false); }} disabled={isSaving}
+                      className="px-4 py-2 text-xs font-bold bg-[#0D3B2E] text-white rounded-xl hover:bg-[#0a3025] flex items-center gap-1.5 cursor-pointer disabled:opacity-60">
+                      <Save className="w-3.5 h-3.5" />
+                      Enregistrer le profil
+                    </button>
                   </div>
                 </div>
-
-                {/* Onglets de Navigation Spacieux */}
-                <div className="flex items-center gap-2 mt-4 pt-1 border-b border-[#E6E4DD]">
-                  <button
-                    onClick={() => setActiveTab("variables")}
-                    className={`pb-2.5 px-3 text-xs font-bold tracking-tight transition-all relative cursor-pointer flex items-center gap-1.5 ${
-                      activeTab === "variables"
-                        ? "text-[#0D3B2E] border-b-2 border-b-[#0D3B2E]"
-                        : "text-[#5A6065] hover:text-[#111315]"
-                    }`}
-                  >
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>Variables du Mois (Activité Réelle)</span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab("fixes")}
-                    className={`pb-2.5 px-3 text-xs font-bold tracking-tight transition-all relative cursor-pointer flex items-center gap-1.5 ${
-                      activeTab === "fixes"
-                        ? "text-[#0D3B2E] border-b-2 border-b-[#0D3B2E]"
-                        : "text-[#5A6065] hover:text-[#111315]"
-                    }`}
-                  >
-                    <Building2 className="w-3.5 h-3.5" />
-                    <span>Rubriques Fixes du Poste ({currentSalarie.rubriquesFixes.length})</span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab("profil")}
-                    className={`pb-2.5 px-3 text-xs font-bold tracking-tight transition-all relative cursor-pointer flex items-center gap-1.5 ${
-                      activeTab === "profil"
-                        ? "text-[#0D3B2E] border-b-2 border-b-[#0D3B2E]"
-                        : "text-[#5A6065] hover:text-[#111315]"
-                    }`}
-                  >
-                    <User className="w-3.5 h-3.5" />
-                    <span>Fiche & Paramètres RH</span>
-                  </button>
-                </div>
-
-                {/* ==============================================================
-                    CONTENU DE L'ONGLET 1 : VARIABLES DU MOIS (ACTIVITÉ RÉELLE)
-                    ============================================================== */}
-                {activeTab === "variables" && (
-                  <div className="pt-4 space-y-4">
-                    {/* Absences Loi 90-11 */}
-                    <div className="p-3.5 rounded-xl bg-[#F8F7F4] border border-[#E6E4DD] space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="w-4 h-4 text-[#991B1B]" />
-                          <span className="text-xs font-bold text-[#111315]">
-                            Absences Déductibles (Loi 90-11)
-                          </span>
-                        </div>
-                        <span className="text-xs font-mono font-bold text-[#991B1B]">
-                          - {formatDA(currentBulletinCalc?.retenueAbsence || 0)}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
-                        <div>
-                          <label className="text-[11px] text-[#5A6065] block mb-1">
-                            Heures d'absence ce mois :
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              step="0.5"
-                              min="0"
-                              max="173.33"
-                              value={currentVariables.heuresAbsence === 0 ? "" : currentVariables.heuresAbsence}
-                              placeholder="0"
-                              onChange={(e) =>
-                                handleVariableChange("heuresAbsence", parseFloat(e.target.value) || 0)
-                              }
-                              className="w-full bg-white border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
-                            />
-                            <span className="text-xs text-[#5A6065] font-mono">h</span>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="text-[11px] text-[#5A6065] block mb-1">
-                            Heures rémunérées résultantes :
-                          </label>
-                          <div className="bg-white border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-mono text-xs text-[#111315] font-semibold">
-                            {currentBulletinCalc?.heuresTravaillees} h / 173,33h
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Heures Supplémentaires */}
-                    <div className="p-3.5 rounded-xl bg-[#F8F7F4] border border-[#E6E4DD] space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <Plus className="w-4 h-4 text-[#0D3B2E]" />
-                          <span className="text-xs font-bold text-[#111315]">
-                            Heures Supplémentaires (Loi 90-11)
-                          </span>
-                        </div>
-                        <span className="text-xs font-mono font-bold text-[#0D3B2E]">
-                          + {formatDA(currentBulletinCalc?.totalHeuresSup || 0)}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-3 text-xs pt-1">
-                        <div>
-                          <label className="text-[11px] text-[#5A6065] block mb-1">HS +50% (P1) :</label>
-                          <input
-                            type="number"
-                            step="1"
-                            min="0"
-                            value={currentVariables.hs50 === 0 ? "" : currentVariables.hs50}
-                            placeholder="0"
-                            onChange={(e) =>
-                              handleVariableChange("hs50", parseFloat(e.target.value) || 0)
-                            }
-                            className="w-full bg-white border border-[#E6E4DD] rounded-lg px-3 py-1.5 text-center font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[11px] text-[#5A6065] block mb-1">HS +75% (P2) :</label>
-                          <input
-                            type="number"
-                            step="1"
-                            min="0"
-                            value={currentVariables.hs75 === 0 ? "" : currentVariables.hs75}
-                            placeholder="0"
-                            onChange={(e) =>
-                              handleVariableChange("hs75", parseFloat(e.target.value) || 0)
-                            }
-                            className="w-full bg-white border border-[#E6E4DD] rounded-lg px-3 py-1.5 text-center font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[11px] text-[#5A6065] block mb-1">HS +100% (P3) :</label>
-                          <input
-                            type="number"
-                            step="1"
-                            min="0"
-                            value={currentVariables.hs100 === 0 ? "" : currentVariables.hs100}
-                            placeholder="0"
-                            onChange={(e) =>
-                              handleVariableChange("hs100", parseFloat(e.target.value) || 0)
-                            }
-                            className="w-full bg-white border border-[#E6E4DD] rounded-lg px-3 py-1.5 text-center font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Panier & Transport */}
-                    <div className="p-3.5 rounded-xl bg-[#F8F7F4] border border-[#E6E4DD] space-y-2">
-                      <span className="text-xs font-bold text-[#111315]">
-                        Paniers & Transports du Mois (Hors Assiette CNAS)
-                      </span>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <label className="text-[11px] text-[#5A6065] block">
-                              Indemnité de Panier (Nombre × Taux) :
-                            </label>
-                            <span className="font-mono text-[11px] font-bold text-[#0D3B2E]">
-                              = {formatDA((currentVariables.joursPanier || 0) * (currentVariables.tauxPanier || 500))}
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <span className="text-[10px] text-[#94A3B8] block mb-0.5">Nombre (jours / paniers)</span>
-                              <div className="flex items-center gap-1.5">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  max="31"
-                                  value={currentVariables.joursPanier}
-                                  onChange={(e) =>
-                                    handleVariableChange("joursPanier", parseInt(e.target.value, 10) || 0)
-                                  }
-                                  className="w-full bg-white border border-[#E6E4DD] rounded-lg px-2.5 py-1.5 font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
-                                />
-                                <span className="text-[11px] font-mono text-[#5A6065]">j</span>
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-[10px] text-[#94A3B8] block mb-0.5">Taux unitaire du panier</span>
-                              <div className="flex items-center gap-1.5">
-                                <input
-                                  type="number"
-                                  step="50"
-                                  min="0"
-                                  value={currentVariables.tauxPanier || 500}
-                                  onChange={(e) =>
-                                    handleVariableChange("tauxPanier", parseFloat(e.target.value) || 0)
-                                  }
-                                  className="w-full bg-white border border-[#E6E4DD] rounded-lg px-2.5 py-1.5 font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
-                                />
-                                <span className="text-[11px] font-mono text-[#5A6065]">DA</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="text-[11px] text-[#5A6065] block mb-1">
-                            Forfait Transport conventionnel :
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              step="100"
-                              min="0"
-                              value={currentVariables.forfaitTransport}
-                              onChange={(e) =>
-                                handleVariableChange("forfaitTransport", parseFloat(e.target.value) || 0)
-                              }
-                              className="w-full bg-white border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
-                            />
-                            <span className="text-xs font-mono text-[#5A6065]">DA</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Acomptes & Avances */}
-                    <div className="p-3.5 rounded-xl bg-[#FEF3C7]/40 border border-[#FDE68A] flex items-center justify-between gap-4">
-                      <div>
-                        <span className="text-xs font-bold text-[#92400E] block">
-                          Acomptes & Avances sur Salaire à Déduire
-                        </span>
-                        <span className="text-[10px] text-[#92400E]/80">
-                          Précompté directement sur le Net à Payer
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <input
-                          type="number"
-                          step="1000"
-                          min="0"
-                          value={currentVariables.avancesAcomptes === 0 ? "" : currentVariables.avancesAcomptes}
-                          placeholder="0"
-                          onChange={(e) =>
-                            handleVariableChange("avancesAcomptes", parseFloat(e.target.value) || 0)
-                          }
-                          className="w-28 bg-white border border-[#E6E4DD] rounded-lg px-3 py-1.5 text-right font-mono font-black text-xs text-[#991B1B] outline-none focus:border-[#0D3B2E]"
-                        />
-                        <span className="text-xs font-bold font-mono text-[#92400E]">DA</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* ==============================================================
-                    CONTENU DE L'ONGLET 2 : RUBRIQUES FIXES DU POSTE
-                    ============================================================== */}
-                {activeTab === "fixes" && (
-                  <div className="pt-4 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-[#5A6065]">
-                        Primes et indemnités contractuelles permanentes attachées à ce poste.
-                      </p>
-                      <button
-                        onClick={() => {
-                          setIsAddFixedModalOpen(true);
-                          setRubriqueSearch("");
-                          setSelectedRubriqueCode(catalogue[0]?.code || "R200");
-                          setCustomAmount(5000);
-                        }}
-                        className="btn-fintech-primary text-xs flex items-center gap-1.5 py-1.5 px-3"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Assigner une rubrique fixe</span>
-                      </button>
-                    </div>
-
-                    {/* Liste des rubriques fixes */}
-                    <div className="space-y-2">
-                      {currentSalarie.rubriquesFixes.map((rub) => (
-                        <div
-                          key={rub.code}
-                          className="p-3 rounded-xl bg-white border border-[#E6E4DD] hover:border-[#CBD5E1] transition-all flex items-center justify-between gap-3 shadow-2xs"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <span className="font-mono text-xs font-bold text-[#0D3B2E] bg-[#E6F3EE] px-2 py-0.5 rounded border border-[#A7F3D0]">
-                              {rub.code}
-                            </span>
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-xs font-bold text-[#111315] truncate">
-                                {rub.libelle}
-                              </span>
-                              <span className="text-[10px] text-[#94A3B8]">
-                                {rub.cotisable === "OUI" ? "Cotisable CNAS" : "Non Cotisable"} •{" "}
-                                {rub.imposable === "OUI" || rub.imposable === "IRG" ? "Imposable IRG" : "Exonéré"}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            <input
-                              type="number"
-                              step="500"
-                              min="0"
-                              value={rub.valeur_defaut}
-                              onChange={(e) =>
-                                handleUpdateFixedRubriqueAmount(rub.code, parseFloat(e.target.value) || 0)
-                              }
-                              className="w-24 bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-2.5 py-1 text-right font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
-                            />
-                            <span className="text-xs font-mono text-[#5A6065]">DA</span>
-
-                            <button
-                              onClick={() => handleRemoveFixedRubrique(rub.code)}
-                              className="p-1.5 text-[#94A3B8] hover:text-[#991B1B] hover:bg-[#FEE2E2] rounded-lg transition-colors cursor-pointer"
-                              title="Détacher cette rubrique fixe de ce collaborateur"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-
-                      {currentSalarie.rubriquesFixes.length === 0 && (
-                        <div className="p-6 text-center text-xs text-[#94A3B8] border border-dashed border-[#E6E4DD] rounded-xl bg-[#F8F7F4]">
-                          Aucune rubrique fixe contractuelle attachée à ce collaborateur.
-                          <br />
-                          Cliquez sur "+ Assigner une rubrique fixe" pour en ajouter une parmi le catalogue 402.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* ==============================================================
-                    CONTENU DE L'ONGLET 3 : FICHE & INFOS PERSONNELLES DU COLLABORATEUR
-                    ============================================================== */}
-                {activeTab === "profil" && (
-                  <div className="pt-4 space-y-4">
-                    <p className="text-xs text-[#5A6065]">
-                      Mettez à jour les informations administratives, contractuelles et fiscales de ce collaborateur.
-                    </p>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                      {/* Intitulé du Poste */}
-                      <div>
-                        <label className="text-[11px] font-bold text-[#111315] block mb-1">
-                          Fonction / Intitulé du Poste :
-                        </label>
-                        <input
-                          type="text"
-                          value={currentSalarie.fonction}
-                          onChange={(e) => handleProfileFieldChange("fonction", e.target.value)}
-                          className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-semibold text-xs outline-none focus:border-[#0D3B2E]"
-                        />
-                      </div>
-
-                      {/* Service / Département */}
-                      <div>
-                        <label className="text-[11px] font-bold text-[#111315] block mb-1">
-                          Service / Département :
-                        </label>
-                        <input
-                          type="text"
-                          value={currentSalarie.departement}
-                          onChange={(e) => handleProfileFieldChange("departement", e.target.value)}
-                          className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-semibold text-xs outline-none focus:border-[#0D3B2E]"
-                        />
-                      </div>
-
-                      {/* Type de contrat */}
-                      <div>
-                        <label className="text-[11px] font-bold text-[#111315] block mb-1">
-                          Type de Contrat :
-                        </label>
-                        <select
-                          value={currentSalarie.type_contrat}
-                          onChange={(e) => handleProfileFieldChange("type_contrat", e.target.value)}
-                          className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-semibold text-xs outline-none focus:border-[#0D3B2E]"
-                        >
-                          <option value="CDI">CDI (Contrat à Durée Indéterminée)</option>
-                          <option value="CDD">CDD (Contrat à Durée Déterminée)</option>
-                          <option value="Stage/CTA">Stage / CTA</option>
-                        </select>
-                      </div>
-
-                      {/* Situation Familiale */}
-                      <div>
-                        <label className="text-[11px] font-bold text-[#111315] block mb-1">
-                          Situation Familiale :
-                        </label>
-                        <select
-                          value={currentSalarie.situation_familiale}
-                          onChange={(e) => handleProfileFieldChange("situation_familiale", e.target.value)}
-                          className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-semibold text-xs outline-none focus:border-[#0D3B2E]"
-                        >
-                          <option value="Célibataire">Célibataire</option>
-                          <option value="Marié(e)">Marié(e)</option>
-                          <option value="Divorcé(e)">Divorcé(e)</option>
-                          <option value="Veuf(ve)">Veuf(ve)</option>
-                        </select>
-                      </div>
-
-                      {/* Enfants à charge */}
-                      <div>
-                        <label className="text-[11px] font-bold text-[#111315] block mb-1">
-                          Enfants à charge :
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="15"
-                          value={currentSalarie.enfants_a_charge}
-                          onChange={(e) =>
-                            handleProfileFieldChange("enfants_a_charge", parseInt(e.target.value, 10) || 0)
-                          }
-                          className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-semibold text-xs outline-none focus:border-[#0D3B2E]"
-                        />
-                      </div>
-
-                      {/* Régime IRG */}
-                      <div>
-                        <label className="text-[11px] font-bold text-[#111315] block mb-1">
-                          Régime Fiscal IRG (Barème 2022) :
-                        </label>
-                        <select
-                          value={currentSalarie.regime_irg}
-                          onChange={(e) => handleProfileFieldChange("regime_irg", e.target.value as any)}
-                          className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-semibold text-xs outline-none focus:border-[#0D3B2E]"
-                        >
-                          <option value="general">Régime Général (Abattement 137/51)</option>
-                          <option value="particulier">Régime Particulier (Abattement 93/61 - Handicapé/Moudjahid)</option>
-                        </select>
-                      </div>
-
-                      {/* N° Sécurité Sociale */}
-                      <div>
-                        <label className="text-[11px] font-bold text-[#111315] block mb-1">
-                          N° Sécurité Sociale (CNAS) :
-                        </label>
-                        <input
-                          type="text"
-                          value={currentSalarie.num_ss}
-                          onChange={(e) => handleProfileFieldChange("num_ss", e.target.value)}
-                          className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-mono text-xs outline-none focus:border-[#0D3B2E]"
-                        />
-                      </div>
-
-                      {/* Compte Bancaire / CCP */}
-                      <div>
-                        <label className="text-[11px] font-bold text-[#111315] block mb-1">
-                          Numéro de Compte / CCP / RIB :
-                        </label>
-                        <input
-                          type="text"
-                          value={currentSalarie.ccp_rib}
-                          onChange={(e) => handleProfileFieldChange("ccp_rib", e.target.value)}
-                          className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-mono text-xs outline-none focus:border-[#0D3B2E]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="pt-3 border-t border-[#E6E4DD] flex justify-end">
-                      <button
-                        onClick={handleSaveProfile}
-                        disabled={isSaving}
-                        className="btn-fintech-primary text-xs flex items-center gap-1.5 py-2 px-4 cursor-pointer"
-                      >
-                        <Save className="w-3.5 h-3.5" />
-                        <span>Enregistrer les modifications du profil</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
-            </>
+            </div>
           )}
         </section>
 
@@ -1248,19 +928,31 @@ export default function CockpitClient({
                     )}
 
                     {/* Rubriques fixes du poste */}
-                    {currentSalarie.rubriquesFixes
-                      .filter((r) => r.type_valeur === "Gain (+)")
-                      .map((r) => (
-                        <tr key={r.code}>
-                          <td className="py-1 px-2.5 font-sans truncate max-w-[150px]">
-                            {r.code} {r.libelle}
-                          </td>
-                          <td className="py-1 px-2.5 text-right text-[#111315]">
-                            {formatDA(r.valeur_defaut, false)}
-                          </td>
-                          <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
-                        </tr>
-                      ))}
+                    {(() => {
+                      const retenueAbs = currentVariables
+                        ? calculerRetenueAbsence(currentVariables.heuresAbsence, currentSalarie.salaire_base_theorique)
+                        : 0;
+                      const baseReel = Math.max(0, currentSalarie.salaire_base_theorique - retenueAbs);
+
+                      return currentSalarie.rubriquesFixes
+                        .filter((r) => r.type_valeur === "Gain (+)")
+                        .map((r) => {
+                          const mode = r.mode_calcul || detecterModeRubrique(r.code, r.libelle);
+                          const isPct = mode === "pourcentage" && r.valeur_defaut <= 100;
+                          const montant = calculerMontantRubriqueFixe(r, baseReel);
+                          return (
+                            <tr key={r.code}>
+                              <td className="py-1 px-2.5 font-sans truncate max-w-[150px]">
+                                {r.code} {r.libelle} {isPct ? `(${r.valeur_defaut}%)` : ""}
+                              </td>
+                              <td className="py-1 px-2.5 text-right text-[#111315]">
+                                {formatDA(montant, false)}
+                              </td>
+                              <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                            </tr>
+                          );
+                        });
+                    })()}
 
                     {/* Heures sup */}
                     {currentBulletinCalc.totalHeuresSup > 0 && (
@@ -1333,6 +1025,33 @@ export default function CockpitClient({
                         {formatDA(currentBulletinCalc.irgRetenu, false)}
                       </td>
                     </tr>
+
+                    {/* Retenues spécifiques fixes (ex: Mutuelle) */}
+                    {(() => {
+                      const retenueAbs = currentVariables
+                        ? calculerRetenueAbsence(currentVariables.heuresAbsence, currentSalarie.salaire_base_theorique)
+                        : 0;
+                      const baseReel = Math.max(0, currentSalarie.salaire_base_theorique - retenueAbs);
+
+                      return currentSalarie.rubriquesFixes
+                        .filter((r) => r.type_valeur === "Retenue (-)")
+                        .map((r) => {
+                          const mode = r.mode_calcul || detecterModeRubrique(r.code, r.libelle);
+                          const isPct = mode === "pourcentage" && r.valeur_defaut <= 100;
+                          const montant = calculerMontantRubriqueFixe(r, baseReel);
+                          return (
+                            <tr key={r.code} className="text-[#991B1B]">
+                              <td className="py-1 px-2.5 font-sans truncate max-w-[150px]">
+                                {r.code} {r.libelle} {isPct ? `(${r.valeur_defaut}%)` : ""}
+                              </td>
+                              <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                              <td className="py-1 px-2.5 text-right font-semibold text-[#991B1B]">
+                                {formatDA(montant, false)}
+                              </td>
+                            </tr>
+                          );
+                        });
+                    })()}
 
                     {/* Acomptes */}
                     {currentVariables.avancesAcomptes > 0 && (
@@ -1657,205 +1376,6 @@ export default function CockpitClient({
         </div>
       )}
 
-      {/* ====================================================================
-          MODALE D'ASSIGNATION DE RUBRIQUE FIXE AU POSTE
-          ==================================================================== */}
-      {isAddFixedModalOpen && currentSalarie && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="fixed inset-0 bg-[#111315]/40 backdrop-blur-xs"
-            onClick={() => setIsAddFixedModalOpen(false)}
-          />
-          <div className="relative bg-white rounded-xl border border-[#E6E4DD] shadow-2xl max-w-lg w-full p-5 space-y-4 z-10 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E6E4DD]">
-              <div>
-                <h3 className="text-sm font-bold text-[#111315]">
-                  Assigner une Rubrique Fixe à {currentSalarie.nom_prenom}
-                </h3>
-                <span className="text-xs text-[#5A6065]">
-                  Poste : {currentSalarie.fonction} • Service {currentSalarie.departement}
-                </span>
-              </div>
-              <button
-                onClick={() => setIsAddFixedModalOpen(false)}
-                className="p-1 text-[#5A6065] hover:text-[#111315]"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Recherche dans le catalogue 402 */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-[#111315]">
-                Sélectionner parmi le catalogue officiel :
-              </label>
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
-                <input
-                  type="text"
-                  placeholder="Rechercher par code (R200, R202...) ou libellé (Nuisance, Astreinte...)"
-                  value={rubriqueSearch}
-                  onChange={(e) => setRubriqueSearch(e.target.value)}
-                  className="w-full bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg pl-8 pr-2.5 py-1.5 text-xs outline-none focus:border-[#0D3B2E]"
-                />
-              </div>
-
-              {/* Liste de choix */}
-              <div className="max-h-48 overflow-y-auto border border-[#E6E4DD] rounded-lg divide-y divide-[#E6E4DD] text-xs">
-                {filteredCatalogue.map((cat) => (
-                  <div
-                    key={cat.code}
-                    onClick={() => {
-                      setSelectedRubriqueCode(cat.code);
-                      const isNombreTaux = cat.categorie === "nombre_x_taux" || cat.code.startsWith("R52");
-                      if (isNombreTaux) {
-                        setFixedMode("nombre_x_taux");
-                        setFixedNombre(22);
-                        setFixedTaux(500);
-                        setCustomAmount(22 * 500);
-                      } else {
-                        setFixedMode("montant");
-                        setCustomAmount(5000);
-                      }
-                    }}
-                    className={`p-2.5 cursor-pointer flex items-center justify-between transition-colors ${
-                      selectedRubriqueCode === cat.code
-                        ? "bg-[#EEF4F0] font-semibold text-[#0D3B2E]"
-                        : "hover:bg-[#F8FAF9] text-[#111315]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-[#0D3B2E]">{cat.code}</span>
-                      <span>{cat.libelle}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {(cat.categorie === "nombre_x_taux" || cat.code.startsWith("R52")) && (
-                        <span className="text-[9px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded font-semibold">
-                          Nombre × Taux
-                        </span>
-                      )}
-                      <span className="text-[10px] text-[#94A3B8]">
-                        {cat.cotisable === "OUI" ? "CNAS" : "Non cotisable"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Saisie du montant : Mode Nombre x Taux OU Montant Fixe */}
-            {fixedMode === "nombre_x_taux" ? (
-              <div className="space-y-2 pt-2 border-t border-[#E6E4DD]">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-[#111315]">
-                    Saisie Nombre × Taux (ex: 22 paniers × 500 DA) :
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setFixedMode("montant")}
-                    className="text-[10px] text-[#0D3B2E] font-medium hover:underline cursor-pointer"
-                  >
-                    Passer en Montant Fixe direct
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[11px] text-[#5A6065] block mb-1">Nombre / Quantité :</label>
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={fixedNombre}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value) || 0;
-                          setFixedNombre(val);
-                          setCustomAmount(val * fixedTaux);
-                        }}
-                        placeholder="22"
-                        className="w-full bg-white border border-[#E6E4DD] rounded-lg px-2.5 py-1.5 font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
-                      />
-                      <span className="text-xs text-[#5A6065]">unités</span>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-[#5A6065] block mb-1">Taux unitaire (DA) :</label>
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="number"
-                        min="0"
-                        step="50"
-                        value={fixedTaux}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value) || 0;
-                          setFixedTaux(val);
-                          setCustomAmount(fixedNombre * val);
-                        }}
-                        placeholder="500"
-                        className="w-full bg-white border border-[#E6E4DD] rounded-lg px-2.5 py-1.5 font-mono font-bold text-xs outline-none focus:border-[#0D3B2E]"
-                      />
-                      <span className="text-xs text-[#5A6065] font-mono">DA</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-[#E6F3EE] border border-[#A7F3D0] flex items-center justify-between text-xs">
-                  <span className="text-[#0D3B2E] font-medium">Montant mensuel total calculé :</span>
-                  <span className="font-mono font-bold text-[#0D3B2E]">
-                    {fixedNombre} × {formatDA(fixedTaux, false)} = {formatDA(customAmount)}
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-1.5 pt-2 border-t border-[#E6E4DD]">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-[#111315]">
-                    Montant mensuel fixe (DA) :
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFixedMode("nombre_x_taux");
-                      setFixedNombre(22);
-                      setFixedTaux(500);
-                      setCustomAmount(22 * 500);
-                    }}
-                    className="text-[10px] text-[#0D3B2E] font-medium hover:underline cursor-pointer"
-                  >
-                    Passer en Nombre × Taux
-                  </button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    step="500"
-                    min="0"
-                    value={customAmount}
-                    onChange={(e) => setCustomAmount(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-white border border-[#E6E4DD] rounded-lg px-3 py-1.5 font-mono font-bold text-sm text-[#111315] outline-none focus:border-[#0D3B2E]"
-                  />
-                  <span className="text-xs text-[#5A6065] font-mono">DA</span>
-                </div>
-              </div>
-            )}
-
-            {/* Boutons d'action modale */}
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6E4DD]">
-              <button
-                onClick={() => setIsAddFixedModalOpen(false)}
-                className="btn-fintech-secondary text-xs"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleConfirmAddFixed}
-                className="btn-fintech-primary text-xs"
-              >
-                Confirmer l'assignation au poste
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

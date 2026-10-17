@@ -404,25 +404,43 @@ export default function RubriquesForm({
                             </div>
                           </div>
                         ) : (
-                          <input
-                            type="number"
-                            step="0.01"
-                            name={`defaut_${r.code}`}
-                            defaultValue={valeursDefautInitiales.get(r.code) ?? 0}
-                            placeholder={
-                              r.categorie === "pourcentage"
-                                ? "Taux (%)"
-                                : "Montant (DA)"
-                            }
-                            style={{
-                              width: "100%",
-                              padding: "6px 10px",
-                              borderRadius: "var(--rsm)",
-                              border: "1px solid var(--border)",
-                              fontSize: "var(--txs)",
-                              background: estCoche ? "var(--surface)" : "var(--surface-2)",
-                            }}
-                          />
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <input
+                              type="number"
+                              step={r.categorie === "pourcentage" ? "0.5" : "500"}
+                              min="0"
+                              max={r.categorie === "pourcentage" ? "100" : undefined}
+                              name={`defaut_${r.code}`}
+                              defaultValue={valeursDefautInitiales.get(r.code) ?? 0}
+                              placeholder={
+                                r.categorie === "pourcentage"
+                                  ? "10"
+                                  : "5000"
+                              }
+                              style={{
+                                width: "100%",
+                                padding: "6px 10px",
+                                borderRadius: "var(--rsm)",
+                                border: "1px solid var(--border)",
+                                fontSize: "var(--txs)",
+                                fontFamily: "var(--mono)",
+                                fontWeight: 650,
+                                textAlign: "right",
+                                background: estCoche ? "var(--surface)" : "var(--surface-2)",
+                              }}
+                            />
+                            <span
+                              style={{
+                                fontSize: "11px",
+                                fontFamily: "var(--mono)",
+                                fontWeight: 700,
+                                color: r.categorie === "pourcentage" ? "var(--teal)" : "var(--text-muted)",
+                                minWidth: 24,
+                              }}
+                            >
+                              {r.categorie === "pourcentage" ? "%" : "DA"}
+                            </span>
+                          </div>
                         )}
                       </div>
                     </td>
