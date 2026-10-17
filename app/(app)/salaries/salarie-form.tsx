@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Tabs } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { User, Briefcase, CreditCard, AlertTriangle, Save, X } from "lucide-react";
+import { User, Briefcase, CreditCard, AlertTriangle, Save, X, Trash2 } from "lucide-react";
+import { supprimerSalarieDefinitif } from "./actions";
 
 interface SalarieFormProps {
   initialData?: {
@@ -73,6 +74,28 @@ export default function SalarieForm({ initialData, actionSubmit, buttonText }: S
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Une erreur est survenue.");
+      }
+    });
+  }
+
+  async function handleSupprimer() {
+    if (!initialData?.id) return;
+    const confirmation = window.confirm(
+      `Êtes-vous sûr de vouloir supprimer définitivement le collaborateur "${initialData.nom_prenom}" ?\n\nAttention : Cette action est irréversible. Tous ses bulletins de paie, contrats et documents associés seront supprimés.`
+    );
+    if (!confirmation) return;
+
+    startTransition(async () => {
+      try {
+        const res = await supprimerSalarieDefinitif(initialData.id!);
+        if (res && !res.success) {
+          setError(res.error || "Une erreur est survenue.");
+        } else {
+          router.push("/salaries");
+          router.refresh();
+        }
+      } catch (err: any) {
+        setError(err?.message || "Impossible de supprimer ce collaborateur.");
       }
     });
   }
@@ -208,23 +231,37 @@ export default function SalarieForm({ initialData, actionSubmit, buttonText }: S
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-3 pt-6 border-t border-[#E2E8F0]">
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={isPending}
-          className="gap-2 px-6"
-        >
-          <Save className="w-4 h-4 text-white" /> {isPending ? "Enregistrement…" : buttonText}
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => router.back()}
-          className="gap-2"
-        >
-          <X className="w-4 h-4" /> Annuler
-        </Button>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6 border-t border-[#E2E8F0]">
+        <div className="flex items-center gap-3">
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={isPending}
+            className="gap-2 px-6"
+          >
+            <Save className="w-4 h-4 text-white" /> {isPending ? "Enregistrement…" : buttonText}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => router.back()}
+            className="gap-2"
+          >
+            <X className="w-4 h-4" /> Annuler
+          </Button>
+        </div>
+
+        {initialData?.id && (
+          <Button
+            type="button"
+            variant="danger-outline"
+            onClick={handleSupprimer}
+            disabled={isPending}
+            className="gap-2"
+          >
+            <Trash2 className="w-4 h-4" /> Supprimer définitivement ce collaborateur
+          </Button>
+        )}
       </div>
     </form>
   );

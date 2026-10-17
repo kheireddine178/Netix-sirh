@@ -16,8 +16,10 @@ import {
   Download,
   AlertCircle,
   CheckCircle2,
+  Trash2,
 } from "lucide-react";
 import type { Salarie } from "./actions";
+import { supprimerSalarieDefinitif } from "./actions";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Badge } from "@/components/ui/Badge";
@@ -44,22 +46,51 @@ export default function SalariesViewClient({
   status: initialStatus,
 }: SalariesViewClientProps) {
   const router = useRouter();
+  const [salariesList, setSalariesList] = useState<Salarie[]>(salaries);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  React.useEffect(() => {
+    setSalariesList(salaries);
+  }, [salaries]);
+
   const [activeTab, setActiveTab] = useState(initialStatus === "all" ? "all" : initialStatus === "inactive" ? "inactive" : "active");
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
 
+  const handleSupprimer = async (s: Salarie) => {
+    const confirmation = window.confirm(
+      `Êtes-vous sûr de vouloir supprimer définitivement le collaborateur "${s.nom_prenom}" ?\n\nAttention : Cette action est irréversible. Tous ses bulletins de paie, contrats et documents associés seront également supprimés.`
+    );
+    if (!confirmation) return;
+
+    setDeletingId(s.id);
+    try {
+      const res = await supprimerSalarieDefinitif(s.id);
+      if (res && !res.success) {
+        alert("Erreur lors de la suppression : " + (res.error || "Une erreur est survenue"));
+      } else {
+        setSalariesList((prev) => prev.filter((item) => item.id !== s.id));
+        router.refresh();
+      }
+    } catch (err: any) {
+      alert("Erreur : " + (err?.message || "Impossible de supprimer ce collaborateur"));
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   // Filtrage selon onglet de statut
   const filteredSalaries = useMemo(() => {
-    if (activeTab === "active") return salaries.filter((s) => s.actif);
-    if (activeTab === "inactive") return salaries.filter((s) => !s.actif);
-    return salaries;
-  }, [salaries, activeTab]);
+    if (activeTab === "active") return salariesList.filter((s) => s.actif);
+    if (activeTab === "inactive") return salariesList.filter((s) => !s.actif);
+    return salariesList;
+  }, [salariesList, activeTab]);
 
-  const countActifs = salaries.filter((s) => s.actif).length;
-  const countInactifs = salaries.filter((s) => !s.actif).length;
+  const countActifs = salariesList.filter((s) => s.actif).length;
+  const countInactifs = salariesList.filter((s) => !s.actif).length;
 
   const tabItems = [
     { id: "active", label: "Collaborateurs Actifs", badge: countActifs },
-    { id: "all", label: "Tous les Dossiers", badge: salaries.length },
+    { id: "all", label: "Tous les Dossiers", badge: salariesList.length },
     { id: "inactive", label: "Inactifs / Sortis", badge: countInactifs },
   ];
 
@@ -143,16 +174,26 @@ export default function SalariesViewClient({
     },
     {
       key: "actions",
-      header: "Dossier",
+      header: "Actions",
       align: "right",
       sortable: false,
       render: (s) => (
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
           <Button variant="secondary" size="sm">
             <Link href={`/salaries/${s.id}`} className="flex items-center gap-1.5 text-xs font-semibold">
               <Eye className="w-3.5 h-3.5" />
               <span>Consulter</span>
             </Link>
+          </Button>
+          <Button
+            variant="danger-outline"
+            size="sm"
+            onClick={() => handleSupprimer(s)}
+            loading={deletingId === s.id}
+            title="Supprimer définitivement ce collaborateur"
+            className="px-2"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
           </Button>
         </div>
       ),
@@ -284,9 +325,24 @@ export default function SalariesViewClient({
                     >
                       Calculer la paie
                     </Link>
-                    <Button variant="secondary" size="sm" href={`/salaries/${s.id}`}>
-                      Dossier complet
-                    </Button>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        variant="danger-outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSupprimer(s);
+                        }}
+                        loading={deletingId === s.id}
+                        title="Supprimer définitivement ce collaborateur"
+                        className="px-2"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button variant="secondary" size="sm" href={`/salaries/${s.id}`}>
+                        Dossier complet
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

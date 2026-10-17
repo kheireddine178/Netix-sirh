@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   User,
   Building2,
@@ -21,6 +22,7 @@ import {
   Printer,
   Shield,
   FileCheck,
+  Trash2,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Tabs, TabItem } from "@/components/ui/Tabs";
@@ -37,6 +39,7 @@ import type {
   SanctionRow,
   DocumentSalarieRow,
 } from "../actions";
+import { supprimerSalarieDefinitif } from "../actions";
 
 interface SalarieDossierViewProps {
   salarie: Salarie;
@@ -59,7 +62,31 @@ export default function SalarieDossierView({
   sanctions,
   documents,
 }: SalarieDossierViewProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("identite");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleSupprimer = async () => {
+    const confirmation = window.confirm(
+      `Êtes-vous sûr de vouloir supprimer définitivement le collaborateur "${salarie.nom_prenom}" ?\n\nAttention : Cette action est irréversible. Tous ses bulletins de paie, contrats et documents associés seront définitivement effacés.`
+    );
+    if (!confirmation) return;
+
+    setIsDeleting(true);
+    try {
+      const res = await supprimerSalarieDefinitif(salarie.id);
+      if (res && !res.success) {
+        alert("Erreur lors de la suppression : " + (res.error || "Une erreur est survenue"));
+        setIsDeleting(false);
+      } else {
+        router.push("/salaries");
+        router.refresh();
+      }
+    } catch (err: any) {
+      alert("Erreur : " + (err?.message || "Impossible de supprimer ce collaborateur"));
+      setIsDeleting(false);
+    }
+  };
 
   const initials = salarie.nom_prenom
     .trim()
@@ -117,6 +144,14 @@ export default function SalarieDossierView({
             </Button>
             <Button variant="secondary" href={`/salaries/${salarie.id}/modifier`} icon={<Edit3 className="w-4 h-4" />}>
               Modifier
+            </Button>
+            <Button
+              variant="danger-outline"
+              onClick={handleSupprimer}
+              loading={isDeleting}
+              icon={<Trash2 className="w-4 h-4" />}
+            >
+              Supprimer
             </Button>
           </>
         }

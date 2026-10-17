@@ -282,40 +282,71 @@ export async function reactiverSalarie(id: number) {
 }
 
 /**
- * Supprime définitivement un salarié et tout son historique.
+ * Supprime définitivement un salarié et tout son historique complet (bulletins, contrats, congés, etc.).
  */
-export async function supprimerSalarieDefinitif(id: number) {
-  const { supabase, user, email } = await enforceResponsableRHAccess();
+export async function supprimerSalarieDefinitif(id: number): Promise<{ success: boolean; error?: string }> {
+  const { supabase, user, email } = await enforceSession();
 
-  const { data: avant } = await supabase.from("salaries").select("*").eq("id", id).single();
+  try {
+    // 1. Bulletins et rubriques de bulletins
+    const { data: bulletins } = await supabase
+      .from("bulletins")
+      .select("id")
+      .eq("salarie_id", id);
 
-  const { data: bulletins, error: bulletinsError } = await supabase
-    .from("bulletins")
-    .select("id")
-    .eq("salarie_id", id);
+    const bulletinIds = (bulletins ?? []).map((b: any) => b.id);
+    if (bulletinIds.length > 0) {
+      await supabase
+        .from("bulletin_rubriques")
+        .delete()
+        .in("bulletin_id", bulletinIds);
+    }
+    await supabase.from("bulletins").delete().eq("salarie_id", id);
 
-  if (bulletinsError) throw new Error(bulletinsError.message);
+    // 2. Rubriques fixes
+    await supabase.from("salarie_rubriques").delete().eq("salarie_id", id);
 
-  const bulletinIds = (bulletins ?? []).map((b) => b.id);
+    // 3. Contrats et documents
+    await supabase.from("contrats").delete().eq("salarie_id", id);
+    await supabase.from("documents_salaries").delete().eq("salarie_id", id);
 
-  if (bulletinIds.length > 0) {
-    const { error: brError } = await supabase
-      .from("bulletin_rubriques")
-      .delete()
-      .in("bulletin_id", bulletinIds);
-    if (brError) throw new Error(brError.message);
+    // 4. Congés, carrières, sanctions, formations, missions, avances
+    await supabase.from("conges").delete().eq("salarie_id", id);
+    await supabase.from("promotions").delete().eq("salarie_id", id);
+    await supabase.from("sanctions").delete().eq("salarie_id", id);
+    await supabase.from("formations_suivies").delete().eq("salarie_id", id);
+    await supabase.from("missions").delete().eq("salarie_id", id);
+    await supabase.from("avances_acomptes").delete().eq("salarie_id", id);
+
+    // 5. Profils utilisateurs liés (délier)
+    await supabase.from("profiles").update({ salarie_id: null }).eq("salarie_id", id);
+
+    // 6. Suppression finale du salarié
+    const { error: sError } = await supabase.from("salaries").delete().eq("id", id);
+    if (sError) {
+      console.error("Erreur suppression salarié:", sError);
+      return { success: false, error: sError.message };
+    }
+
+    try {
+      await supabase.from("audit_logs").insert({
+        auteur_id: getAuditAuteurId(user?.id),
+        auteur_email: email,
+        table_cible: "salaries",
+        type_action: "DELETE",
+        enregistrement_id: id,
+      });
+    } catch {
+      // Ignorer
+    }
+
+    revalidatePath("/salaries");
+    revalidatePath("/paie");
+    return { success: true };
+  } catch (err: any) {
+    console.error("Exception suppression salarié:", err);
+    return { success: false, error: err.message || "Erreur de suppression" };
   }
-
-  const { error: bError } = await supabase.from("bulletins").delete().eq("salarie_id", id);
-  if (bError) throw new Error(bError.message);
-
-  const { error: srError } = await supabase.from("salarie_rubriques").delete().eq("salarie_id", id);
-  if (srError) throw new Error(srError.message);
-
-  const { error: sError } = await supabase.from("salaries").delete().eq("id", id);
-  if (sError) throw new Error(sError.message);
-
-  revalidatePath("/salaries");
 }
 
 export async function getSalarie(id: number): Promise<Salarie | null> {
