@@ -76,14 +76,18 @@ export function calculerMontantRubriqueFixe(
 ): number {
   const mode = rub.mode_calcul || detecterModeRubrique(rub.code, rub.libelle);
   if (mode === "pourcentage") {
-    // Si la valeur est <= 100, c'est un taux en % (ex: 10 pour 10%, 2.5 pour 2.5%)
-    // Si > 100, c'est un montant fixe historique en DA
-    if (rub.valeur_defaut <= 100) {
-      return round2(salaireBaseReel * (rub.valeur_defaut / 100));
+    const val = rub.valeur1 !== undefined ? rub.valeur1 : rub.valeur_defaut;
+    const taux = val > 1 ? val / 100 : val;
+    return round2(salaireBaseReel * taux);
+  }
+  if (mode === "nombre_x_taux") {
+    if (rub.valeur1 !== undefined && rub.valeur2 !== undefined && rub.valeur2 > 0) {
+      return round2(rub.valeur1 * rub.valeur2);
     }
     return Math.max(0, rub.valeur_defaut);
   }
-  return Math.max(0, rub.valeur_defaut);
+  const val = rub.valeur1 !== undefined ? rub.valeur1 : rub.valeur_defaut;
+  return Math.max(0, val);
 }
 
 function formatDA(num: number, withSymbol: boolean = true): string {
@@ -296,12 +300,19 @@ export default function CockpitClient({
           [currentSalarie.id]: updatedVars,
         }));
 
+        const rubriquesAEnregistrer = (currentSalarie.rubriquesFixes || []).map((r) => ({
+          code: r.code,
+          valeur1: r.valeur1 !== undefined ? r.valeur1 : r.valeur_defaut,
+          valeur2: r.valeur2 || 0,
+        }));
+
         const res = await sauvegarderBulletinIndividuel(
           currentSalarie.id,
           selectedYear,
           selectedMonth,
           currentSalarie.salaire_base_theorique,
-          updatedVars
+          updatedVars,
+          rubriquesAEnregistrer
         );
 
         if (res.success) {
@@ -418,14 +429,20 @@ export default function CockpitClient({
     const catItem = catalogue.find((c) => c.code === rubrique.code);
     if (!catItem) return;
 
+    const valDef = (rubrique.mode === "nombre_x_taux" && (rubrique.valeur2 || 0) > 0)
+      ? (rubrique.valeur1 * rubrique.valeur2)
+      : rubrique.valeur1;
+
     const newRubrique: RubriqueFixeAssignee = {
       code: catItem.code,
       libelle: catItem.libelle,
       type_valeur: catItem.type_valeur,
       cotisable: catItem.cotisable,
       imposable: catItem.imposable,
-      valeur_defaut: rubrique.valeur1,
+      valeur_defaut: valDef,
       mode_calcul: rubrique.mode === "heures" ? "montant_fixe" : rubrique.mode as any,
+      valeur1: rubrique.valeur1,
+      valeur2: rubrique.valeur2,
     };
 
     setSalaries((prev) =>
@@ -484,8 +501,8 @@ export default function CockpitClient({
     setTimeout(() => setSaveNotice(null), 3500);
   };
 
-  // Mettre à jour le montant d'une rubrique fixe
-  const handleUpdateFixedRubriqueAmount = (code: string, newAmount: number) => {
+  // Mettre à jour le montant et le taux d'une rubrique fixe
+  const handleUpdateFixedRubriqueAmount = (code: string, v1: number, v2?: number) => {
     if (!currentSalarie) return;
 
     setSalaries((prev) =>
@@ -493,9 +510,18 @@ export default function CockpitClient({
         if (s.id === currentSalarie.id) {
           return {
             ...s,
-            rubriquesFixes: s.rubriquesFixes.map((r) =>
-              r.code === code ? { ...r, valeur_defaut: Math.max(0, newAmount) } : r
-            ),
+            rubriquesFixes: s.rubriquesFixes.map((r) => {
+              if (r.code !== code) return r;
+              const mode = r.mode_calcul || detecterModeRubrique(r.code, r.libelle);
+              const val2 = v2 !== undefined ? v2 : (r.valeur2 ?? 0);
+              const valDefaut = (mode === "nombre_x_taux" && val2 > 0) ? (v1 * val2) : v1;
+              return {
+                ...r,
+                valeur_defaut: Math.max(0, valDefaut),
+                valeur1: Math.max(0, v1),
+                valeur2: Math.max(0, val2),
+              };
+            }),
           };
         }
         return s;
@@ -743,7 +769,7 @@ export default function CockpitClient({
                 await handleRemoveFixedRubrique(code);
               }}
               onUpdateRubriquePermanente={(code, v1, v2) => {
-                handleUpdateFixedRubriqueAmount(code, v1);
+                handleUpdateFixedRubriqueAmount(code, v1, v2);
               }}
 
               isSaving={isSaving}

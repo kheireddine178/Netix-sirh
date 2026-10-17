@@ -52,7 +52,10 @@ function calculerMontant(rub: RubriqueLigne, salaireBaseReel: number, tauxHorair
       return Math.max(0, salaireBaseReel * taux);
     }
     case "nombre_x_taux":
-      return Math.max(0, rub.valeur1 * rub.valeur2);
+      if (rub.valeur2 && rub.valeur2 > 0) {
+        return Math.max(0, rub.valeur1 * rub.valeur2);
+      }
+      return Math.max(0, rub.valeur1);
     case "heures":
       return Math.max(0, rub.valeur1 * tauxHoraire * majoration);
     case "montant_fixe":

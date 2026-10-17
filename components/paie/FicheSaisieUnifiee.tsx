@@ -197,13 +197,15 @@ function formatDA(n: number): string {
 function rubriqueFixeToLigne(r: RubriqueFixeAssignee): RubriqueLigne {
   const mode = (r.mode_calcul as ModeRubrique) ||
     (detecterModeRubrique(r.code, r.libelle) as ModeRubrique);
+  const val1 = r.valeur1 !== undefined ? r.valeur1 : r.valeur_defaut;
+  const val2 = r.valeur2 !== undefined ? r.valeur2 : (mode === "nombre_x_taux" ? (val1 > 0 ? 1 : 0) : 0);
   return {
     code: r.code,
     libelle: r.libelle,
     type: r.type_valeur === "Retenue (-)" ? "retenue" : "gain",
     mode,
-    valeur1: r.valeur_defaut,
-    valeur2: 0,
+    valeur1: val1,
+    valeur2: val2,
     cotisable: r.cotisable === "OUI",
     imposable:
       r.imposable === "OUI" || r.imposable === "IRG" ? "irg" : "non_imposable",
@@ -409,7 +411,8 @@ export function FicheSaisieUnifiee({
         const taux = r.valeur1 > 1 ? r.valeur1 / 100 : r.valeur1;
         t += salaireBaseReel * taux;
       } else if (r.mode === "nombre_x_taux") {
-        t += r.valeur1 * r.valeur2;
+        const rate = (r.valeur2 && r.valeur2 > 0) ? r.valeur2 : 1;
+        t += r.valeur1 * rate;
       } else {
         t += r.valeur1;
       }
@@ -423,7 +426,12 @@ export function FicheSaisieUnifiee({
   const totalRetenues = useMemo(() => {
     let t = totalHeuresAbsence * tauxHoraire;
     rubriquesRetenuePermanentes.forEach((r) => {
-      t += r.mode === "montant_fixe" ? r.valeur1 : r.valeur1 * r.valeur2;
+      if (r.mode === "nombre_x_taux") {
+        const rate = (r.valeur2 && r.valeur2 > 0) ? r.valeur2 : 1;
+        t += r.valeur1 * rate;
+      } else {
+        t += r.valeur1;
+      }
     });
     return t;
   }, [totalHeuresAbsence, tauxHoraire, rubriquesRetenuePermanentes]);
@@ -572,7 +580,7 @@ export function FicheSaisieUnifiee({
               rubrique={rub}
               salaireBaseReel={salaireBaseReel}
               tauxHoraire={tauxHoraire}
-              onChangeValeur1={(v) => onUpdateRubriquePermanente(rub.code, v)}
+              onChangeValeur1={(v) => onUpdateRubriquePermanente(rub.code, v, rub.valeur2)}
               onChangeValeur2={(v) => onUpdateRubriquePermanente(rub.code, rub.valeur1, v)}
               onRemove={() => onRetirerRubriquePermanente(rub.code)}
             />
@@ -622,7 +630,8 @@ export function FicheSaisieUnifiee({
               rubrique={rub}
               salaireBaseReel={salaireBaseReel}
               tauxHoraire={tauxHoraire}
-              onChangeValeur1={(v) => onUpdateRubriquePermanente(rub.code, v)}
+              onChangeValeur1={(v) => onUpdateRubriquePermanente(rub.code, v, rub.valeur2)}
+              onChangeValeur2={(v) => onUpdateRubriquePermanente(rub.code, rub.valeur1, v)}
               onRemove={() => onRetirerRubriquePermanente(rub.code)}
             />
           ))}

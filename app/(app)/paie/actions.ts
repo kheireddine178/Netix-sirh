@@ -22,6 +22,8 @@ export interface RubriqueFixeAssignee {
   imposable: "OUI" | "NON" | "IRG";
   valeur_defaut: number; // Taux en % (ex: 10 pour 10%) ou Montant en DA
   mode_calcul?: "pourcentage" | "nombre_x_taux" | "montant_fixe";
+  valeur1?: number;
+  valeur2?: number;
 }
 
 export interface SalarieCockpit {
@@ -321,12 +323,19 @@ export async function chargerDonneesCockpit(annee: number, mois: number) {
 // SAUVEGARDE RÉELLE D'UN BULLETIN DANS SUPABASE
 // ------------------------------------------------------------------
 
+export interface LigneBulletinRubriqueSauvegarde {
+  code: string;
+  valeur1: number;
+  valeur2?: number;
+}
+
 export async function sauvegarderBulletinIndividuel(
   salarieId: number,
   annee: number,
   mois: number,
   salaireBase: number,
-  variables: BulletinCockpitVariables
+  variables: BulletinCockpitVariables,
+  rubriques?: LigneBulletinRubriqueSauvegarde[]
 ): Promise<{ success: boolean; error?: string }> {
   const { supabase, user, email } = await enforceSession();
 
@@ -347,13 +356,40 @@ export async function sauvegarderBulletinIndividuel(
       modifie_le: new Date().toISOString(),
     };
 
-    const { error: upsertError } = await supabase
+    const { data: bulletinRow, error: upsertError } = await supabase
       .from("bulletins")
-      .upsert(payload, { onConflict: "salarie_id,annee,mois" });
+      .upsert(payload, { onConflict: "salarie_id,annee,mois" })
+      .select("id")
+      .single();
 
     if (upsertError) {
       console.error("Erreur upsert bulletin:", upsertError);
       return { success: false, error: upsertError.message };
+    }
+
+    const bulletinId = bulletinRow?.id;
+    if (bulletinId && rubriques && rubriques.length > 0) {
+      try {
+        await supabase
+          .from("bulletin_rubriques")
+          .delete()
+          .eq("bulletin_id", bulletinId);
+
+        const lignesAInserer = rubriques
+          .filter((r) => (r.valeur1 || 0) > 0 || (r.valeur2 || 0) > 0)
+          .map((r) => ({
+            bulletin_id: bulletinId,
+            rubrique_code: r.code,
+            valeur_1: r.valeur1,
+            valeur_2: r.valeur2 || 0,
+          }));
+
+        if (lignesAInserer.length > 0) {
+          await supabase.from("bulletin_rubriques").insert(lignesAInserer);
+        }
+      } catch (errRub: any) {
+        console.warn("Avertissement sauvegarde bulletin_rubriques:", errRub?.message);
+      }
     }
 
     try {
@@ -391,41 +427,38 @@ export async function assignerRubriqueFixeSalarie(
   const { supabase } = await enforceSession();
 
   try {
+    let montantFinal = Number(valeurDefaut) || 0;
+    if (modeCalcul === "nombre_x_taux" && valeur2 !== undefined && valeur2 > 0) {
+      montantFinal = montantFinal * valeur2;
+    }
+
+    // 1. Supprimer l'ancienne assignation (évite tout conflit d'index ou contrainte manquante)
+    await supabase
+      .from("salarie_rubriques")
+      .delete()
+      .eq("salarie_id", salarieId)
+      .eq("rubrique_code", code);
+
+    // 2. Insérer proprement avec les colonnes standards
     const payload: any = {
       salarie_id: salarieId,
       rubrique_code: code,
-      valeur_defaut: valeurDefaut,
+      valeur_defaut: montantFinal,
     };
-    if (modeCalcul) payload.mode_calcul = modeCalcul;
-    if (valeur2 !== undefined) payload.valeur2 = valeur2;
 
-    let { error } = await supabase.from("salarie_rubriques").upsert(
-      payload,
-      { onConflict: "salarie_id,rubrique_code" }
-    );
+    const { error: insError } = await supabase
+      .from("salarie_rubriques")
+      .insert(payload);
 
-    if (error && (error.message?.includes("column") || (error as any).code === "42703")) {
-      // Si la colonne mode_calcul ou valeur2 n'existe pas en base, fallback sur le schéma de base
-      const fallbackPayload = {
-        salarie_id: salarieId,
-        rubrique_code: code,
-        valeur_defaut: valeurDefaut,
-      };
-      const retry = await supabase.from("salarie_rubriques").upsert(
-        fallbackPayload,
-        { onConflict: "salarie_id,rubrique_code" }
-      );
-      error = retry.error;
-    }
-
-    if (error) {
-      console.error("Erreur assignation rubrique:", error);
-      return { success: false, error: error.message };
+    if (insError) {
+      console.error("Erreur insertion salarie_rubriques:", insError);
+      return { success: false, error: insError.message };
     }
 
     revalidatePath("/paie");
     return { success: true };
   } catch (err: any) {
+    console.error("Exception assignerRubriqueFixeSalarie:", err);
     return { success: false, error: err.message || "Erreur réseau" };
   }
 }
