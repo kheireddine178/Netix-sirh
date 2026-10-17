@@ -58,8 +58,6 @@ export default function Sidebar() {
           label: "Saisie de Paie",
           href: "/paie",
           icon: TableProperties,
-          badge: "200 SALARIÉS",
-          badgeColor: "bg-[#E6F3EE] text-[#0D3B2E] border-[#A7F3D0]",
         },
         {
           label: "Clôture Période",
@@ -72,7 +70,7 @@ export default function Sidebar() {
           icon: FileText,
         },
         {
-          label: "402 Rubriques",
+          label: "Rubriques de Paie",
           href: "/rubriques",
           icon: Sparkles,
           adminOnly: true,
@@ -224,7 +222,7 @@ export default function Sidebar() {
               </span>
               <span className="text-[10px] text-[#065F46] font-medium flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-                Session Active (200 Collaborateurs)
+                Session Active
               </span>
             </div>
           </div>

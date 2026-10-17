@@ -27,7 +27,7 @@ export function NavbarMobile() {
 
   const NAV_LINKS = [
     { label: "Tableau de Bord", href: "/dashboard", icon: LayoutDashboard },
-    { label: "Saisie de Paie", href: "/paie", icon: Wallet, badge: "200" },
+    { label: "Saisie de Paie", href: "/paie", icon: Wallet },
     { label: "Clôture Période", href: "/paie/cloture", icon: Sparkles },
     { label: "Journal & Déclarations", href: "/rapports", icon: FileText },
     { label: "Collaborateurs", href: "/salaries", icon: Users },
