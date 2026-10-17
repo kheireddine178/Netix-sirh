@@ -503,16 +503,6 @@ export default function CockpitClient({
     );
   };
 
-  const filteredCatalogue = useMemo(() => {
-    if (!rubriqueSearch.trim()) return catalogue;
-    return catalogue.filter(
-      (c) =>
-        c.code.toLowerCase().includes(rubriqueSearch.toLowerCase()) ||
-        c.libelle.toLowerCase().includes(rubriqueSearch.toLowerCase()) ||
-        (c.categorie && c.categorie.toLowerCase().includes(rubriqueSearch.toLowerCase()))
-    );
-  }, [catalogue, rubriqueSearch]);
-
   if (salaries.length === 0) {
     return (
       <div className="flex flex-col min-h-[calc(100vh-140px)] items-center justify-center p-6 text-center animate-in fade-in-50 duration-200">
@@ -719,9 +709,10 @@ export default function CockpitClient({
         <section className="lg:col-span-7 space-y-4">
           {currentSalarie && currentVariables ? (
             <FicheSaisieUnifiee
+              key={currentSalarie.id}
               salaireBaseTheorique={currentSalarie.salaire_base_theorique}
-              catalogue={catalogue}
-              rubriquesFixes={currentSalarie.rubriquesFixes}
+              catalogue={catalogue || []}
+              rubriquesFixes={currentSalarie.rubriquesFixes || []}
 
               hs50Init={currentVariables.hs50}
               hs75Init={currentVariables.hs75}

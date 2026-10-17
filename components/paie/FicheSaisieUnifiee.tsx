@@ -286,7 +286,7 @@ export function FicheSaisieUnifiee({
 
   // ── Rubriques permanentes (gain) triées ──
   const rubriquesGainPermanentes = useMemo(() => {
-    return rubriquesFixes
+    return (rubriquesFixes || [])
       .filter((r) => r.type_valeur === "Gain (+)")
       .map(rubriqueFixeToLigne)
       .sort((a, b) => codeToNum(a.code) - codeToNum(b.code));
@@ -295,7 +295,7 @@ export function FicheSaisieUnifiee({
   // ── Rubriques permanentes (retenue, hors absences) triées ──
   const rubriquesRetenuePermanentes = useMemo(() => {
     const absenceCodes = RETENUES_ABSENCES_SYSTEME.map((r) => r.code);
-    return rubriquesFixes
+    return (rubriquesFixes || [])
       .filter((r) => r.type_valeur === "Retenue (-)" && !absenceCodes.includes(r.code))
       .map(rubriqueFixeToLigne)
       .sort((a, b) => codeToNum(a.code) - codeToNum(b.code));
@@ -303,7 +303,7 @@ export function FicheSaisieUnifiee({
 
   // ── Codes déjà présents (pour griser dans la modale) ──
   const codesExistants = useMemo(
-    () => rubriquesFixes.map((r) => r.code),
+    () => (rubriquesFixes || []).map((r) => r.code),
     [rubriquesFixes]
   );
 
