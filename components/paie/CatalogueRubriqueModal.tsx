@@ -64,7 +64,7 @@ export function CatalogueRubriqueModal({
 
   // Valeurs de saisie selon le mode
   const [valeur1, setValeur1] = useState<number>(0);
-  const [valeur2, setValeur2] = useState<number>(500);
+  const [valeur2, setValeur2] = useState<number>(0);
 
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -117,10 +117,10 @@ export function CatalogueRubriqueModal({
     }
   }, [rubriquesDisponibles, selectedCode]);
 
-  // Réinitialiser valeurs quand on change de rubrique
+  // Réinitialiser valeurs quand on change de rubrique (tout à 0 par défaut)
   useEffect(() => {
-    setValeur1(modeDetecte === "pourcentage" ? 10 : modeDetecte === "nombre_x_taux" ? 22 : 5000);
-    setValeur2(500);
+    setValeur1(0);
+    setValeur2(0);
   }, [selectedCode, modeDetecte]);
 
   const handleConfirm = () => {

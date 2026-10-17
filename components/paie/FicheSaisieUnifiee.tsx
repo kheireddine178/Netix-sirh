@@ -262,8 +262,25 @@ export function FicheSaisieUnifiee({
   });
 
   // ── Panier ──
-  const [joursPanier, setJoursPanier] = useState(joursPanierInit);
-  const [tauxPanier, setTauxPanier] = useState(tauxPanierInit);
+  const [joursPanier, setJoursPanier] = useState(joursPanierInit || 0);
+  const [tauxPanier, setTauxPanier] = useState(tauxPanierInit || 0);
+
+  // ── Salaire de base avec formatage virgule (ex: 20000,00) ──
+  const formatVirgule = (val: number): string => {
+    if (!val && val !== 0) return "0,00";
+    return val.toFixed(2).replace(".", ",");
+  };
+
+  const [salaireBaseInput, setSalaireBaseInput] = useState<string>(() =>
+    formatVirgule(salaireBaseTheorique)
+  );
+  const [isBaseFocused, setIsBaseFocused] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isBaseFocused) {
+      setSalaireBaseInput(formatVirgule(salaireBaseTheorique));
+    }
+  }, [salaireBaseTheorique, isBaseFocused]);
 
   // ── Modale d'ajout ──
   const [modalType, setModalType] = useState<"gain" | "retenue" | null>(null);
@@ -475,12 +492,29 @@ export function FicheSaisieUnifiee({
         </div>
         <div className="flex items-center gap-2">
           <input
-            type="number"
-            step="500"
-            min="0"
-            value={salaireBaseTheorique || ""}
-            placeholder="0"
-            onChange={(e) => onChangeSalaireBase(parseFloat(e.target.value) || 0)}
+            type="text"
+            inputMode="decimal"
+            value={isBaseFocused ? salaireBaseInput : formatVirgule(salaireBaseTheorique)}
+            placeholder="0,00"
+            onFocus={() => {
+              setIsBaseFocused(true);
+              setSalaireBaseInput(formatVirgule(salaireBaseTheorique));
+            }}
+            onChange={(e) => {
+              const raw = e.target.value;
+              setSalaireBaseInput(raw);
+              const cleanNum = parseFloat(raw.replace(/\s/g, "").replace(",", "."));
+              if (!isNaN(cleanNum) && isFinite(cleanNum)) {
+                onChangeSalaireBase(cleanNum);
+              }
+            }}
+            onBlur={() => {
+              setIsBaseFocused(false);
+              const cleanNum = parseFloat(salaireBaseInput.replace(/\s/g, "").replace(",", "."));
+              const finalVal = isNaN(cleanNum) ? 0 : cleanNum;
+              setSalaireBaseInput(formatVirgule(finalVal));
+              onChangeSalaireBase(finalVal);
+            }}
             className="flex-1 bg-[#F8F7F4] border border-[#E6E4DD] rounded-xl px-4 py-2.5 text-right font-mono font-black text-xl text-[#0D3B2E] outline-none focus:border-[#0D3B2E] focus:ring-2 focus:ring-[#0D3B2E]/10 transition-all"
           />
           <span className="text-sm font-black font-mono text-[#0D3B2E] shrink-0">DA</span>

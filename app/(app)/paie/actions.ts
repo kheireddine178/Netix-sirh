@@ -143,10 +143,11 @@ export async function chargerDonneesCockpit(annee: number, mois: number) {
 
   let salaries: SalarieCockpit[] = [];
   let dbBulletins: any[] = [];
+  let dbPrevBulletins: any[] = [];
   let catalogue: RubriqueCatalogueItem[] = CATALOGUE_RUBRIQUES_OFFICIEL;
 
   try {
-    const [salRes, bRes, catRes] = await Promise.all([
+    const [salRes, bRes, catRes, allBulletinsRes] = await Promise.all([
       supabase
         .from("salaries")
         .select("*, salarie_rubriques(*, rubriques_catalogue(*))")
@@ -161,6 +162,11 @@ export async function chargerDonneesCockpit(annee: number, mois: number) {
         .from("rubriques_catalogue")
         .select("*")
         .order("code"),
+      supabase
+        .from("bulletins")
+        .select("*")
+        .order("annee", { ascending: false })
+        .order("mois", { ascending: false }),
     ]);
 
     if (catRes.data && catRes.data.length > 0) {
@@ -215,36 +221,91 @@ export async function chargerDonneesCockpit(annee: number, mois: number) {
     if (bRes.data) {
       dbBulletins = bRes.data;
     }
+    if (allBulletinsRes.data) {
+      dbPrevBulletins = allBulletinsRes.data;
+    }
   } catch (err) {
     console.error("Erreur lors du chargement des données cockpit:", err);
   }
 
+  // Indexation du bulletin actuel du mois
   const bulletinsMap = new Map<number, any>();
   for (const b of dbBulletins) {
     bulletinsMap.set(b.salarie_id, b);
   }
 
-  // Initialisation des variables mensuelles pour chaque salarié réel
+  // Indexation du dernier bulletin antérieur pour reconduction intelligente
+  const prevBulletinsMap = new Map<number, any>();
+  for (const pb of dbPrevBulletins) {
+    const isAnterieur = pb.annee < annee || (pb.annee === annee && pb.mois < mois);
+    if (isAnterieur && !prevBulletinsMap.has(pb.salarie_id)) {
+      prevBulletinsMap.set(pb.salarie_id, pb);
+    }
+  }
+
+  // Initialisation des variables mensuelles pour chaque salarié
   const initialVariables: Record<number, BulletinCockpitVariables> = {};
   for (const s of salaries) {
     const b = bulletinsMap.get(s.id);
-    initialVariables[s.id] = {
-      salarieId: s.id,
-      annee,
-      mois,
-      heuresAbsence: Number(b?.maladie_h ?? 0),
-      hs50: Number(b?.heures_sup_1 ?? 0),
-      hs75: Number(b?.heures_sup_2 ?? 0),
-      hs100: Number(b?.heures_sup_3 ?? 0),
-      joursPanier: Number(b?.panier_jours ?? 22),
-      tauxPanier: Number(b?.panier_forfait_jour ?? 300),
-      forfaitTransport: 2500,
-      primesVariables: [],
-      avancesAcomptes: 0,
-      autresRetenues: Number(b?.autres_retenues ?? 0),
-      statut: (b?.statut as any) || "Brouillon",
-      modifieLe: b?.modifie_le,
-    };
+    const pb = prevBulletinsMap.get(s.id);
+
+    if (b) {
+      // 1. Bulletin existant pour ce mois précis
+      initialVariables[s.id] = {
+        salarieId: s.id,
+        annee,
+        mois,
+        heuresAbsence: Number(b.maladie_h ?? 0),
+        hs50: Number(b.heures_sup_1 ?? 0),
+        hs75: Number(b.heures_sup_2 ?? 0),
+        hs100: Number(b.heures_sup_3 ?? 0),
+        joursPanier: Number(b.panier_jours ?? 0),
+        tauxPanier: Number(b.panier_forfait_jour ?? 0),
+        forfaitTransport: Number(b.forfait_transport ?? 0),
+        primesVariables: [],
+        avancesAcomptes: 0,
+        autresRetenues: Number(b.autres_retenues ?? 0),
+        statut: (b.statut as any) || "Brouillon",
+        modifieLe: b.modifie_le,
+      };
+    } else if (pb) {
+      // 2. Mois suivant : reconduire les montants/taux de gains du mois précédent,
+      // MAIS remettre obligatoirement toutes les retenues et heures sup à 0 !
+      initialVariables[s.id] = {
+        salarieId: s.id,
+        annee,
+        mois,
+        heuresAbsence: 0,                                    // <-- Retenues remises à zéro
+        hs50: 0,                                             // <-- HS remises à zéro
+        hs75: 0,                                             // <-- HS remises à zéro
+        hs100: 0,                                            // <-- HS remises à zéro
+        joursPanier: Number(pb.panier_jours ?? 0),           // <-- Reconduit du mois précédent
+        tauxPanier: Number(pb.panier_forfait_jour ?? 0),     // <-- Reconduit du mois précédent
+        forfaitTransport: Number(pb.forfait_transport ?? 0), // <-- Reconduit du mois précédent
+        primesVariables: [],
+        avancesAcomptes: 0,
+        autresRetenues: 0,                                   // <-- Retenues remises à zéro
+        statut: "Brouillon",
+      };
+    } else {
+      // 3. Nouveau salarié sans historique : tous les taux et retenues sont à zéro par défaut
+      initialVariables[s.id] = {
+        salarieId: s.id,
+        annee,
+        mois,
+        heuresAbsence: 0,
+        hs50: 0,
+        hs75: 0,
+        hs100: 0,
+        joursPanier: 0,
+        tauxPanier: 0,
+        forfaitTransport: 0,
+        primesVariables: [],
+        avancesAcomptes: 0,
+        autresRetenues: 0,
+        statut: "Brouillon",
+      };
+    }
   }
 
   return {

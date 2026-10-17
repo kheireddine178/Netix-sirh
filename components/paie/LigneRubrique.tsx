@@ -154,8 +154,8 @@ export function LigneRubrique({
                 step="0.5"
                 min="0"
                 max="200"
-                value={rubrique.valeur1 === 0 ? "" : rubrique.valeur1}
-                placeholder="0"
+                value={rubrique.valeur1 ?? 0}
+                onFocus={(e) => e.target.select()}
                 onChange={(e) => onChangeValeur1(parseFloat(e.target.value) || 0)}
                 className={cn(INPUT_BASE, "w-16 text-center")}
                 disabled={rubrique.estVerrouillee}
@@ -176,8 +176,8 @@ export function LigneRubrique({
                 type="number"
                 step="1"
                 min="0"
-                value={rubrique.valeur1 === 0 ? "" : rubrique.valeur1}
-                placeholder="0"
+                value={rubrique.valeur1 ?? 0}
+                onFocus={(e) => e.target.select()}
                 onChange={(e) => onChangeValeur1(parseFloat(e.target.value) || 0)}
                 className={cn(INPUT_BASE, "w-14 text-center")}
                 disabled={rubrique.estVerrouillee}
@@ -187,8 +187,8 @@ export function LigneRubrique({
                 type="number"
                 step="50"
                 min="0"
-                value={rubrique.valeur2 === 0 ? "" : rubrique.valeur2}
-                placeholder="0"
+                value={rubrique.valeur2 ?? 0}
+                onFocus={(e) => e.target.select()}
                 onChange={(e) => onChangeValeur2?.(parseFloat(e.target.value) || 0)}
                 className={cn(INPUT_BASE, "w-16 text-center")}
                 disabled={rubrique.estVerrouillee}
@@ -210,8 +210,8 @@ export function LigneRubrique({
                 step="0.5"
                 min="0"
                 max="173.33"
-                value={rubrique.valeur1 === 0 ? "" : rubrique.valeur1}
-                placeholder="0"
+                value={rubrique.valeur1 ?? 0}
+                onFocus={(e) => e.target.select()}
                 onChange={(e) => onChangeValeur1(parseFloat(e.target.value) || 0)}
                 className={cn(INPUT_BASE, "w-16 text-center")}
                 disabled={rubrique.estVerrouillee}
@@ -233,8 +233,8 @@ export function LigneRubrique({
               type="number"
               step="500"
               min="0"
-              value={rubrique.valeur1 === 0 ? "" : rubrique.valeur1}
-              placeholder="0"
+              value={rubrique.valeur1 ?? 0}
+              onFocus={(e) => e.target.select()}
               onChange={(e) => onChangeValeur1(parseFloat(e.target.value) || 0)}
               className={cn(INPUT_BASE, "w-24")}
               disabled={rubrique.estVerrouillee}
