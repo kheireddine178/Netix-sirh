@@ -145,7 +145,9 @@ export default function CongesViewClient({
             <Users className="w-4 h-4" />
             {viewMode === "balances" ? "Vue Demandes" : "Soldes Collaborateurs"}
           </Button>
-          <div className="flex items-center gap-4 mt-6">
+        }
+      >
+        <div className="flex items-center gap-4 mt-6">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A1A1AA]" />
             <Input
