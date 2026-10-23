@@ -1,152 +1,54 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
   TrendingUp,
   TrendingDown,
   Plus,
   User,
   ChevronRight,
-  Save,
-  CheckCircle2,
+  Clock,
+  Calendar,
+  AlertCircle,
+  HelpCircle,
+  Sparkles,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type RubriqueCatalogueItem, type RubriqueFixeAssignee } from "@/app/(app)/paie/actions";
 import { detecterModeRubrique } from "@/lib/paieCalcul";
-import { calculerRetenueAbsence } from "@/src/lib/payroll-engine";
 import { LigneRubrique, type RubriqueLigne, type ModeRubrique } from "./LigneRubrique";
 import { CatalogueRubriqueModal } from "./CatalogueRubriqueModal";
 
 // ------------------------------------------------------------------
-// Constantes — Rubriques système toujours présentes
+// Définitions des rubriques variables du système
 // ------------------------------------------------------------------
 
-/** HS : toujours affichées dans la section Gains */
-const HS_SYSTEME: RubriqueLigne[] = [
-  {
-    code: "R061",
-    libelle: "Heures Sup. +50% (Palier 1)",
-    type: "gain",
-    mode: "heures",
-    valeur1: 0,
-    valeur2: 0,
-    cotisable: true,
-    imposable: "irg",
-    estPermanente: false,
-    estVerrouillee: false,
-  },
-  {
-    code: "R065",
-    libelle: "Heures Sup. +75% (Palier 2)",
-    type: "gain",
-    mode: "heures",
-    valeur1: 0,
-    valeur2: 0,
-    cotisable: true,
-    imposable: "irg",
-    estPermanente: false,
-    estVerrouillee: false,
-  },
-  {
-    code: "R066",
-    libelle: "Heures Sup. +100% (Palier 3)",
-    type: "gain",
-    mode: "heures",
-    valeur1: 0,
-    valeur2: 0,
-    cotisable: true,
-    imposable: "irg",
-    estPermanente: false,
-    estVerrouillee: false,
-  },
-];
-
-/** Codes de majoration HS correspondants */
-const HS_MAJORATION: Record<string, number> = {
-  R061: 1.5,
-  R065: 1.75,
-  R066: 2.0,
+const HS_CONFIGS: Record<string, { label: string; majoration: number }> = {
+  R061: { label: "Heures Sup. +50% (Palier 1)", majoration: 1.5 },
+  R065: { label: "Heures Sup. +75% (Palier 2)", majoration: 1.75 },
+  R066: { label: "Heures Sup. +100% (Palier 3)", majoration: 2.0 },
 };
 
-/** Retenues sur absences : toujours affichées, valeur 0 par défaut */
-const RETENUES_ABSENCES_SYSTEME: RubriqueLigne[] = [
-  {
-    code: "R650",
-    libelle: "Absence pour Maladie",
-    type: "retenue",
-    mode: "heures",
-    valeur1: 0,
-    valeur2: 0,
-    cotisable: false,
-    imposable: "non_imposable",
-    estPermanente: false,
-    estVerrouillee: false,
-  },
-  {
-    code: "R651",
-    libelle: "Mise à Pied",
-    type: "retenue",
-    mode: "heures",
-    valeur1: 0,
-    valeur2: 0,
-    cotisable: false,
-    imposable: "non_imposable",
-    estPermanente: false,
-    estVerrouillee: false,
-  },
-  {
-    code: "R652",
-    libelle: "Retards",
-    type: "retenue",
-    mode: "heures",
-    valeur1: 0,
-    valeur2: 0,
-    cotisable: false,
-    imposable: "non_imposable",
-    estPermanente: false,
-    estVerrouillee: false,
-  },
-  {
-    code: "R655",
-    libelle: "Absence Irrégulière",
-    type: "retenue",
-    mode: "heures",
-    valeur1: 0,
-    valeur2: 0,
-    cotisable: false,
-    imposable: "non_imposable",
-    estPermanente: false,
-    estVerrouillee: false,
-  },
-  {
-    code: "R656",
-    libelle: "Accident de Travail",
-    type: "retenue",
-    mode: "heures",
-    valeur1: 0,
-    valeur2: 0,
-    cotisable: false,
-    imposable: "non_imposable",
-    estPermanente: false,
-    estVerrouillee: false,
-  },
-];
-
-// ------------------------------------------------------------------
-// Types Props
-// ------------------------------------------------------------------
+const ABSENCES_CONFIGS: Record<string, string> = {
+  R650: "Absence Maladie",
+  R652: "Retards",
+  R655: "Absence Irrégulière",
+  R651: "Mise à Pied",
+  R656: "Accident de Travail",
+};
 
 interface Props {
   salaireBaseTheorique: number;
   catalogue: RubriqueCatalogueItem[];
-  rubriquesFixes: RubriqueFixeAssignee[];  // depuis le profil salarié (DB)
-  
-  // HS initiales (depuis variables sauvegardées)
+  rubriquesFixes: RubriqueFixeAssignee[];
+
+  // HS initiales
   hs50Init: number;
   hs75Init: number;
   hs100Init: number;
 
-  // Absences initiales (depuis variables sauvegardées)
+  // Absences initiales
   maladie_hInit: number;
   miseAPied_hInit: number;
   retards_hInit: number;
@@ -157,7 +59,7 @@ interface Props {
   joursPanierInit: number;
   tauxPanierInit: number;
 
-  // Callbacks vers le parent (cockpit-client)
+  // Callbacks vers le parent
   onChangeSalaireBase: (v: number) => void;
   onChangeHS: (hs50: number, hs75: number, hs100: number) => void;
   onChangeAbsences: (totalHeures: number) => void;
@@ -176,10 +78,6 @@ interface Props {
   fonction: string;
   statut: string;
 }
-
-// ------------------------------------------------------------------
-// Utilitaires
-// ------------------------------------------------------------------
 
 const BASE_HORAIRE_LEGALE = 173.33;
 
@@ -213,10 +111,6 @@ function rubriqueFixeToLigne(r: RubriqueFixeAssignee): RubriqueLigne {
   };
 }
 
-// ------------------------------------------------------------------
-// Composant principal
-// ------------------------------------------------------------------
-
 export function FicheSaisieUnifiee({
   salaireBaseTheorique,
   catalogue,
@@ -246,28 +140,94 @@ export function FicheSaisieUnifiee({
   fonction,
   statut,
 }: Props) {
-
   // ── État local des HS ──
   const [hs, setHs] = useState({
-    R061: hs50Init,
-    R065: hs75Init,
-    R066: hs100Init,
+    R061: hs50Init || 0,
+    R065: hs75Init || 0,
+    R066: hs100Init || 0,
+  });
+
+  // Progressive disclosure : quelles HS afficher (seulement celles > 0 ou explicitement ouvertes)
+  const [visibleHsCodes, setVisibleHsCodes] = useState<string[]>(() => {
+    const list: string[] = [];
+    if (hs50Init > 0) list.push("R061");
+    if (hs75Init > 0) list.push("R065");
+    if (hs100Init > 0) list.push("R066");
+    return list;
   });
 
   // ── État local des absences (par code) ──
   const [absences, setAbsences] = useState({
-    R650: maladie_hInit,
-    R651: miseAPied_hInit,
-    R652: retards_hInit,
-    R655: absenceIrreg_hInit,
-    R656: accidentTravail_hInit,
+    R650: maladie_hInit || 0,
+    R651: miseAPied_hInit || 0,
+    R652: retards_hInit || 0,
+    R655: absenceIrreg_hInit || 0,
+    R656: accidentTravail_hInit || 0,
+  });
+
+  // Progressive disclosure : quelles absences afficher
+  const [visibleAbsenceCodes, setVisibleAbsenceCodes] = useState<string[]>(() => {
+    const list: string[] = [];
+    if (maladie_hInit > 0) list.push("R650");
+    if (retards_hInit > 0) list.push("R652");
+    if (absenceIrreg_hInit > 0) list.push("R655");
+    if (miseAPied_hInit > 0) list.push("R651");
+    if (accidentTravail_hInit > 0) list.push("R656");
+    return list;
   });
 
   // ── Panier ──
   const [joursPanier, setJoursPanier] = useState(joursPanierInit || 0);
   const [tauxPanier, setTauxPanier] = useState(tauxPanierInit || 0);
+  const [isPanierVisible, setIsPanierVisible] = useState(
+    () => joursPanierInit > 0 || tauxPanierInit > 0
+  );
 
-  // ── Salaire de base avec formatage virgule (ex: 20000,00) ──
+  // Synchronisation si le salarié sélectionné change
+  useEffect(() => {
+    setHs({
+      R061: hs50Init || 0,
+      R065: hs75Init || 0,
+      R066: hs100Init || 0,
+    });
+    const hsList: string[] = [];
+    if (hs50Init > 0) hsList.push("R061");
+    if (hs75Init > 0) hsList.push("R065");
+    if (hs100Init > 0) hsList.push("R066");
+    setVisibleHsCodes(hsList);
+
+    setAbsences({
+      R650: maladie_hInit || 0,
+      R651: miseAPied_hInit || 0,
+      R652: retards_hInit || 0,
+      R655: absenceIrreg_hInit || 0,
+      R656: accidentTravail_hInit || 0,
+    });
+    const absList: string[] = [];
+    if (maladie_hInit > 0) absList.push("R650");
+    if (retards_hInit > 0) absList.push("R652");
+    if (absenceIrreg_hInit > 0) absList.push("R655");
+    if (miseAPied_hInit > 0) absList.push("R651");
+    if (accidentTravail_hInit > 0) absList.push("R656");
+    setVisibleAbsenceCodes(absList);
+
+    setJoursPanier(joursPanierInit || 0);
+    setTauxPanier(tauxPanierInit || 0);
+    setIsPanierVisible(joursPanierInit > 0 || tauxPanierInit > 0);
+  }, [
+    hs50Init,
+    hs75Init,
+    hs100Init,
+    maladie_hInit,
+    miseAPied_hInit,
+    retards_hInit,
+    absenceIrreg_hInit,
+    accidentTravail_hInit,
+    joursPanierInit,
+    tauxPanierInit,
+  ]);
+
+  // ── Salaire de base avec formatage virgule ──
   const formatVirgule = (val: number): string => {
     if (!val && val !== 0) return "0,00";
     return val.toFixed(2).replace(".", ",");
@@ -284,8 +244,27 @@ export function FicheSaisieUnifiee({
     }
   }, [salaireBaseTheorique, isBaseFocused]);
 
-  // ── Modale d'ajout ──
+  // ── Modale d'ajout catalogue ──
   const [modalType, setModalType] = useState<"gain" | "retenue" | null>(null);
+
+  // ── Menus déroulants d'ajout rapide (Progressive Disclosure) ──
+  const [showAddGainMenu, setShowAddGainMenu] = useState(false);
+  const [showAddRetenueMenu, setShowAddRetenueMenu] = useState(false);
+  const addGainMenuRef = useRef<HTMLDivElement>(null);
+  const addRetenueMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (addGainMenuRef.current && !addGainMenuRef.current.contains(event.target as Node)) {
+        setShowAddGainMenu(false);
+      }
+      if (addRetenueMenuRef.current && !addRetenueMenuRef.current.contains(event.target as Node)) {
+        setShowAddRetenueMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // ── Calculs dérivés ──
   const totalHeuresAbsence = useMemo(
@@ -294,7 +273,7 @@ export function FicheSaisieUnifiee({
   );
 
   const tauxHoraire = useMemo(
-    () => salaireBaseTheorique / BASE_HORAIRE_LEGALE,
+    () => (salaireBaseTheorique > 0 ? salaireBaseTheorique / BASE_HORAIRE_LEGALE : 0),
     [salaireBaseTheorique]
   );
 
@@ -313,121 +292,114 @@ export function FicheSaisieUnifiee({
 
   // ── Rubriques permanentes (retenue, hors absences) triées ──
   const rubriquesRetenuePermanentes = useMemo(() => {
-    const absenceCodes = RETENUES_ABSENCES_SYSTEME.map((r) => r.code);
+    const absenceCodes = Object.keys(ABSENCES_CONFIGS);
     return (rubriquesFixes || [])
       .filter((r) => r.type_valeur === "Retenue (-)" && !absenceCodes.includes(r.code))
       .map(rubriqueFixeToLigne)
       .sort((a, b) => codeToNum(a.code) - codeToNum(b.code));
   }, [rubriquesFixes]);
 
-  // ── Codes déjà présents (pour griser dans la modale) ──
+  // ── Codes déjà présents ──
   const codesExistants = useMemo(
     () => (rubriquesFixes || []).map((r) => r.code),
     [rubriquesFixes]
   );
 
-  // ── Callbacks ──
-  const handleHsChange = useCallback((code: string, val: number) => {
-    setHs((prev) => {
-      const next = { ...prev, [code]: val };
-      onChangeHS(next.R061, next.R065, next.R066);
-      return next;
-    });
-  }, [onChangeHS]);
-
-  const handleAbsenceChange = useCallback((code: string, val: number) => {
-    setAbsences((prev) => {
-      const next = { ...prev, [code]: val };
-      const total = Object.values(next).reduce((s, v) => s + v, 0);
-      onChangeAbsences(total);
-      return next;
-    });
-  }, [onChangeAbsences]);
-
-  const handlePanierChange = useCallback((jours: number, taux: number) => {
-    setJoursPanier(jours);
-    setTauxPanier(taux);
-    onChangePanier(jours, taux);
-  }, [onChangePanier]);
-
-  // Section header helper
-  const SectionHeader = ({
-    icon: Icon,
-    label,
-    total,
-    color,
-    onAdd,
-  }: {
-    icon: React.ComponentType<{ className?: string }>;
-    label: string;
-    total: number;
-    color: "green" | "red";
-    onAdd?: () => void;
-  }) => (
-    <div className={cn(
-      "flex items-center justify-between px-3 py-2 rounded-t-xl border-b",
-      color === "green"
-        ? "bg-[#E6F3EE] border-[#A7F3D0]"
-        : "bg-[#FEF2F2] border-[#FECACA]"
-    )}>
-      <div className="flex items-center gap-2">
-        <Icon className={cn("w-4 h-4", color === "green" ? "text-[#065F46]" : "text-[#991B1B]")} />
-        <span className={cn("text-xs font-black uppercase tracking-wide", color === "green" ? "text-[#065F46]" : "text-[#991B1B]")}>
-          {label}
-        </span>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className={cn("font-mono font-black text-xs tabular-nums", color === "green" ? "text-[#0D3B2E]" : "text-[#991B1B]")}>
-          {color === "green" ? "+" : "−"} {formatDA(total)}
-        </span>
-        {onAdd && (
-          <button
-            onClick={onAdd}
-            className={cn(
-              "flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-lg border transition-all cursor-pointer",
-              color === "green"
-                ? "bg-white border-[#A7F3D0] text-[#065F46] hover:bg-[#D1FAE5]"
-                : "bg-white border-[#FECACA] text-[#991B1B] hover:bg-[#FEE2E2]"
-            )}
-          >
-            <Plus className="w-3 h-3" />
-            Ajouter
-          </button>
-        )}
-      </div>
-    </div>
+  // ── Callbacks HS & Absences ──
+  const handleHsChange = useCallback(
+    (code: string, val: number) => {
+      setHs((prev) => {
+        const next = { ...prev, [code]: val };
+        onChangeHS(next.R061, next.R065, next.R066);
+        return next;
+      });
+    },
+    [onChangeHS]
   );
 
-  // ── Total gains (HS + permanentes) pour affichage header ──
+  const handleRemoveHs = useCallback(
+    (code: string) => {
+      setHs((prev) => {
+        const next = { ...prev, [code]: 0 };
+        onChangeHS(next.R061, next.R065, next.R066);
+        return next;
+      });
+      setVisibleHsCodes((prev) => prev.filter((c) => c !== code));
+    },
+    [onChangeHS]
+  );
+
+  const handleAbsenceChange = useCallback(
+    (code: string, val: number) => {
+      setAbsences((prev) => {
+        const next = { ...prev, [code]: val };
+        const total = Object.values(next).reduce((s, v) => s + v, 0);
+        onChangeAbsences(total);
+        return next;
+      });
+    },
+    [onChangeAbsences]
+  );
+
+  const handleRemoveAbsence = useCallback(
+    (code: string) => {
+      setAbsences((prev) => {
+        const next = { ...prev, [code]: 0 };
+        const total = Object.values(next).reduce((s, v) => s + v, 0);
+        onChangeAbsences(total);
+        return next;
+      });
+      setVisibleAbsenceCodes((prev) => prev.filter((c) => c !== code));
+    },
+    [onChangeAbsences]
+  );
+
+  const handlePanierChange = useCallback(
+    (jours: number, taux: number) => {
+      setJoursPanier(jours);
+      setTauxPanier(taux);
+      onChangePanier(jours, taux);
+    },
+    [onChangePanier]
+  );
+
+  const handleRemovePanier = useCallback(() => {
+    setJoursPanier(0);
+    setTauxPanier(0);
+    setIsPanierVisible(false);
+    onChangePanier(0, 0);
+  }, [onChangePanier]);
+
+  // ── Total gains ──
   const totalGains = useMemo(() => {
     let t = 0;
-    // HS
     Object.entries(hs).forEach(([code, val]) => {
-      t += val * tauxHoraire * (HS_MAJORATION[code] || 1);
+      const cfg = HS_CONFIGS[code];
+      t += val * tauxHoraire * (cfg?.majoration || 1);
     });
-    // Rubriques permanentes gain
     rubriquesGainPermanentes.forEach((r) => {
       if (r.mode === "pourcentage") {
         const taux = r.valeur1 > 1 ? r.valeur1 / 100 : r.valeur1;
         t += salaireBaseReel * taux;
       } else if (r.mode === "nombre_x_taux") {
-        const rate = (r.valeur2 && r.valeur2 > 0) ? r.valeur2 : 1;
+        const rate = r.valeur2 && r.valeur2 > 0 ? r.valeur2 : 1;
         t += r.valeur1 * rate;
       } else {
         t += r.valeur1;
       }
     });
-    // Panier
-    t += joursPanier * tauxPanier;
+    if (isPanierVisible) {
+      t += joursPanier * tauxPanier;
+    }
     return t;
-  }, [hs, tauxHoraire, rubriquesGainPermanentes, salaireBaseReel, joursPanier, tauxPanier]);
+  }, [hs, tauxHoraire, rubriquesGainPermanentes, salaireBaseReel, isPanierVisible, joursPanier, tauxPanier]);
 
-  // ── Total retenues (absences + permanentes retenues) ──
+  // ── Total retenues ──
   const totalRetenues = useMemo(() => {
     let t = totalHeuresAbsence * tauxHoraire;
     rubriquesRetenuePermanentes.forEach((r) => {
       if (r.mode === "nombre_x_taux") {
-        const rate = (r.valeur2 && r.valeur2 > 0) ? r.valeur2 : 1;
+        const rate = r.valeur2 && r.valeur2 > 0 ? r.valeur2 : 1;
         t += r.valeur1 * rate;
       } else {
         t += r.valeur1;
@@ -438,66 +410,71 @@ export function FicheSaisieUnifiee({
 
   return (
     <div className="space-y-4">
-
       {/* ═══════════════════════════════════════════════════
-          0. IDENTITÉ SALARIÉ + LIEN PROFIL
+          0. IDENTITÉ SALARIÉ (Clean Zen Pill)
           ═══════════════════════════════════════════════════ */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0D3B2E] to-[#1E5C49] text-white flex items-center justify-center font-black text-base shadow-sm shrink-0">
+      <div className="bg-white border border-[#F0EFEA] rounded-xl p-3.5 shadow-2xs flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-lg bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs">
             {nomSalarie.charAt(0)}
           </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-sm font-black text-[#111315]">{nomSalarie}</h2>
-              <span className="font-mono text-[11px] font-bold px-1.5 py-0.5 bg-[#F2F0EC] border border-[#E6E4DD] rounded text-[#5A6065]">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-[#111827] truncate">{nomSalarie}</h2>
+              <span className="font-mono text-[11px] font-semibold px-1.5 py-0.5 bg-[#F4F4F5] rounded text-[#52525B] shrink-0">
                 {matricule}
               </span>
-              <span className={cn(
-                "text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border",
-                statut === "Validé"
-                  ? "bg-[#D1FAE5] text-[#065F46] border-[#A7F3D0]"
-                  : "bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]"
-              )}>
+              <span
+                className={cn(
+                  "text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0",
+                  statut === "Validé"
+                    ? "bg-[#E6F3EE] text-[#065F46]"
+                    : "bg-[#FEF3C7] text-[#92400E]"
+                )}
+              >
                 {statut}
               </span>
             </div>
-            <p className="text-[11px] text-[#5A6065] mt-0.5">{fonction}</p>
+            <p className="text-xs text-[#71717A] truncate mt-0.5">{fonction}</p>
           </div>
         </div>
+
         <button
           onClick={onOpenProfil}
-          className="flex items-center gap-1.5 text-[11px] text-[#5A6065] hover:text-[#0D3B2E] transition-colors cursor-pointer"
+          className="flex items-center gap-1 text-xs font-medium text-[#52525B] hover:text-[#0D3B2E] hover:bg-[#F4F4F5] px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer shrink-0"
         >
           <User className="w-3.5 h-3.5" />
-          Fiche RH
-          <ChevronRight className="w-3 h-3" />
+          <span>Fiche RH</span>
+          <ChevronRight className="w-3.5 h-3.5 text-[#A1A1AA]" />
         </button>
       </div>
 
       {/* ═══════════════════════════════════════════════════
-          1. SALAIRE DE BASE (R030)
+          1. SALAIRE DE BASE (R030) — Focus Typographique
           ═══════════════════════════════════════════════════ */}
-      <div className="bg-white border border-[#E6E4DD] rounded-xl p-4 space-y-2">
+      <div className="bg-white border border-[#F0EFEA] rounded-xl p-4 shadow-2xs space-y-2">
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#5A6065]">
-              R030 — Salaire de Base Théorique
+            <span className="text-[10px] font-bold tracking-wider uppercase text-[#71717A]">
+              R030 • Salaire de Base Théorique
             </span>
-            <p className="text-[10px] text-[#94A3B8] mt-0.5">
-              Base légale 173,33h/mois — Taux horaire :{" "}
-              <span className="font-mono font-bold text-[#0D3B2E]">{formatDA(tauxHoraire)}/h</span>
+            <p className="text-xs text-[#71717A] mt-0.5">
+              173,33h/mois • Taux horaire :{" "}
+              <span className="font-mono font-medium text-[#111827]">
+                {formatDA(tauxHoraire)}/h
+              </span>
             </p>
           </div>
           {totalHeuresAbsence > 0 && (
             <div className="text-right">
-              <span className="text-[10px] text-[#94A3B8]">Base réelle :</span>
-              <p className="font-mono font-black text-sm text-[#0D3B2E]">
+              <span className="text-[10px] text-[#991B1B]">Base réelle après déduction :</span>
+              <p className="font-mono font-bold text-xs text-[#065F46]">
                 {formatDA(salaireBaseReel)}
               </p>
             </div>
           )}
         </div>
+
         <div className="flex items-center gap-2">
           <input
             type="text"
@@ -518,62 +495,119 @@ export function FicheSaisieUnifiee({
             }}
             onBlur={() => {
               setIsBaseFocused(false);
-              const cleanNum = parseFloat(salaireBaseInput.replace(/\s/g, "").replace(",", "."));
+              const cleanNum = parseFloat(
+                salaireBaseInput.replace(/\s/g, "").replace(",", ".")
+              );
               const finalVal = isNaN(cleanNum) ? 0 : cleanNum;
               setSalaireBaseInput(formatVirgule(finalVal));
               onChangeSalaireBase(finalVal);
             }}
-            className="flex-1 bg-[#F8F7F4] border border-[#E6E4DD] rounded-xl px-4 py-2.5 text-right font-mono font-black text-xl text-[#0D3B2E] outline-none focus:border-[#0D3B2E] focus:ring-2 focus:ring-[#0D3B2E]/10 transition-all"
+            className="flex-1 bg-[#FAF9F8] border border-[#E4E4E7] rounded-lg px-3.5 py-2 text-right font-mono font-bold text-lg text-[#111827] outline-none focus:border-[#0D3B2E] focus:ring-1 focus:ring-[#0D3B2E]/20 transition-all"
           />
-          <span className="text-sm font-black font-mono text-[#0D3B2E] shrink-0">DA</span>
+          <span className="text-xs font-mono font-bold text-[#71717A] shrink-0">DA</span>
         </div>
       </div>
 
       {/* ═══════════════════════════════════════════════════
-          2. SECTION GAINS (HS + primes permanentes + panier)
+          2. SECTION GAINS & PRIMES (Progressive Disclosure)
           ═══════════════════════════════════════════════════ */}
-      <div className="bg-white border border-[#A7F3D0] rounded-xl overflow-hidden shadow-xs">
-        <SectionHeader
-          icon={TrendingUp}
-          label="Gains & Primes"
-          total={totalGains}
-          color="green"
-          onAdd={() => setModalType("gain")}
-        />
+      <div className="bg-white border border-[#F0EFEA] rounded-xl shadow-2xs overflow-hidden">
+        {/* En-tête Zen Minimaliste */}
+        <div className="flex items-center justify-between px-4 py-2.5 bg-[#FAF9F8] border-b border-[#F0EFEA]">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-3.5 h-3.5 text-[#065F46]" />
+            <span className="text-xs font-bold text-[#111827] tracking-tight">
+              Gains & Primes
+            </span>
+          </div>
 
-        <div className="p-3 space-y-2">
-          {/* ── Heures supplémentaires (toujours présentes) ── */}
-          {HS_SYSTEME.map((hs_ligne) => (
-            <LigneRubrique
-              key={hs_ligne.code}
-              rubrique={{ ...hs_ligne, valeur1: hs[hs_ligne.code as keyof typeof hs] }}
-              salaireBaseReel={salaireBaseReel}
-              tauxHoraire={tauxHoraire}
-              majoration={HS_MAJORATION[hs_ligne.code]}
-              onChangeValeur1={(v) => handleHsChange(hs_ligne.code, v)}
-            />
-          ))}
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-xs font-bold text-[#065F46] tabular-nums">
+              +{formatDA(totalGains)}
+            </span>
 
-          {/* ── Panier (Nombre × Taux) ── */}
-          <LigneRubrique
-            rubrique={{
-              code: "R250",
-              libelle: "Indemnité de Panier",
-              type: "gain",
-              mode: "nombre_x_taux",
-              valeur1: joursPanier,
-              valeur2: tauxPanier,
-              cotisable: false,
-              imposable: "irg",
-              estPermanente: false,
-            }}
-            salaireBaseReel={salaireBaseReel}
-            tauxHoraire={tauxHoraire}
-            onChangeValeur1={(v) => handlePanierChange(v, tauxPanier)}
-            onChangeValeur2={(v) => handlePanierChange(joursPanier, v)}
-          />
+            {/* Menu Popover Ajouter */}
+            <div className="relative" ref={addGainMenuRef}>
+              <button
+                type="button"
+                onClick={() => setShowAddGainMenu(!showAddGainMenu)}
+                className="flex items-center gap-1 text-[11px] font-semibold text-[#0D3B2E] bg-white border border-[#E4E4E7] hover:border-[#0D3B2E] px-2.5 py-1 rounded-md transition-colors cursor-pointer shadow-2xs"
+              >
+                <Plus className="w-3 h-3" />
+                <span>Ajouter</span>
+                <ChevronDown className="w-3 h-3 text-[#71717A]" />
+              </button>
 
-          {/* ── Rubriques permanentes (gains) — triées ── */}
+              {showAddGainMenu && (
+                <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-[#E4E4E7] rounded-xl shadow-lg z-50 p-1.5 space-y-1 text-xs animate-in fade-in-50 zoom-in-95 duration-150">
+                  <button
+                    onClick={() => {
+                      setShowAddGainMenu(false);
+                      setModalType("gain");
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#F4F4F5] font-semibold text-[#111827] flex items-center justify-between cursor-pointer"
+                  >
+                    <span>Prime du catalogue...</span>
+                    <Sparkles className="w-3.5 h-3.5 text-[#0D3B2E]" />
+                  </button>
+
+                  <div className="h-px bg-[#F4F4F5] my-1" />
+                  <div className="px-2 py-0.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">
+                    Heures Supplémentaires
+                  </div>
+
+                  {Object.entries(HS_CONFIGS).map(([code, cfg]) => {
+                    const isAlreadyVisible = visibleHsCodes.includes(code);
+                    return (
+                      <button
+                        key={code}
+                        disabled={isAlreadyVisible}
+                        onClick={() => {
+                          if (!isAlreadyVisible) {
+                            setVisibleHsCodes((prev) => [...prev, code]);
+                          }
+                          setShowAddGainMenu(false);
+                        }}
+                        className={cn(
+                          "w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between cursor-pointer",
+                          isAlreadyVisible
+                            ? "opacity-50 cursor-not-allowed bg-[#F4F4F5] text-[#A1A1AA]"
+                            : "hover:bg-[#E6F3EE] text-[#065F46]"
+                        )}
+                      >
+                        <span>{cfg.label}</span>
+                        <span className="font-mono text-[10px] text-[#71717A]">{code}</span>
+                      </button>
+                    );
+                  })}
+
+                  <div className="h-px bg-[#F4F4F5] my-1" />
+
+                  <button
+                    disabled={isPanierVisible}
+                    onClick={() => {
+                      setIsPanierVisible(true);
+                      setShowAddGainMenu(false);
+                    }}
+                    className={cn(
+                      "w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between cursor-pointer",
+                      isPanierVisible
+                        ? "opacity-50 cursor-not-allowed bg-[#F4F4F5] text-[#A1A1AA]"
+                        : "hover:bg-[#E6F3EE] text-[#065F46]"
+                    )}
+                  >
+                    <span>Indemnité de Panier (R250)</span>
+                    <span className="font-mono text-[10px] text-[#71717A]">Nb × Taux</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Lignes Actives (Uniquement ce qui compte) */}
+        <div className="divide-y divide-[#F4F3F0]">
+          {/* 1. Primes permanentes du poste */}
           {rubriquesGainPermanentes.map((rub) => (
             <LigneRubrique
               key={rub.code}
@@ -586,44 +620,183 @@ export function FicheSaisieUnifiee({
             />
           ))}
 
-          {/* Message si vide */}
-          {rubriquesGainPermanentes.length === 0 && (
-            <div
-              className="p-3 text-center text-[11px] text-[#94A3B8] border border-dashed border-[#D1FAE5] rounded-xl bg-[#F4FBF8] cursor-pointer hover:bg-[#E6F3EE] transition-colors"
-              onClick={() => setModalType("gain")}
-            >
-              <Plus className="w-4 h-4 mx-auto mb-1 text-[#A7F3D0]" />
-              Cliquez pour ajouter une prime ou indemnité
-            </div>
+          {/* 2. Heures supplémentaires actives */}
+          {visibleHsCodes.map((code) => {
+            const cfg = HS_CONFIGS[code];
+            const currentHours = hs[code as keyof typeof hs] || 0;
+            return (
+              <LigneRubrique
+                key={code}
+                rubrique={{
+                  code,
+                  libelle: cfg?.label || code,
+                  type: "gain",
+                  mode: "heures",
+                  valeur1: currentHours,
+                  valeur2: 0,
+                  cotisable: true,
+                  imposable: "irg",
+                  estPermanente: false,
+                }}
+                salaireBaseReel={salaireBaseReel}
+                tauxHoraire={tauxHoraire}
+                majoration={cfg?.majoration || 1}
+                onChangeValeur1={(v) => handleHsChange(code, v)}
+                onRemove={() => handleRemoveHs(code)}
+              />
+            );
+          })}
+
+          {/* 3. Panier (si activé) */}
+          {isPanierVisible && (
+            <LigneRubrique
+              rubrique={{
+                code: "R250",
+                libelle: "Indemnité de Panier",
+                type: "gain",
+                mode: "nombre_x_taux",
+                valeur1: joursPanier,
+                valeur2: tauxPanier,
+                cotisable: false,
+                imposable: "irg",
+                estPermanente: false,
+              }}
+              salaireBaseReel={salaireBaseReel}
+              tauxHoraire={tauxHoraire}
+              onChangeValeur1={(v) => handlePanierChange(v, tauxPanier)}
+              onChangeValeur2={(v) => handlePanierChange(joursPanier, v)}
+              onRemove={handleRemovePanier}
+            />
           )}
+
+          {/* État vide élégant */}
+          {rubriquesGainPermanentes.length === 0 &&
+            visibleHsCodes.length === 0 &&
+            !isPanierVisible && (
+              <div className="py-6 px-4 text-center">
+                <p className="text-xs text-[#71717A]">
+                  Aucune prime ou heure supplémentaire ce mois-ci.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowAddGainMenu(true)}
+                  className="mt-2 text-xs font-semibold text-[#0D3B2E] hover:underline cursor-pointer"
+                >
+                  + Ajouter une prime ou heure sup
+                </button>
+              </div>
+            )}
         </div>
       </div>
 
       {/* ═══════════════════════════════════════════════════
-          3. SECTION RETENUES (absences + retenues permanentes)
+          3. SECTION RETENUES & ABSENCES (Progressive Disclosure)
           ═══════════════════════════════════════════════════ */}
-      <div className="bg-white border border-[#FECACA] rounded-xl overflow-hidden shadow-xs">
-        <SectionHeader
-          icon={TrendingDown}
-          label="Retenues & Absences"
-          total={totalRetenues}
-          color="red"
-          onAdd={() => setModalType("retenue")}
-        />
+      <div className="bg-white border border-[#F0EFEA] rounded-xl shadow-2xs overflow-hidden">
+        {/* En-tête Zen Minimaliste */}
+        <div className="flex items-center justify-between px-4 py-2.5 bg-[#FAF9F8] border-b border-[#F0EFEA]">
+          <div className="flex items-center gap-2">
+            <TrendingDown className="w-3.5 h-3.5 text-[#991B1B]" />
+            <span className="text-xs font-bold text-[#111827] tracking-tight">
+              Retenues & Absences
+            </span>
+          </div>
 
-        <div className="p-3 space-y-2">
-          {/* ── Absences (toujours présentes, valeur 0 par défaut) ── */}
-          {RETENUES_ABSENCES_SYSTEME.map((abs) => (
-            <LigneRubrique
-              key={abs.code}
-              rubrique={{ ...abs, valeur1: absences[abs.code as keyof typeof absences] }}
-              salaireBaseReel={salaireBaseReel}
-              tauxHoraire={tauxHoraire}
-              onChangeValeur1={(v) => handleAbsenceChange(abs.code, v)}
-            />
-          ))}
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-xs font-bold text-[#991B1B] tabular-nums">
+              −{formatDA(totalRetenues)}
+            </span>
 
-          {/* ── Rubriques permanentes (retenues) — triées ── */}
+            {/* Menu Popover Ajouter Retenue / Absence */}
+            <div className="relative" ref={addRetenueMenuRef}>
+              <button
+                type="button"
+                onClick={() => setShowAddRetenueMenu(!showAddRetenueMenu)}
+                className="flex items-center gap-1 text-[11px] font-semibold text-[#991B1B] bg-white border border-[#E4E4E7] hover:border-[#991B1B] px-2.5 py-1 rounded-md transition-colors cursor-pointer shadow-2xs"
+              >
+                <Plus className="w-3 h-3" />
+                <span>Ajouter</span>
+                <ChevronDown className="w-3 h-3 text-[#71717A]" />
+              </button>
+
+              {showAddRetenueMenu && (
+                <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-[#E4E4E7] rounded-xl shadow-lg z-50 p-1.5 space-y-1 text-xs animate-in fade-in-50 zoom-in-95 duration-150">
+                  <div className="px-2 py-0.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">
+                    Signaler une Absence (heures)
+                  </div>
+
+                  {Object.entries(ABSENCES_CONFIGS).map(([code, label]) => {
+                    const isAlreadyVisible = visibleAbsenceCodes.includes(code);
+                    return (
+                      <button
+                        key={code}
+                        disabled={isAlreadyVisible}
+                        onClick={() => {
+                          if (!isAlreadyVisible) {
+                            setVisibleAbsenceCodes((prev) => [...prev, code]);
+                          }
+                          setShowAddRetenueMenu(false);
+                        }}
+                        className={cn(
+                          "w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between cursor-pointer",
+                          isAlreadyVisible
+                            ? "opacity-50 cursor-not-allowed bg-[#F4F4F5] text-[#A1A1AA]"
+                            : "hover:bg-[#FDF2F2] text-[#991B1B]"
+                        )}
+                      >
+                        <span>{label}</span>
+                        <span className="font-mono text-[10px] text-[#71717A]">{code}</span>
+                      </button>
+                    );
+                  })}
+
+                  <div className="h-px bg-[#F4F4F5] my-1" />
+
+                  <button
+                    onClick={() => {
+                      setShowAddRetenueMenu(false);
+                      setModalType("retenue");
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#F4F4F5] font-semibold text-[#111827] flex items-center justify-between cursor-pointer"
+                  >
+                    <span>Retenue du catalogue (Mutuelle...)</span>
+                    <Sparkles className="w-3.5 h-3.5 text-[#991B1B]" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Lignes Actives */}
+        <div className="divide-y divide-[#F4F3F0]">
+          {/* 1. Absences actives */}
+          {visibleAbsenceCodes.map((code) => {
+            const label = ABSENCES_CONFIGS[code] || code;
+            const hours = absences[code as keyof typeof absences] || 0;
+            return (
+              <LigneRubrique
+                key={code}
+                rubrique={{
+                  code,
+                  libelle: label,
+                  type: "retenue",
+                  mode: "heures",
+                  valeur1: hours,
+                  valeur2: 0,
+                  cotisable: false,
+                  imposable: "non_imposable",
+                  estPermanente: false,
+                }}
+                salaireBaseReel={salaireBaseReel}
+                tauxHoraire={tauxHoraire}
+                onChangeValeur1={(v) => handleAbsenceChange(code, v)}
+                onRemove={() => handleRemoveAbsence(code)}
+              />
+            );
+          })}
+
+          {/* 2. Retenues permanentes (Mutuelle, etc.) */}
           {rubriquesRetenuePermanentes.map((rub) => (
             <LigneRubrique
               key={rub.code}
@@ -636,39 +809,22 @@ export function FicheSaisieUnifiee({
             />
           ))}
 
-          {/* Message si pas de retenues permanentes */}
-          {rubriquesRetenuePermanentes.length === 0 && (
-            <div
-              className="p-3 text-center text-[11px] text-[#94A3B8] border border-dashed border-[#FECACA] rounded-xl bg-[#FFF8F8] cursor-pointer hover:bg-[#FEF2F2] transition-colors"
-              onClick={() => setModalType("retenue")}
-            >
-              <Plus className="w-4 h-4 mx-auto mb-1 text-[#FECACA]" />
-              Cliquez pour ajouter une retenue (mutuelle, etc.)
+          {/* État vide élégant */}
+          {visibleAbsenceCodes.length === 0 && rubriquesRetenuePermanentes.length === 0 && (
+            <div className="py-6 px-4 text-center">
+              <p className="text-xs text-[#71717A]">
+                Aucune absence ou retenue enregistrée. Présence complète (173,33h).
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowAddRetenueMenu(true)}
+                className="mt-2 text-xs font-semibold text-[#991B1B] hover:underline cursor-pointer"
+              >
+                + Signaler une absence ou retard
+              </button>
             </div>
           )}
         </div>
-      </div>
-
-      {/* ═══════════════════════════════════════════════════
-          4. BOUTONS SAUVEGARDE
-          ═══════════════════════════════════════════════════ */}
-      <div className="space-y-2 pt-1">
-        <button
-          onClick={() => onSave(true)}
-          disabled={isSaving}
-          className="w-full py-2.5 bg-[#0D3B2E] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#0a3025] transition-colors shadow-sm cursor-pointer disabled:opacity-60"
-        >
-          <CheckCircle2 className="w-4 h-4" />
-          Valider & Salarié Suivant (Entrée)
-        </button>
-        <button
-          onClick={() => onSave(false)}
-          disabled={isSaving}
-          className="w-full py-2 border border-[#E6E4DD] rounded-xl text-xs font-semibold text-[#5A6065] flex items-center justify-center gap-2 hover:bg-[#F2F0EC] transition-colors cursor-pointer disabled:opacity-60"
-        >
-          <Save className="w-3.5 h-3.5" />
-          Enregistrer (Ctrl+S)
-        </button>
       </div>
 
       {/* ═══════════════════════════════════════════════════

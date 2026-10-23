@@ -65,12 +65,12 @@ function calculerMontant(rub: RubriqueLigne, salaireBaseReel: number, tauxHorair
 }
 
 const INPUT_BASE =
-  "bg-white border border-[#E6E4DD] rounded-lg px-2.5 py-1.5 font-mono font-bold text-xs outline-none transition-colors focus:border-[#0D3B2E] focus:ring-1 focus:ring-[#0D3B2E]/20 text-right";
+  "bg-white border border-[#E4E4E7] rounded-md px-2 py-1 font-mono font-semibold text-xs outline-none transition-all focus:border-[#0D3B2E] focus:ring-1 focus:ring-[#0D3B2E]/20 text-right shadow-2xs";
 
 const CODE_BADGE_GAIN =
-  "font-mono text-[11px] font-black px-2 py-0.5 rounded border bg-[#E6F3EE] text-[#0D3B2E] border-[#A7F3D0] shrink-0";
+  "font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#F4F4F5] text-[#52525B] shrink-0";
 const CODE_BADGE_RETENUE =
-  "font-mono text-[11px] font-black px-2 py-0.5 rounded border bg-[#FEF2F2] text-[#991B1B] border-[#FECACA] shrink-0";
+  "font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#FDF2F2] text-[#991B1B] shrink-0";
 
 // ------------------------------------------------------------------
 // Composant
@@ -91,23 +91,20 @@ export function LigneRubrique({
   const isRetenue = rubrique.type === "retenue";
 
   const montantClass = isGain
-    ? "text-[#0D3B2E] font-mono font-black text-xs tabular-nums"
-    : "text-[#991B1B] font-mono font-black text-xs tabular-nums";
+    ? "text-[#065F46] font-mono font-bold text-xs tabular-nums"
+    : "text-[#991B1B] font-mono font-bold text-xs tabular-nums";
 
   const montantPrefix = isGain ? "+" : "−";
 
   return (
     <div
       className={cn(
-        "flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all group",
-        isGain
-          ? "bg-white border-[#E6E4DD] hover:border-[#A7F3D0] hover:bg-[#F4FBF8]"
-          : "bg-white border-[#E6E4DD] hover:border-[#FECACA] hover:bg-[#FFF8F8]",
-        rubrique.estVerrouillee && "opacity-90",
+        "flex items-center gap-3 px-3 py-2 border-b border-[#F4F3F0] last:border-b-0 hover:bg-[#F9F9F8] transition-colors rounded-lg group",
+        rubrique.estVerrouillee && "opacity-95",
         className
       )}
     >
-      {/* Code badge */}
+      {/* Code badge discret */}
       <span className={isGain ? CODE_BADGE_GAIN : CODE_BADGE_RETENUE}>
         {rubrique.code}
       </span>

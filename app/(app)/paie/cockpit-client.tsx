@@ -611,18 +611,18 @@ export default function CockpitClient({
       {/* ====================================================================
           BARRE DE COMMANDE SUPÉRIEURE : LE COLLABORATEUR AU CENTRE
           ==================================================================== */}
-      <header className="bg-white border border-[#E6E4DD] rounded-xl p-3.5 shadow-xs mb-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <header className="bg-white border border-[#F0EFEA] rounded-xl px-4 py-3 shadow-2xs mb-5 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         {/* Navigation rapide entre collaborateurs */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* Bouton pour ouvrir le tiroir des collaborateurs */}
           <button
             onClick={() => setIsFleetDrawerOpen(true)}
-            className="btn-fintech-secondary text-xs flex items-center gap-2 py-1.5 px-3 bg-[#F8F7F4] hover:bg-[#EEF4F0] hover:border-[#A7F3D0] transition-all cursor-pointer font-semibold"
+            className="text-xs flex items-center gap-2 py-1.5 px-3 bg-[#FAF9F8] hover:bg-[#EEF4F0] border border-[#E4E4E7] hover:border-[#0D3B2E] rounded-lg transition-all cursor-pointer font-semibold text-[#111827] shadow-2xs"
             title="Ouvrir la liste complète des collaborateurs"
           >
             <Users className="w-3.5 h-3.5 text-[#0D3B2E]" />
             <span>Effectif ({stats.total})</span>
-            <span className="text-[10px] bg-[#E6F3EE] text-[#0D3B2E] px-1.5 py-0.2 rounded font-mono font-bold">
+            <span className="text-[10px] bg-[#E6F3EE] text-[#0D3B2E] px-1.5 py-0.5 rounded font-mono font-bold">
               {stats.valides}/{stats.total}
             </span>
           </button>
@@ -631,7 +631,7 @@ export default function CockpitClient({
           <button
             onClick={handleSelectPrev}
             disabled={currentIdx <= 0}
-            className="p-1.5 rounded-lg border border-[#E6E4DD] hover:bg-[#F2F0EC] disabled:opacity-40 disabled:cursor-not-allowed text-[#5A6065] transition-colors"
+            className="p-1.5 rounded-lg border border-[#E4E4E7] bg-white hover:bg-[#FAF9F8] disabled:opacity-40 disabled:cursor-not-allowed text-[#52525B] transition-colors cursor-pointer shadow-2xs"
             title="Salarié précédent (Raccourci: ↑)"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -641,42 +641,42 @@ export default function CockpitClient({
           <div className="relative">
             <button
               onClick={() => setIsQuickSwitcherOpen(!isQuickSwitcherOpen)}
-              className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg border border-[#0D3B2E]/30 bg-[#F4F9F6] hover:bg-[#E6F3EE] transition-all cursor-pointer text-left"
+              className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg border border-[#E4E4E7] bg-white hover:border-[#0D3B2E] transition-all cursor-pointer text-left shadow-2xs"
             >
-              <div className="w-6 h-6 rounded bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-xs shrink-0">
+              <div className="w-6 h-6 rounded bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
                 {currentSalarie?.nom_prenom.charAt(0)}
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-black text-[#0D3B2E]">
+                  <span className="font-mono text-xs font-bold text-[#0D3B2E]">
                     {currentSalarie?.matricule}
                   </span>
-                  <span className="text-xs font-bold text-[#111315]">
+                  <span className="text-xs font-semibold text-[#111827]">
                     {currentSalarie?.nom_prenom}
                   </span>
                 </div>
-                <span className="text-[10px] text-[#5A6065]">
+                <span className="text-[10px] text-[#71717A]">
                   {currentSalarie?.fonction} • {currentSalarie?.departement}
                 </span>
               </div>
-              <ChevronDown className="w-3.5 h-3.5 text-[#5A6065] ml-1" />
+              <ChevronDown className="w-3.5 h-3.5 text-[#71717A] ml-1" />
             </button>
 
             {/* Menu Pop-up du Quick Switcher */}
             {isQuickSwitcherOpen && (
-              <div className="absolute left-0 top-full mt-1.5 w-80 bg-white border border-[#E6E4DD] rounded-xl shadow-xl z-50 p-2 space-y-2">
+              <div className="absolute left-0 top-full mt-1.5 w-80 bg-white border border-[#E4E4E7] rounded-xl shadow-xl z-50 p-2 space-y-2 animate-in fade-in-50 zoom-in-95 duration-150">
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#A1A1AA]" />
                   <input
                     type="text"
                     placeholder="Chercher matricule, nom..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-8 pr-2 py-1 text-xs bg-[#F8F7F4] border border-[#E6E4DD] rounded outline-none focus:border-[#0D3B2E]"
+                    className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-[#FAF9F8] border border-[#E4E4E7] rounded-lg outline-none focus:border-[#0D3B2E] focus:ring-1 focus:ring-[#0D3B2E]/20"
                     autoFocus
                   />
                 </div>
-                <div className="max-h-60 overflow-y-auto divide-y divide-[#E6E4DD] text-xs">
+                <div className="max-h-60 overflow-y-auto divide-y divide-[#F4F3F0] text-xs">
                   {filteredSalaries.map((s) => (
                     <div
                       key={s.id}
@@ -684,15 +684,15 @@ export default function CockpitClient({
                         setSelectedSalarieId(s.id);
                         setIsQuickSwitcherOpen(false);
                       }}
-                      className={`p-2 flex items-center justify-between cursor-pointer hover:bg-[#F4F9F6] ${
-                        s.id === currentSalarie?.id ? "bg-[#EEF4F0] font-bold text-[#0D3B2E]" : ""
+                      className={`p-2 rounded-lg flex items-center justify-between cursor-pointer hover:bg-[#FAF9F8] transition-colors ${
+                        s.id === currentSalarie?.id ? "bg-[#E6F3EE] font-bold text-[#0D3B2E]" : ""
                       }`}
                     >
                       <div className="flex items-center gap-2 truncate">
-                        <span className="font-mono text-[11px] shrink-0">{s.matricule}</span>
+                        <span className="font-mono text-[11px] shrink-0 text-[#71717A]">{s.matricule}</span>
                         <span className="truncate">{s.nom_prenom}</span>
                       </div>
-                      <span className="font-mono text-[11px] text-[#5A6065] shrink-0">
+                      <span className="font-mono text-[11px] text-[#71717A] shrink-0">
                         {formatDA(s.salaire_base_theorique, false)}
                       </span>
                     </div>
@@ -706,7 +706,7 @@ export default function CockpitClient({
           <button
             onClick={handleSelectNext}
             disabled={currentIdx >= filteredSalaries.length - 1}
-            className="p-1.5 rounded-lg border border-[#E6E4DD] hover:bg-[#F2F0EC] disabled:opacity-40 disabled:cursor-not-allowed text-[#5A6065] transition-colors"
+            className="p-1.5 rounded-lg border border-[#E4E4E7] bg-white hover:bg-[#FAF9F8] disabled:opacity-40 disabled:cursor-not-allowed text-[#52525B] transition-colors cursor-pointer shadow-2xs"
             title="Salarié suivant (Raccourci: ↓)"
           >
             <ArrowRight className="w-4 h-4" />
@@ -715,7 +715,7 @@ export default function CockpitClient({
 
         {/* Sélecteur Dynamique de Période (Mois / Année) & Actions Globales */}
         <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="flex items-center gap-1 bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-2 py-1 text-xs shadow-2xs">
+          <div className="flex items-center gap-1 bg-[#FAF9F8] border border-[#E4E4E7] rounded-lg px-2 py-1 text-xs shadow-2xs">
             <button
               type="button"
               onClick={() => {
@@ -727,7 +727,7 @@ export default function CockpitClient({
                 }
                 handlePeriodChange(prevY, prevM);
               }}
-              className="p-1 hover:bg-white rounded text-[#5A6065] hover:text-[#111315] transition-colors cursor-pointer"
+              className="p-1 hover:bg-white rounded text-[#71717A] hover:text-[#111827] transition-colors cursor-pointer"
               title="Mois précédent"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -738,7 +738,7 @@ export default function CockpitClient({
             <select
               value={selectedMonth}
               onChange={(e) => handlePeriodChange(selectedYear, Number(e.target.value))}
-              className="bg-transparent font-bold text-[#111315] outline-none cursor-pointer text-xs pr-1"
+              className="bg-transparent font-bold text-[#111827] outline-none cursor-pointer text-xs pr-1"
               title="Sélectionner le mois de calcul"
             >
               {MOIS_FR.map((m, idx) => (
@@ -751,7 +751,7 @@ export default function CockpitClient({
             <select
               value={selectedYear}
               onChange={(e) => handlePeriodChange(Number(e.target.value), selectedMonth)}
-              className="bg-transparent font-bold text-[#111315] outline-none cursor-pointer text-xs"
+              className="bg-transparent font-bold text-[#111827] outline-none cursor-pointer text-xs"
               title="Sélectionner l'année"
             >
               {[2024, 2025, 2026, 2027].map((y) => (
@@ -772,18 +772,18 @@ export default function CockpitClient({
                 }
                 handlePeriodChange(nextY, nextM);
               }}
-              className="p-1 hover:bg-white rounded text-[#5A6065] hover:text-[#111315] transition-colors cursor-pointer"
+              className="p-1 hover:bg-white rounded text-[#71717A] hover:text-[#111827] transition-colors cursor-pointer"
               title="Mois suivant"
             >
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="h-4 w-px bg-[#E6E4DD] hidden sm:block" />
+          <div className="h-4 w-px bg-[#E4E4E7] hidden sm:block" />
 
           <Link
             href={`/paie/cloture?annee=${selectedYear}&mois=${selectedMonth}`}
-            className="btn-fintech-secondary text-xs flex items-center gap-1.5 py-1 px-2.5"
+            className="text-xs flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-[#E4E4E7] bg-white hover:bg-[#FAF9F8] text-[#52525B] hover:text-[#0D3B2E] transition-all cursor-pointer font-medium shadow-2xs"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-[#0D3B2E]" />
             <span>Clôture & Déclarations</span>
@@ -793,7 +793,7 @@ export default function CockpitClient({
           <button
             onClick={toggleSidebar}
             className={cn(
-              "btn-fintech-secondary text-xs flex items-center gap-1.5 py-1 px-2.5 transition-all cursor-pointer font-medium",
+              "text-xs flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-[#E4E4E7] bg-white hover:bg-[#FAF9F8] transition-all cursor-pointer font-medium shadow-2xs",
               !isSidebarOpen && "bg-[#E6F3EE] text-[#0D3B2E] border-[#A7F3D0]"
             )}
             title={
@@ -804,8 +804,8 @@ export default function CockpitClient({
           >
             {isSidebarOpen ? (
               <>
-                <PanelLeftClose className="w-3.5 h-3.5 text-[#5A6065]" />
-                <span className="hidden xl:inline">Agrandir l'espace</span>
+                <PanelLeftClose className="w-3.5 h-3.5 text-[#71717A]" />
+                <span className="hidden xl:inline text-[#52525B]">Agrandir l'espace</span>
               </>
             ) : (
               <>
@@ -816,7 +816,7 @@ export default function CockpitClient({
           </button>
 
           {/* Raccourci rappel */}
-          <span className="hidden sm:inline-block text-[11px] font-mono text-[#5A6065] bg-[#F2F0EC] px-2 py-0.5 rounded border border-[#E6E4DD]">
+          <span className="hidden sm:inline-block text-[11px] font-mono text-[#71717A] bg-[#FAF9F8] px-2.5 py-1 rounded-md border border-[#E4E4E7]">
             [Entrée : Valider & Suivant]
           </span>
         </div>
@@ -984,70 +984,70 @@ export default function CockpitClient({
         {/* ==================================================================
             VOLET 2 : LE BULLETIN VIVANT OFFICIEL (5 COLS = ~42%)
             ================================================================== */}
-        <section className="lg:col-span-5 bg-white border border-[#E6E4DD] rounded-xl p-5 shadow-xs sticky top-4 overflow-y-auto print:border-none print:shadow-none space-y-4">
+        <section className="lg:col-span-5 bg-white border border-[#F0EFEA] rounded-xl p-5 shadow-xs sticky top-4 overflow-y-auto print:border-none print:shadow-none space-y-4">
           {currentSalarie && currentVariables && currentBulletinCalc && (
             <>
               {/* En-tête officiel du bulletin */}
-              <div className="border-b border-[#E6E4DD] pb-3 text-center space-y-0.5">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#5A6065]">
+              <div className="border-b border-[#F0EFEA] pb-3 text-center space-y-0.5">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#71717A]">
                   NETIX SIRH • SARL ENTREPRISE ALGER
                 </span>
-                <h3 className="text-sm font-black text-[#111315]">
+                <h3 className="text-sm font-black text-[#111827]">
                   BULLETIN DE PAIE OFFICIEL
                 </h3>
-                <p className="text-xs text-[#5A6065]">
+                <p className="text-xs text-[#71717A]">
                   Période : {MOIS_FR[selectedMonth - 1]} {selectedYear}
                 </p>
               </div>
 
               {/* Fiche récapitulative du salarié sur le bulletin */}
-              <div className="grid grid-cols-2 gap-2 text-[11px] bg-[#F8F7F4] p-3 rounded-lg border border-[#E6E4DD]">
+              <div className="grid grid-cols-2 gap-2 text-[11px] bg-[#FAF9F8] p-3 rounded-lg border border-[#F0EFEA]">
                 <div>
-                  <span className="text-[#5A6065]">Matricule : </span>
-                  <span className="font-mono font-bold text-[#111315]">{currentSalarie.matricule}</span>
+                  <span className="text-[#71717A]">Matricule : </span>
+                  <span className="font-mono font-bold text-[#111827]">{currentSalarie.matricule}</span>
                 </div>
                 <div>
-                  <span className="text-[#5A6065]">N° Sécurité Sociale : </span>
-                  <span className="font-mono text-[10px] text-[#111315]">{currentSalarie.num_ss}</span>
+                  <span className="text-[#71717A]">N° Sécurité Sociale : </span>
+                  <span className="font-mono text-[10px] text-[#111827]">{currentSalarie.num_ss}</span>
                 </div>
                 <div>
-                  <span className="text-[#5A6065]">Nom : </span>
-                  <span className="font-bold text-[#111315]">{currentSalarie.nom_prenom}</span>
+                  <span className="text-[#71717A]">Nom : </span>
+                  <span className="font-bold text-[#111827]">{currentSalarie.nom_prenom}</span>
                 </div>
                 <div>
-                  <span className="text-[#5A6065]">Emploi : </span>
-                  <span className="text-[#111315]">{currentSalarie.fonction}</span>
+                  <span className="text-[#71717A]">Emploi : </span>
+                  <span className="text-[#111827]">{currentSalarie.fonction}</span>
                 </div>
               </div>
 
               {/* Tableau officiel des rubriques */}
-              <div className="border border-[#E6E4DD] rounded-lg overflow-hidden">
+              <div className="border border-[#F0EFEA] rounded-lg overflow-hidden">
                 <table className="w-full text-xs">
-                  <thead className="bg-[#F2F0EC] border-b border-[#E6E4DD] text-[10px] text-[#5A6065]">
+                  <thead className="bg-[#FAF9F8] border-b border-[#F0EFEA] text-[10px] text-[#71717A]">
                     <tr>
                       <th className="py-1.5 px-2.5 text-left font-bold uppercase">Rubrique</th>
                       <th className="py-1.5 px-2.5 text-right font-bold uppercase">Gains</th>
                       <th className="py-1.5 px-2.5 text-right font-bold uppercase">Retenues</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#E6E4DD] font-mono text-[11px]">
+                  <tbody className="divide-y divide-[#F4F3F0] font-mono text-[11px]">
                     {/* Salaire de base */}
                     <tr>
-                      <td className="py-1 px-2.5 font-sans">R030 Salaire de Base (173,33h)</td>
-                      <td className="py-1 px-2.5 text-right text-[#111315]">
+                      <td className="py-1.5 px-2.5 font-sans">R030 Salaire de Base (173,33h)</td>
+                      <td className="py-1.5 px-2.5 text-right text-[#111827]">
                         {formatDA(currentSalarie.salaire_base_theorique, false)}
                       </td>
-                      <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                      <td className="py-1.5 px-2.5 text-right text-[#A1A1AA]">—</td>
                     </tr>
 
                     {/* Retenue absence */}
                     {currentBulletinCalc.retenueAbsence > 0 && (
-                      <tr className="text-[#991B1B]">
-                        <td className="py-1 px-2.5 font-sans">
+                      <tr className="text-[#991B1B] bg-[#FFF8F8]">
+                        <td className="py-1.5 px-2.5 font-sans">
                           Retenue Absence ({currentVariables.heuresAbsence}h)
                         </td>
-                        <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
-                        <td className="py-1 px-2.5 text-right">
+                        <td className="py-1.5 px-2.5 text-right text-[#A1A1AA]">—</td>
+                        <td className="py-1.5 px-2.5 text-right font-bold">
                           {formatDA(currentBulletinCalc.retenueAbsence, false)}
                         </td>
                       </tr>
@@ -1068,13 +1068,13 @@ export default function CockpitClient({
                           const montant = calculerMontantRubriqueFixe(r, baseReel);
                           return (
                             <tr key={r.code}>
-                              <td className="py-1 px-2.5 font-sans truncate max-w-[150px]">
+                              <td className="py-1.5 px-2.5 font-sans truncate max-w-[150px]">
                                 {r.code} {r.libelle} {isPct ? `(${r.valeur_defaut}%)` : ""}
                               </td>
-                              <td className="py-1 px-2.5 text-right text-[#111315]">
+                              <td className="py-1.5 px-2.5 text-right text-[#111827]">
                                 {formatDA(montant, false)}
                               </td>
-                              <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                              <td className="py-1.5 px-2.5 text-right text-[#A1A1AA]">—</td>
                             </tr>
                           );
                         });
@@ -1083,28 +1083,28 @@ export default function CockpitClient({
                     {/* Heures sup */}
                     {currentBulletinCalc.totalHeuresSup > 0 && (
                       <tr>
-                        <td className="py-1 px-2.5 font-sans">R120 Heures Supplémentaires</td>
-                        <td className="py-1 px-2.5 text-right text-[#111315]">
+                        <td className="py-1.5 px-2.5 font-sans">R120 Heures Supplémentaires</td>
+                        <td className="py-1.5 px-2.5 text-right text-[#111827]">
                           {formatDA(currentBulletinCalc.totalHeuresSup, false)}
                         </td>
-                        <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                        <td className="py-1.5 px-2.5 text-right text-[#A1A1AA]">—</td>
                       </tr>
                     )}
 
                     {/* Sous-total Salaire de Poste */}
-                    <tr className="bg-[#F4F3F0] font-bold text-[#0D3B2E] border-t border-b border-[#E6E4DD]">
-                      <td className="py-1 px-2.5 font-sans">Salaire de Poste (CNAS)</td>
-                      <td className="py-1 px-2.5 text-right">
+                    <tr className="bg-[#F4FBF8] font-bold text-[#0D3B2E] border-t border-b border-[#F0EFEA]">
+                      <td className="py-1.5 px-2.5 font-sans">Salaire de Poste (CNAS)</td>
+                      <td className="py-1.5 px-2.5 text-right">
                         {formatDA(currentBulletinCalc.salaireDePoste, false)}
                       </td>
-                      <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                      <td className="py-1.5 px-2.5 text-right text-[#A1A1AA]">—</td>
                     </tr>
 
                     {/* Cotisation CNAS 9% */}
                     <tr>
-                      <td className="py-1 px-2.5 font-sans">R950 Sécurité Sociale (9%)</td>
-                      <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
-                      <td className="py-1 px-2.5 text-right font-semibold text-[#991B1B]">
+                      <td className="py-1.5 px-2.5 font-sans">R950 Sécurité Sociale (9%)</td>
+                      <td className="py-1.5 px-2.5 text-right text-[#A1A1AA]">—</td>
+                      <td className="py-1.5 px-2.5 text-right font-semibold text-[#991B1B]">
                         {formatDA(currentBulletinCalc.cnasSalariale, false)}
                       </td>
                     </tr>
@@ -1112,42 +1112,42 @@ export default function CockpitClient({
                     {/* Panier & Transport */}
                     {currentBulletinCalc.montantPanier > 0 && (
                       <tr>
-                        <td className="py-1 px-2.5 font-sans">
+                        <td className="py-1.5 px-2.5 font-sans">
                           R250 Prime Panier ({currentVariables.joursPanier}j)
                         </td>
-                        <td className="py-1 px-2.5 text-right text-[#111315]">
+                        <td className="py-1.5 px-2.5 text-right text-[#111827]">
                           {formatDA(currentBulletinCalc.montantPanier, false)}
                         </td>
-                        <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                        <td className="py-1.5 px-2.5 text-right text-[#A1A1AA]">—</td>
                       </tr>
                     )}
 
                     {currentBulletinCalc.montantTransport > 0 && (
                       <tr>
-                        <td className="py-1 px-2.5 font-sans">R280 Indemnité Transport</td>
-                        <td className="py-1 px-2.5 text-right text-[#111315]">
+                        <td className="py-1.5 px-2.5 font-sans">R280 Indemnité Transport</td>
+                        <td className="py-1.5 px-2.5 text-right text-[#111827]">
                           {formatDA(currentBulletinCalc.montantTransport, false)}
                         </td>
-                        <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                        <td className="py-1.5 px-2.5 text-right text-[#A1A1AA]">—</td>
                       </tr>
                     )}
 
                     {/* Salaire Brut */}
-                    <tr className="bg-[#FAF9F6] font-bold text-[#111315] border-t border-b border-[#E6E4DD]">
-                      <td className="py-1 px-2.5 font-sans">Salaire Brut Total Rémunéré</td>
-                      <td className="py-1 px-2.5 text-right">
+                    <tr className="bg-[#FAF9F8] font-bold text-[#111827] border-t border-b border-[#F0EFEA]">
+                      <td className="py-1.5 px-2.5 font-sans">Salaire Brut Total Rémunéré</td>
+                      <td className="py-1.5 px-2.5 text-right">
                         {formatDA(currentBulletinCalc.salaireBrutTotal, false)}
                       </td>
-                      <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
+                      <td className="py-1.5 px-2.5 text-right text-[#A1A1AA]">—</td>
                     </tr>
 
                     {/* Retenue IRG Barème 2022 */}
                     <tr>
-                      <td className="py-1 px-2.5 font-sans">
+                      <td className="py-1.5 px-2.5 font-sans">
                         R980 IRG Barème (R: {formatDA(currentBulletinCalc.rTronqueIrg, false)})
                       </td>
-                      <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
-                      <td className="py-1 px-2.5 text-right font-semibold text-[#991B1B]">
+                      <td className="py-1.5 px-2.5 text-right text-[#A1A1AA]">—</td>
+                      <td className="py-1.5 px-2.5 text-right font-semibold text-[#991B1B]">
                         {formatDA(currentBulletinCalc.irgRetenu, false)}
                       </td>
                     </tr>
@@ -1167,11 +1167,11 @@ export default function CockpitClient({
                           const montant = calculerMontantRubriqueFixe(r, baseReel);
                           return (
                             <tr key={r.code} className="text-[#991B1B]">
-                              <td className="py-1 px-2.5 font-sans truncate max-w-[150px]">
+                              <td className="py-1.5 px-2.5 font-sans truncate max-w-[150px]">
                                 {r.code} {r.libelle} {isPct ? `(${r.valeur_defaut}%)` : ""}
                               </td>
-                              <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
-                              <td className="py-1 px-2.5 text-right font-semibold text-[#991B1B]">
+                              <td className="py-1.5 px-2.5 text-right text-[#A1A1AA]">—</td>
+                              <td className="py-1.5 px-2.5 text-right font-semibold text-[#991B1B]">
                                 {formatDA(montant, false)}
                               </td>
                             </tr>
@@ -1182,9 +1182,9 @@ export default function CockpitClient({
                     {/* Acomptes */}
                     {currentVariables.avancesAcomptes > 0 && (
                       <tr className="text-[#991B1B]">
-                        <td className="py-1 px-2.5 font-sans">R999 Acomptes déduits</td>
-                        <td className="py-1 px-2.5 text-right text-[#94A3B8]">—</td>
-                        <td className="py-1 px-2.5 text-right font-semibold">
+                        <td className="py-1.5 px-2.5 font-sans">R999 Acomptes déduits</td>
+                        <td className="py-1.5 px-2.5 text-right text-[#A1A1AA]">—</td>
+                        <td className="py-1.5 px-2.5 text-right font-semibold">
                           {formatDA(currentVariables.avancesAcomptes, false)}
                         </td>
                       </tr>
@@ -1193,8 +1193,8 @@ export default function CockpitClient({
                 </table>
               </div>
 
-              {/* ENCADRÉ NET À PAYER MODERNE */}
-              <div className="p-4 rounded-xl bg-[#EBF7F2] border border-[#A7F3D0] space-y-1.5 shadow-2xs">
+              {/* ENCADRÉ NET À PAYER ZEN & ÉLÉGANT */}
+              <div className="p-4 rounded-xl bg-gradient-to-br from-[#F4FBF8] to-[#E6F3EE] border border-[#A7F3D0]/70 space-y-1.5 shadow-2xs">
                 <div className="flex justify-between items-center">
                   <span className="text-xs uppercase font-extrabold tracking-wider text-[#065F46]">
                     Net à Payer au Salarié
@@ -1203,7 +1203,7 @@ export default function CockpitClient({
                     {formatDA(currentBulletinCalc.netAPayer)}
                   </span>
                 </div>
-                <div className="flex justify-between text-[11px] text-[#065F46] pt-1.5 border-t border-[#A7F3D0]/70">
+                <div className="flex justify-between text-[11px] text-[#065F46] pt-1.5 border-t border-[#A7F3D0]/60">
                   <span>Coût Total Employeur (avec 25,5% CNAS) :</span>
                   <span className="tabular-nums font-bold">
                     {formatDA(currentBulletinCalc.coutTotalEmployeur)}
@@ -1211,12 +1211,12 @@ export default function CockpitClient({
                 </div>
               </div>
 
-              {/* Actions Rapides */}
+              {/* Action Bar Sticky & Unique */}
               <div className="pt-2 space-y-2">
                 <button
                   onClick={() => handleSaveCurrentBulletin(true)}
                   disabled={isSaving}
-                  className="btn-fintech-primary w-full justify-center py-2.5 text-xs font-bold cursor-pointer"
+                  className="w-full justify-center py-2.5 bg-[#0D3B2E] hover:bg-[#092B21] text-white rounded-lg text-xs font-bold flex items-center gap-2 transition-all shadow-xs cursor-pointer disabled:opacity-60"
                   title="Valider le bulletin et charger le salarié suivant (Entrée)"
                 >
                   <CheckCircle2 className="w-4 h-4 text-white" />
@@ -1227,30 +1227,30 @@ export default function CockpitClient({
                   <button
                     onClick={() => handleSaveCurrentBulletin(false)}
                     disabled={isSaving}
-                    className="btn-fintech-secondary text-xs flex-1 justify-center py-2 cursor-pointer"
+                    className="flex-1 justify-center py-2 rounded-lg border border-[#E4E4E7] bg-white hover:bg-[#FAF9F8] text-xs font-medium text-[#52525B] flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60 shadow-2xs"
                     title="Sauvegarder sans changer de salarié (Ctrl+S)"
                   >
-                    <Save className="w-3.5 h-3.5 text-[#5A6065]" />
+                    <Save className="w-3.5 h-3.5 text-[#71717A]" />
                     <span>Enregistrer (Ctrl+S)</span>
                   </button>
 
                   <button
                     onClick={() => handleOpenDocument("bulletin")}
-                    className="btn-fintech-secondary text-xs px-3 py-2 cursor-pointer flex items-center gap-1.5"
+                    className="px-3 py-2 rounded-lg border border-[#E4E4E7] bg-white hover:bg-[#FAF9F8] text-xs font-medium text-[#52525B] flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
                     title="Ouvrir la fiche de paie officielle dans un nouvel onglet"
                   >
-                    <Printer className="w-3.5 h-3.5 text-[#5A6065]" />
+                    <Printer className="w-3.5 h-3.5 text-[#71717A]" />
                     <span>Imprimer</span>
                   </button>
                 </div>
 
                 {/* MODULE D'ÉDITION DES 3 DOCUMENTS DE PAIE (SYNCHRONISÉ) */}
-                <div className="pt-3 border-t border-[#E6E4DD] space-y-2">
+                <div className="pt-3 border-t border-[#F0EFEA] space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-[#111315]">
+                    <span className="font-bold text-[#111827]">
                       Fiches & Justificatifs Réglementaires :
                     </span>
-                    <span className="text-[10px] text-[#0D3B2E] font-medium bg-[#E6F3EE] px-1.5 py-0.2 rounded border border-[#A7F3D0]">
+                    <span className="text-[10px] text-[#0D3B2E] font-medium bg-[#E6F3EE] px-2 py-0.5 rounded-full">
                       {MOIS_FR[selectedMonth - 1]} {selectedYear}
                     </span>
                   </div>
