@@ -2,6 +2,8 @@
 
 import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Drawer } from "@/components/ui/Drawer";
 import {
   Users,
   Search,
@@ -133,8 +135,18 @@ export default function CockpitClient({
   // Onglet actif (pour la modale profil uniquement)
   const [showProfilModal, setShowProfilModal] = useState<boolean>(false);
 
+  const router = useRouter();
   const [selectedMonth, setSelectedMonth] = useState<number>(mois);
   const [selectedYear, setSelectedYear] = useState<number>(annee);
+  const [isExplicationDrawerOpen, setIsExplicationDrawerOpen] = useState<boolean>(false);
+
+  // Synchroniser l'état local si les props serveur changent (navigation d'un mois à un autre)
+  useEffect(() => {
+    setSelectedMonth(mois);
+    setSelectedYear(annee);
+    setVariablesMap(initialVariables);
+    setSalaries(initialSalaries);
+  }, [mois, annee, initialVariables, initialSalaries]);
 
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
@@ -330,6 +342,44 @@ export default function CockpitClient({
       }
     },
     [currentSalarie, currentVariables, selectedYear, selectedMonth, handleSelectNext]
+  );
+
+  // Changement explicite de période avec sauvegarde du brouillon en cours et rechargement serveur
+  const handlePeriodChange = useCallback(
+    async (newYear: number, newMonth: number) => {
+      if (newYear === selectedYear && newMonth === selectedMonth) return;
+      if (currentSalarie && currentVariables) {
+        try {
+          await handleSaveCurrentBulletin(false);
+        } catch (e) {
+          console.warn("Auto-sauvegarde avant changement de période :", e);
+        }
+      }
+      setSelectedMonth(newMonth);
+      setSelectedYear(newYear);
+      router.push(`/paie?annee=${newYear}&mois=${newMonth}`);
+    },
+    [selectedYear, selectedMonth, currentSalarie, currentVariables, handleSaveCurrentBulletin, router]
+  );
+
+  // Ouverture des documents officiels avec auto-sauvegarde préalable pour garantir la cohérence en DB
+  const handleOpenDocument = useCallback(
+    async (type: "bulletin" | "calcul" | "charges" | "complet") => {
+      if (!currentSalarie || !currentVariables) return;
+      setIsSaving(true);
+      try {
+        await handleSaveCurrentBulletin(false);
+      } catch (e) {
+        console.warn("Auto-sauvegarde avant ouverture de document :", e);
+      } finally {
+        setIsSaving(false);
+      }
+      window.open(
+        `/document-paie?id=${currentSalarie.id}&annee=${selectedYear}&mois=${selectedMonth}&type=${type}`,
+        "_blank"
+      );
+    },
+    [currentSalarie, currentVariables, selectedYear, selectedMonth, handleSaveCurrentBulletin]
   );
 
   useEffect(() => {
@@ -663,14 +713,73 @@ export default function CockpitClient({
           </button>
         </div>
 
-        {/* Période et Actions Globales */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-xs text-[#5A6065]">
-            <Calendar className="w-3.5 h-3.5 text-[#0D3B2E]" />
-            <span className="font-semibold">{MOIS_FR[selectedMonth - 1]} {selectedYear}</span>
+        {/* Sélecteur Dynamique de Période (Mois / Année) & Actions Globales */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-1 bg-[#F8F7F4] border border-[#E6E4DD] rounded-lg px-2 py-1 text-xs shadow-2xs">
+            <button
+              type="button"
+              onClick={() => {
+                let prevM = selectedMonth - 1;
+                let prevY = selectedYear;
+                if (prevM < 1) {
+                  prevM = 12;
+                  prevY -= 1;
+                }
+                handlePeriodChange(prevY, prevM);
+              }}
+              className="p-1 hover:bg-white rounded text-[#5A6065] hover:text-[#111315] transition-colors cursor-pointer"
+              title="Mois précédent"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+            </button>
+
+            <Calendar className="w-3.5 h-3.5 text-[#0D3B2E] ml-1 shrink-0" />
+
+            <select
+              value={selectedMonth}
+              onChange={(e) => handlePeriodChange(selectedYear, Number(e.target.value))}
+              className="bg-transparent font-bold text-[#111315] outline-none cursor-pointer text-xs pr-1"
+              title="Sélectionner le mois de calcul"
+            >
+              {MOIS_FR.map((m, idx) => (
+                <option key={idx + 1} value={idx + 1}>
+                  {m}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedYear}
+              onChange={(e) => handlePeriodChange(Number(e.target.value), selectedMonth)}
+              className="bg-transparent font-bold text-[#111315] outline-none cursor-pointer text-xs"
+              title="Sélectionner l'année"
+            >
+              {[2024, 2025, 2026, 2027].map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={() => {
+                let nextM = selectedMonth + 1;
+                let nextY = selectedYear;
+                if (nextM > 12) {
+                  nextM = 1;
+                  nextY += 1;
+                }
+                handlePeriodChange(nextY, nextM);
+              }}
+              className="p-1 hover:bg-white rounded text-[#5A6065] hover:text-[#111315] transition-colors cursor-pointer"
+              title="Mois suivant"
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
-          <div className="h-4 w-px bg-[#E6E4DD]" />
+          <div className="h-4 w-px bg-[#E6E4DD] hidden sm:block" />
 
           <Link
             href={`/paie/cloture?annee=${selectedYear}&mois=${selectedMonth}`}
@@ -1126,39 +1235,29 @@ export default function CockpitClient({
                   </button>
 
                   <button
-                    onClick={() =>
-                      window.open(
-                        `/document-paie?id=${currentSalarie.id}&annee=${selectedYear}&mois=${selectedMonth}&type=bulletin`,
-                        "_blank"
-                      )
-                    }
+                    onClick={() => handleOpenDocument("bulletin")}
                     className="btn-fintech-secondary text-xs px-3 py-2 cursor-pointer flex items-center gap-1.5"
-                    title="Ouvrir la fiche de paie dans un nouvel onglet"
+                    title="Ouvrir la fiche de paie officielle dans un nouvel onglet"
                   >
                     <Printer className="w-3.5 h-3.5 text-[#5A6065]" />
                     <span>Imprimer</span>
                   </button>
                 </div>
 
-                {/* MODULE D'ÉDITION DES 3 DOCUMENTS DE PAIE (NOUVEL ONGLET) */}
+                {/* MODULE D'ÉDITION DES 3 DOCUMENTS DE PAIE (SYNCHRONISÉ) */}
                 <div className="pt-3 border-t border-[#E6E4DD] space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-[#111315]">
                       Fiches & Justificatifs Réglementaires :
                     </span>
                     <span className="text-[10px] text-[#0D3B2E] font-medium bg-[#E6F3EE] px-1.5 py-0.2 rounded border border-[#A7F3D0]">
-                      Nouvel Onglet
+                      {MOIS_FR[selectedMonth - 1]} {selectedYear}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <button
-                      onClick={() =>
-                        window.open(
-                          `/document-paie?id=${currentSalarie.id}&annee=${selectedYear}&mois=${selectedMonth}&type=bulletin`,
-                          "_blank"
-                        )
-                      }
+                      onClick={() => handleOpenDocument("bulletin")}
                       className="p-2 rounded-lg border border-[#E6E4DD] bg-white hover:bg-[#F4F9F6] hover:border-[#0D3B2E] hover:text-[#0D3B2E] transition-all flex items-center gap-2 cursor-pointer text-left"
                       title="Fiche de paie officielle algérienne prête pour remise au collaborateur"
                     >
@@ -1170,29 +1269,19 @@ export default function CockpitClient({
                     </button>
 
                     <button
-                      onClick={() =>
-                        window.open(
-                          `/document-paie?id=${currentSalarie.id}&annee=${selectedYear}&mois=${selectedMonth}&type=calcul`,
-                          "_blank"
-                        )
-                      }
-                      className="p-2 rounded-lg border border-[#E6E4DD] bg-white hover:bg-[#F4F9F6] hover:border-[#0D3B2E] hover:text-[#0D3B2E] transition-all flex items-center gap-2 cursor-pointer text-left"
-                      title="Fiche explicative détaillée du calcul (taux horaire, Loi 90-11, barème IRG)"
+                      onClick={() => setIsExplicationDrawerOpen(true)}
+                      className="p-2 rounded-lg border border-[#0D3B2E]/40 bg-[#F4F9F6] hover:bg-[#E6F3EE] hover:border-[#0D3B2E] text-[#0D3B2E] transition-all flex items-center gap-2 cursor-pointer text-left shadow-2xs"
+                      title="Ouvrir l'explication pédagogique en direct pour le mois sélectionné"
                     >
                       <Calculator className="w-4 h-4 text-[#0D3B2E] shrink-0" />
                       <div className="flex flex-col min-w-0">
                         <span className="font-bold truncate">2. Explication Calcul</span>
-                        <span className="text-[9px] text-[#5A6065]">Formules & IRG</span>
+                        <span className="text-[9px] text-[#065F46] font-semibold">Live & Formules</span>
                       </div>
                     </button>
 
                     <button
-                      onClick={() =>
-                        window.open(
-                          `/document-paie?id=${currentSalarie.id}&annee=${selectedYear}&mois=${selectedMonth}&type=charges`,
-                          "_blank"
-                        )
-                      }
+                      onClick={() => handleOpenDocument("charges")}
                       className="p-2 rounded-lg border border-[#E6E4DD] bg-white hover:bg-[#F4F9F6] hover:border-[#0D3B2E] hover:text-[#0D3B2E] transition-all flex items-center gap-2 cursor-pointer text-left"
                       title="Fiche des charges patronales et coût global employeur (DAC 34,5%)"
                     >
@@ -1204,12 +1293,7 @@ export default function CockpitClient({
                     </button>
 
                     <button
-                      onClick={() =>
-                        window.open(
-                          `/document-paie?id=${currentSalarie.id}&annee=${selectedYear}&mois=${selectedMonth}&type=complet`,
-                          "_blank"
-                        )
-                      }
+                      onClick={() => handleOpenDocument("complet")}
                       className="p-2 rounded-lg border border-[#A7F3D0] bg-[#E6F3EE] hover:bg-[#D1EBE2] text-[#0D3B2E] transition-all flex items-center gap-2 cursor-pointer text-left"
                       title="Dossier complet en liasse (les 3 documents réunis prêts à imprimer)"
                     >
@@ -1392,6 +1476,181 @@ export default function CockpitClient({
           </div>
         </div>
       )}
+
+      {/* ── VOLET LATÉRAL D'EXPLICATION DU CALCUL DE PAIE (LIVE & PÉDAGOGIQUE) ── */}
+      <Drawer
+        isOpen={isExplicationDrawerOpen}
+        onClose={() => setIsExplicationDrawerOpen(false)}
+        title="Explication Détaillée du Calcul de Paie"
+        description={`${currentSalarie?.nom_prenom} (${currentSalarie?.matricule}) · Période : ${MOIS_FR[selectedMonth - 1]} ${selectedYear}`}
+        size="lg"
+        footer={
+          <div className="flex items-center justify-between w-full">
+            <button
+              type="button"
+              onClick={() => setIsExplicationDrawerOpen(false)}
+              className="btn-fintech-secondary text-xs py-2 px-3"
+            >
+              Fermer
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOpenDocument("calcul")}
+              className="btn-fintech-primary text-xs py-2 px-3.5 flex items-center gap-1.5 shadow-xs"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Ouvrir la Note Officielle PDF</span>
+            </button>
+          </div>
+        }
+      >
+        {currentBulletinCalc && currentSalarie && currentVariables && (
+          <div className="flex flex-col gap-4 text-xs">
+            {/* Bannière Période et Statut */}
+            <div className="p-3 rounded-xl bg-[#F4F9F6] border border-[#A7F3D0] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-[#0D3B2E]" />
+                <span className="font-bold text-[#0D3B2E]">
+                  Période active : {MOIS_FR[selectedMonth - 1]} {selectedYear}
+                </span>
+              </div>
+              <span
+                className={cn(
+                  "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                  currentVariables.statut === "Validé"
+                    ? "bg-[#D1FAE5] text-[#065F46] border-[#A7F3D0]"
+                    : "bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]"
+                )}
+              >
+                {currentVariables.statut || "Brouillon en cours"}
+              </span>
+            </div>
+
+            {/* Étape 1 : Loi 90-11 & Temps de Travail */}
+            <div className="p-4 rounded-xl bg-white border border-[#E6E4DD] space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-[10px]">
+                    1
+                  </span>
+                  <span className="font-bold text-[#111315]">
+                    Temps de Travail Légal & Salaire de Base (Loi 90-11)
+                  </span>
+                </div>
+                <span className="font-mono text-[11px] text-[#5A6065]">173,33 h/mois</span>
+              </div>
+              <p className="text-[11px] text-[#5A6065] leading-relaxed">
+                Durée légale mensuelle : <strong>173,33 heures</strong>. Le taux horaire sert de référence pour valoriser le travail effectif et déduire les absences.
+              </p>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <div className="p-2.5 rounded-lg bg-[#FAF9F6] border border-[#E6E4DD]">
+                  <span className="text-[10px] text-[#5A6065] block">Taux horaire de base :</span>
+                  <strong className="text-[#111315] font-mono">
+                    {formatDA(currentSalarie.salaire_base_theorique)} ÷ 173,33 = {formatDA(currentBulletinCalc.tauxHoraire)}/h
+                  </strong>
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#FAF9F6] border border-[#E6E4DD]">
+                  <span className="text-[10px] text-[#5A6065] block">Heures payées :</span>
+                  <strong className="text-[#0D3B2E] font-mono">
+                    {currentBulletinCalc.heuresTravaillees} h
+                    {currentVariables.heuresAbsence > 0 ? ` (-${currentVariables.heuresAbsence}h absence)` : " (Temps plein)"}
+                  </strong>
+                </div>
+              </div>
+              <div className="flex justify-between items-center pt-1 border-t border-[#E6E4DD] text-[11px]">
+                <span className="text-[#5A6065]">Salaire de base réel (après déduction absences) :</span>
+                <strong className="font-mono text-[#111315]">{formatDA(currentBulletinCalc.salaireBase)}</strong>
+              </div>
+            </div>
+
+            {/* Étape 2 : Cotisation Sécurité Sociale CNAS (9%) */}
+            <div className="p-4 rounded-xl bg-white border border-[#E6E4DD] space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-[10px]">
+                    2
+                  </span>
+                  <span className="font-bold text-[#111315]">
+                    Sécurité Sociale · Décret n°06-373 & Ord. n°95-01
+                  </span>
+                </div>
+                <span className="font-bold text-[#065F46] bg-[#D1FAE5] px-2 py-0.5 rounded-full text-[10px]">
+                  Taux légal 9,00%
+                </span>
+              </div>
+              <p className="text-[11px] text-[#5A6065] leading-relaxed">
+                L'assiette cotisable correspond au <strong>Salaire de Poste</strong>. Les indemnités de panier ({formatDA(currentBulletinCalc.montantPanier)}) et de transport ({formatDA(currentBulletinCalc.montantTransport)}) sont exonérées de cotisations CNAS selon l'Art. 1 de l'Ordonnance n°95-01.
+              </p>
+              <div className="p-3 rounded-lg bg-[#FAF9F6] border border-[#E6E4DD] space-y-1 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-[#5A6065]">Assiette cotisable (Salaire de Poste) :</span>
+                  <strong className="font-mono text-[#111315]">{formatDA(currentBulletinCalc.salaireDePoste)}</strong>
+                </div>
+                <div className="flex justify-between text-[#991B1B]">
+                  <span>Cotisation CNAS Salariale (9,00%) :</span>
+                  <strong className="font-mono">- {formatDA(currentBulletinCalc.cnasSalariale)}</strong>
+                </div>
+                <div className="flex justify-between text-[#5A6065]">
+                  <span>Cotisation CNAS Patronale (26,00%) :</span>
+                  <span className="font-mono">{formatDA(currentBulletinCalc.cnasPatronale)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Étape 3 : Impôt sur le Revenu Global (IRG Art. 104) */}
+            <div className="p-4 rounded-xl bg-white border border-[#E6E4DD] space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[#0D3B2E] text-white flex items-center justify-center font-bold text-[10px]">
+                    3
+                  </span>
+                  <span className="font-bold text-[#111315]">
+                    Fiscalité des Salaires · Art. 104 CIDTA / LF 2022-2024
+                  </span>
+                </div>
+                <span className="text-[10px] text-[#5A6065] font-mono">Troncature à 10 DA</span>
+              </div>
+              <p className="text-[11px] text-[#5A6065] leading-relaxed">
+                Base imposable tronquée à la dizaine de dinar inférieure : <strong>{formatDA(currentBulletinCalc.rTronqueIrg)}</strong>.
+                Barème progressif avec abattement général de 40% (plafonné à 1 500 DA / minimum 1 000 DA).
+              </p>
+              <div className="p-3 rounded-lg bg-[#FAF9F6] border border-[#E6E4DD] space-y-1 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-[#5A6065]">Base Imposable IRG :</span>
+                  <strong className="font-mono text-[#111315]">{formatDA(currentBulletinCalc.baseIrg)}</strong>
+                </div>
+                <div className="flex justify-between text-[#5A6065]">
+                  <span>IRG Brut barème légal :</span>
+                  <span className="font-mono">{formatDA(currentBulletinCalc.detailIrg.irgBrutBareme)}</span>
+                </div>
+                <div className="flex justify-between text-[#065F46]">
+                  <span>Abattement légal (40% / dégressif) :</span>
+                  <strong className="font-mono">- {formatDA(currentBulletinCalc.detailIrg.abattementTotal)}</strong>
+                </div>
+                <div className="flex justify-between text-[#991B1B] font-bold border-t border-[#E6E4DD] pt-1 mt-1">
+                  <span>IRG Net à retenir :</span>
+                  <span className="font-mono">- {formatDA(currentBulletinCalc.irgRetenu)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Étape 4 : Récapitulatif Final */}
+            <div className="p-4 rounded-xl bg-[#0D3B2E] text-white space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#A7F3D0] block">
+                Synthèse Financière du Mois ({MOIS_FR[selectedMonth - 1]} {selectedYear})
+              </span>
+              <div className="flex justify-between items-baseline pt-1">
+                <span className="text-sm font-semibold">Net à Payer au Collaborateur :</span>
+                <span className="text-xl font-mono font-black text-white">{formatDA(currentBulletinCalc.netAPayer)}</span>
+              </div>
+              <div className="flex justify-between items-baseline text-xs text-[#A7F3D0] border-t border-white/20 pt-1.5 mt-1">
+                <span>Coût Total Employeur (avec DAC 34,5%) :</span>
+                <span className="font-mono font-bold text-white">{formatDA(currentBulletinCalc.coutTotalEmployeur)}</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </Drawer>
 
     </div>
   );

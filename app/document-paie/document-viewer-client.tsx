@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Printer,
   Download,
@@ -28,6 +29,7 @@ import {
 } from "lucide-react";
 import {
   calculerBulletinComplet,
+  calculerRetenueAbsence,
   round2,
   round1,
   BASE_HORAIRE_LEGALE,
@@ -43,6 +45,7 @@ import {
   SalarieCockpit,
   BulletinCockpitVariables,
 } from "../(app)/paie/actions";
+import { calculerMontantRubriqueFixe } from "../(app)/paie/cockpit-client";
 import { montantEnLettresDA } from "@/lib/numberToWords";
 
 function formatDA(num: number, withSymbol: boolean = true): string {
@@ -76,6 +79,7 @@ export default function DocumentViewerClient({
   initialSalarieId,
   initialType,
 }: Props) {
+  const router = useRouter();
   const [salaries] = useState<SalarieCockpit[]>(initialSalaries);
   const [variablesMap] = useState<Record<number, BulletinCockpitVariables>>(initialVariables);
   const [selectedSalarieId, setSelectedSalarieId] = useState<number>(initialSalarieId);
@@ -113,13 +117,17 @@ export default function DocumentViewerClient({
     );
   }, [currentSalarie, variablesMap, annee, mois]);
 
-  // Calcul du bulletin du collaborateur
+  // Calcul du bulletin du collaborateur (harmonisé avec le moteur Cockpit)
   const calc = useMemo(() => {
     if (!currentSalarie || !currentVariables) return null;
 
+    // Proratisation salaire réel selon absences Loi 90-11
+    const retenueAbsence = calculerRetenueAbsence(currentVariables.heuresAbsence, currentSalarie.salaire_base_theorique);
+    const salaireBaseReel = Math.max(0, currentSalarie.salaire_base_theorique - retenueAbsence);
+
     const totalPrimesFixesCotisables = currentSalarie.rubriquesFixes
       .filter((r) => r.type_valeur === "Gain (+)" && r.cotisable === "OUI")
-      .reduce((acc, r) => acc + r.valeur_defaut, 0);
+      .reduce((acc, r) => acc + calculerMontantRubriqueFixe(r, salaireBaseReel), 0);
 
     const totalPrimesVariablesCotisables = currentVariables.primesVariables
       .filter((p) => p.cotisable)
@@ -129,11 +137,11 @@ export default function DocumentViewerClient({
 
     const totalPrimesNonCotisablesImposables = currentSalarie.rubriquesFixes
       .filter((r) => r.type_valeur === "Gain (+)" && r.cotisable === "NON" && (r.imposable === "OUI" || r.imposable === "IRG"))
-      .reduce((acc, r) => acc + r.valeur_defaut, 0);
+      .reduce((acc, r) => acc + calculerMontantRubriqueFixe(r, salaireBaseReel), 0);
 
     const totalRetenuesFixes = currentSalarie.rubriquesFixes
       .filter((r) => r.type_valeur === "Retenue (-)")
-      .reduce((acc, r) => acc + r.valeur_defaut, 0);
+      .reduce((acc, r) => acc + calculerMontantRubriqueFixe(r, salaireBaseReel), 0);
 
     return calculerBulletinComplet({
       salaireBase: currentSalarie.salaire_base_theorique,
@@ -249,9 +257,39 @@ export default function DocumentViewerClient({
               <span className="text-xs font-bold text-[#111315]">
                 Netix SIRH • Édition Documents de Paie
               </span>
-              <span className="tabular-nums text-[10px] bg-[#E6F3EE] text-[#0D3B2E] px-2 py-0.5 rounded-full font-bold border border-[#A7F3D0]">
-                {MOIS_FR[mois - 1]} {annee}
-              </span>
+              <div className="flex items-center gap-1 bg-[#F8F7F4] border border-[#E6E4DD] rounded-md px-1.5 py-0.5 text-xs">
+                <Calendar className="w-3 h-3 text-[#0D3B2E]" />
+                <select
+                  value={mois}
+                  onChange={(e) => {
+                    const newM = Number(e.target.value);
+                    router.push(`/document-paie?id=${currentSalarie.id}&annee=${annee}&mois=${newM}&type=${docType}`);
+                  }}
+                  className="bg-transparent font-bold text-[#0D3B2E] outline-none cursor-pointer text-xs"
+                  title="Changer le mois visualisé"
+                >
+                  {MOIS_FR.map((m, idx) => (
+                    <option key={idx + 1} value={idx + 1}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={annee}
+                  onChange={(e) => {
+                    const newY = Number(e.target.value);
+                    router.push(`/document-paie?id=${currentSalarie.id}&annee=${newY}&mois=${mois}&type=${docType}`);
+                  }}
+                  className="bg-transparent font-bold text-[#0D3B2E] outline-none cursor-pointer text-xs"
+                  title="Changer l'année visualisée"
+                >
+                  {[2024, 2025, 2026, 2027].map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <p className="text-[11px] text-[#5A6065]">
               Collaborateur : <strong className="text-[#111315]">{currentSalarie.nom_prenom}</strong> ({currentSalarie.matricule}) • {currentSalarie.fonction}

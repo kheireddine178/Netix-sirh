@@ -16,23 +16,51 @@ export default async function ExplicationPage({ params, searchParams }: PageProp
   const { id } = await params;
   const salarieId = parseInt(id, 10);
 
-  const sParams = await searchParams;
-  const annee = parseInt(sParams.annee || "", 10);
-  const mois = parseInt(sParams.mois || "", 10);
+  const now = new Date();
+  const annee = parseInt(sParams.annee || "", 10) || now.getFullYear();
+  const mois = parseInt(sParams.mois || "", 10) || (now.getMonth() + 1);
 
-  if (!salarieId || !annee || !mois) {
+  if (!salarieId) {
     return (
-      <div className="card">
-        <p style={{ color: "var(--red-600)" }}>Paramètres annee et mois requis dans l'URL.</p>
-        <Link href={`/salaries/${salarieId}/historique`} className="btn btn-secondary mt-4">
-          Retour à l'historique
+      <div className="card max-w-lg mx-auto p-6 text-center">
+        <p className="text-red-600 font-semibold mb-4">Salarié introuvable.</p>
+        <Link href="/salaries" className="btn btn-secondary">
+          Retour aux collaborateurs
         </Link>
       </div>
     );
   }
 
   const donnees = await getBulletinPourPdf(salarieId, annee, mois);
-  if (!donnees) notFound();
+  if (!donnees) {
+    return (
+      <div className="card max-w-xl mx-auto my-8 p-8 text-center bg-white border border-[#E6E4DD] rounded-2xl shadow-xs space-y-4">
+        <div className="w-12 h-12 rounded-full bg-[#FEF3C7] text-[#92400E] mx-auto flex items-center justify-center font-bold text-lg">
+          !
+        </div>
+        <h2 className="text-base font-bold text-[#111315]">
+          Aucun bulletin validé pour la période {mois}/{annee}
+        </h2>
+        <p className="text-xs text-[#5A6065] leading-relaxed">
+          Le bulletin de paie pour ce collaborateur n&apos;a pas encore été calculé et enregistré pour le mois demandé ({mois}/{annee}).
+        </p>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <Link
+            href={`/paie?annee=${annee}&mois=${mois}`}
+            className="btn btn-primary text-xs font-semibold py-2 px-4 rounded-xl"
+          >
+            Ouvrir la saisie de paie ({mois}/{annee})
+          </Link>
+          <Link
+            href={`/salaries/${salarieId}/historique`}
+            className="btn btn-secondary text-xs py-2 px-4 rounded-xl"
+          >
+            Consulter l&apos;historique
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const d = genererExplicationDonnees(
     donnees.salarie,
