@@ -40,18 +40,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="text-xs font-bold text-slate-700 flex items-center justify-between uppercase tracking-wider"
+            className="text-[11px] font-semibold text-[#71717A] flex items-center justify-between uppercase tracking-wider"
           >
             <span>
               {label}
-              {required && <span className="text-rose-600 ml-1">*</span>}
+              {required && <span className="text-[#991B1B] ml-1">*</span>}
             </span>
           </label>
         )}
 
         <div className="relative flex items-center">
           {leftIcon && (
-            <div className="absolute left-3.5 text-slate-400 pointer-events-none flex items-center justify-center">
+            <div className="absolute left-3 text-[#A1A1AA] pointer-events-none flex items-center justify-center">
               {leftIcon}
             </div>
           )}
@@ -63,15 +63,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             disabled={disabled}
             required={required}
             className={cn(
-              "w-full h-10 px-3.5 py-2 text-sm bg-white text-slate-900 border rounded-xl transition-all duration-150 shadow-2xs",
-              "placeholder:text-slate-400",
-              "focus:outline-none focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10",
-              "disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed",
+              "w-full h-9 px-3 py-1.5 text-xs bg-white text-[#111827] border rounded-lg transition-all duration-150 shadow-2xs",
+              "placeholder:text-[#A1A1AA]",
+              "focus:outline-none focus:border-[#0D3B2E] focus:ring-1 focus:ring-[#0D3B2E]/20",
+              "disabled:bg-[#FAF9F8] disabled:text-[#A1A1AA] disabled:border-[#E4E4E7] disabled:cursor-not-allowed",
               error
-                ? "border-rose-400 focus:border-rose-600 focus:ring-rose-500/10"
-                : "border-slate-200 hover:border-slate-300",
-              leftIcon && "pl-10",
-              (rightIcon || suffix) && "pr-12",
+                ? "border-[#FECACA] focus:border-[#991B1B] focus:ring-[#991B1B]/20"
+                : "border-[#E4E4E7] hover:border-[#D4D4D8]",
+              leftIcon && "pl-9",
+              (rightIcon || suffix) && "pr-10",
               type === "number" && "tabular-nums",
               className
             )}
@@ -79,25 +79,25 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           />
 
           {suffix && !rightIcon && (
-            <div className="absolute right-3.5 text-xs font-bold text-slate-400 pointer-events-none select-none">
+            <div className="absolute right-3 text-xs font-bold text-[#A1A1AA] pointer-events-none select-none">
               {suffix}
             </div>
           )}
 
           {rightIcon && (
-            <div className="absolute right-3.5 text-slate-400 flex items-center justify-center">
+            <div className="absolute right-3 text-[#A1A1AA] flex items-center justify-center">
               {rightIcon}
             </div>
           )}
         </div>
 
         {error ? (
-          <p className="text-xs text-rose-600 flex items-center gap-1 mt-0.5 font-medium">
+          <p className="text-xs text-[#991B1B] flex items-center gap-1 mt-0.5 font-medium">
             <AlertCircle className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
             <span>{error}</span>
           </p>
         ) : helperText ? (
-          <p className="text-xs text-slate-500 mt-0.5">{helperText}</p>
+          <p className="text-xs text-[#71717A] mt-0.5">{helperText}</p>
         ) : null}
       </div>
     );

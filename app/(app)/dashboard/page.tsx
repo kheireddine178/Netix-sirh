@@ -124,7 +124,7 @@ export default async function DashboardPage() {
         primaryAction={
           <Button
             variant="primary"
-            href="/saisie"
+            href="/paie"
             icon={<Wallet className="w-4 h-4 text-white" />}
           >
             Saisie de paie
@@ -167,8 +167,8 @@ export default async function DashboardPage() {
         <StatCard
           label="Net à payer estimé"
           value={formatDA(netAPayerTotal)}
-          subtext="Estimation"
-          icon={<CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+          subtext="Estimation mensuelle"
+          icon={<CheckCircle2 className="w-4 h-4 text-[#065F46]" />}
         />
 
         <StatCard
@@ -183,7 +183,7 @@ export default async function DashboardPage() {
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-sm font-bold text-[#111827] tracking-tight">
               Alertes &amp; échéances ({alertes.length})
             </h2>
             {alertes.length > 0 && (
@@ -192,33 +192,33 @@ export default async function DashboardPage() {
               </Badge>
             )}
           </div>
-          <span className="text-xs text-slate-400">Classé par criticité</span>
+          <span className="text-xs text-[#71717A]">Classé par criticité</span>
         </div>
 
-        <div className="rounded-2xl border border-slate-200/80 bg-white shadow-xs overflow-hidden">
+        <div className="rounded-xl border border-[#F0EFEA] bg-white shadow-2xs overflow-hidden">
           {alertes.length > 0 ? (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-[#F4F3F0]">
               {alertes.map((alerte) => (
                 <div
                   key={alerte.id}
-                  className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-slate-50/70 transition-colors"
+                  className="p-3.5 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-[#FAF9F8] transition-colors"
                 >
                   <div className="flex items-start gap-3">
                     <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
                         alerte.urgence === "danger"
-                          ? "bg-rose-50 text-rose-600 border border-rose-200"
-                          : "bg-amber-50 text-amber-600 border border-amber-200"
+                          ? "bg-[#FEE2E2] text-[#991B1B] border border-[#FECACA]"
+                          : "bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]"
                       }`}
                     >
                       <AlertTriangle className="w-4 h-4" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-xs font-bold text-slate-900 leading-snug">
+                      <span className="text-xs font-bold text-[#111827] leading-snug">
                         {alerte.titre}
                       </span>
-                      <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500">
-                        <span className="font-semibold text-slate-700">
+                      <div className="flex items-center gap-2 mt-0.5 text-xs text-[#71717A]">
+                        <span className="font-semibold text-[#111827]">
                           {alerte.salarieNom}
                         </span>
                         <span>•</span>
@@ -236,13 +236,13 @@ export default async function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="p-10 text-center flex flex-col items-center justify-center">
-              <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-2" />
-              <span className="text-sm font-bold text-slate-900">
+            <div className="p-8 text-center flex flex-col items-center justify-center">
+              <CheckCircle2 className="w-7 h-7 text-[#065F46] mb-1.5" />
+              <span className="text-xs font-bold text-[#111827]">
                 Aucune alerte en attente
               </span>
-              <span className="text-xs text-slate-500 mt-1">
-                Tout est à jour.
+              <span className="text-xs text-[#71717A] mt-0.5">
+                Tous les dossiers et contrats sont à jour.
               </span>
             </div>
           )}

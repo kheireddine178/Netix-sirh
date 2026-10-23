@@ -6,32 +6,32 @@
 }
 
 :root {
-  /* 1. Surfaces & Fonds */
-  --bg-canvas: #F8F7F4;       /* Pierre chaude / Albâtre très doux pour l'application */
-  --bg-surface: #FFFFFF;      /* Blanc pur pour les zones de travail actives */
-  --bg-subtle: #F2F0EC;       /* Gris-sable très léger pour en-têtes et cellules calculées */
+  /* 1. Surfaces & Fonds — Zen Minimaliste */
+  --bg-canvas: #FAF9F6;       /* Pierre chaude / Albâtre naturel, anti-fatigue oculaire */
+  --bg-surface: #FFFFFF;      /* Blanc pur pour surfaces actives */
+  --bg-subtle: #FAF9F8;       /* Ivoire très doux pour en-têtes et cartes */
   --bg-row-hover: #F8FAF9;    /* Survol discret d'une ligne */
   --bg-row-selected: #EEF4F0; /* Ligne sélectionnée avec subtile teinte émeraude */
 
   /* 2. Bordures Hairline Ultra-Précises */
-  --border-subtle: #E6E4DD;   /* 1px solid partout, net et précis */
+  --border-subtle: #F0EFEA;   /* 1px hairline doux et net */
   --border-focus: #0D3B2E;    /* Bordure active focus clavier */
-  --border-active: #D1CFBF;
+  --border-active: #E4E4E7;   /* Bordures de contrôles et boutons */
 
   /* 3. Typographie */
-  --text-primary: #111315;    /* Noir carbone profond */
-  --text-secondary: #5A6065;  /* En-têtes de colonnes, labels secondaires */
-  --text-muted: #94A3B8;      /* Unités DA, h, et tirets de valeur nulle */
+  --text-primary: #111827;    /* Encre noire carbone moderne */
+  --text-secondary: #71717A;  /* Labels secondaires et métadonnées */
+  --text-muted: #A1A1AA;      /* Unités DA, h, et tirets de valeur nulle */
 
   /* 4. Accent Institutionnel Fintech */
-  --accent-primary: #0D3B2E;  /* Vert Émeraude Institutionnel profond */
-  --accent-hover: #08261E;
+  --accent-primary: #0D3B2E;  /* Vert Émeraude Forêt Institutionnel */
+  --accent-hover: #092B21;
   --accent-light: #E6F3EE;
-  --accent-ring: rgba(13, 59, 46, 0.15);
+  --accent-ring: rgba(13, 59, 46, 0.12);
 
   /* 5. Statuts Sémantiques */
   --status-success-text: #065F46;
-  --status-success-bg: #D1FAE5;
+  --status-success-bg: #E6F3EE;
   --status-success-border: #A7F3D0;
 
   --status-warning-text: #92400E;
@@ -194,21 +194,21 @@ samp {
   background-color: var(--accent-primary);
   color: #FFFFFF;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
   padding: 7px 14px;
-  border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   display: inline-flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: 0 1px 2px rgba(13, 59, 46, 0.12);
+  box-shadow: 0 1px 2px rgba(13, 59, 46, 0.15);
 }
 
 .btn-fintech-primary:hover {
   background-color: var(--accent-hover);
-  box-shadow: 0 2px 4px rgba(13, 59, 46, 0.2);
+  box-shadow: 0 2px 4px rgba(13, 59, 46, 0.25);
 }
 
 .btn-fintech-secondary {
@@ -217,18 +217,19 @@ samp {
   font-size: 0.8125rem;
   font-weight: 500;
   padding: 7px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  border: 1px solid var(--border-active);
   display: inline-flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .btn-fintech-secondary:hover {
   background-color: var(--bg-subtle);
-  border-color: var(--border-active);
+  border-color: #D4D4D8;
 }
 
 /* Barre de synthèse financière en pied de page (Sticky Footer) */

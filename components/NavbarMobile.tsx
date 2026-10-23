@@ -38,16 +38,16 @@ export function NavbarMobile() {
 
   return (
     <>
-      <header className="md:hidden sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-4 py-3 flex items-center justify-between">
+      <header className="md:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#F0EFEA] px-4 py-2.5 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-xs">
-            <span className="font-extrabold text-sm">N</span>
+          <div className="w-7 h-7 rounded-lg bg-[#0D3B2E] flex items-center justify-center text-white shadow-2xs">
+            <span className="font-extrabold text-xs">N</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="font-bold text-sm tracking-tight text-slate-900">
+            <span className="font-bold text-sm tracking-tight text-[#111827]">
               NETIX
             </span>
-            <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1 py-0.5 rounded border border-indigo-100">
+            <span className="text-[10px] font-bold text-[#0D3B2E] bg-[#E6F3EE] px-1.5 py-0.5 rounded border border-[#A7F3D0]">
               2.0
             </span>
           </div>
@@ -56,7 +56,7 @@ export function NavbarMobile() {
         <button
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Menu"
-          className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg text-[#71717A] hover:text-[#111827] hover:bg-[#FAF9F8] transition-colors cursor-pointer"
         >
           {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -64,8 +64,8 @@ export function NavbarMobile() {
 
       {/* Mobile Drawer */}
       {isOpen && (
-        <div className="md:hidden fixed inset-0 top-[53px] z-50 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white border-b border-slate-200 shadow-xl max-h-[calc(100vh-53px)] overflow-y-auto p-4 space-y-4">
+        <div className="md:hidden fixed inset-0 top-[50px] z-50 bg-[#111827]/40 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white border-b border-[#F0EFEA] shadow-xl max-h-[calc(100vh-50px)] overflow-y-auto p-4 space-y-4">
             <nav className="space-y-1">
               {NAV_LINKS.map((item) => {
                 const isActive =
@@ -79,14 +79,14 @@ export function NavbarMobile() {
                     href={item.href}
                     onClick={() => setIsOpen(false)}
                     className={cn(
-                      "flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all",
+                      "flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-all",
                       isActive
-                        ? "bg-indigo-600 text-white"
-                        : "text-slate-700 hover:bg-slate-100"
+                        ? "bg-[#0D3B2E] text-white"
+                        : "text-[#71717A] hover:text-[#111827] hover:bg-[#FAF9F8]"
                     )}
                   >
                     <div className="flex items-center gap-2.5">
-                      <Icon className={cn("w-4 h-4", isActive ? "text-white" : "text-slate-400")} />
+                      <Icon className={cn("w-4 h-4", isActive ? "text-white" : "text-[#A1A1AA]")} />
                       <span>{item.label}</span>
                     </div>
                     {item.badge && (

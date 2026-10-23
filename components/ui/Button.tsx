@@ -39,28 +39,28 @@ export const Button = forwardRef<any, ButtonProps>(
       "inline-flex items-center justify-center font-bold tracking-tight transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer active:scale-[0.98] no-underline";
 
     const variantStyles = {
-      // Primary: Indigo profond avec highlight lumineux supérieur
+      // Primary: Émeraude Institutionnelle (Proposition 1)
       primary:
-        "bg-indigo-600 text-white hover:bg-indigo-500 active:bg-indigo-700 focus-visible:ring-indigo-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_2px_4px_rgba(79,70,229,0.25)] [&_*]:text-white",
+        "bg-[#0D3B2E] text-white hover:bg-[#092B21] active:bg-[#062018] focus-visible:ring-[#0D3B2E] shadow-2xs [&_*]:text-white",
       // Secondary: Fond blanc, contour doux, ombre feutrée
       secondary:
-        "bg-white border border-slate-200/90 text-slate-800 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 focus-visible:ring-slate-300 shadow-[0_1px_2px_rgba(15,23,42,0.04)]",
+        "bg-white border border-[#E4E4E7] text-[#111827] hover:bg-[#FAF9F8] hover:border-[#D4D4D8] active:bg-[#F4F4F5] focus-visible:ring-[#0D3B2E]/20 shadow-2xs",
       // Ghost: Subtil
       ghost:
-        "bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 focus-visible:ring-slate-300",
+        "bg-transparent text-[#52525B] hover:text-[#111827] hover:bg-[#F4F4F5] active:bg-[#E4E4E7] focus-visible:ring-[#0D3B2E]/20",
       // Danger: Action destructive
       danger:
-        "bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 focus-visible:ring-rose-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_2px_4px_rgba(225,29,72,0.25)] [&_*]:text-white",
+        "bg-[#991B1B] text-white hover:bg-[#7F1D1D] active:bg-[#581313] focus-visible:ring-[#991B1B] shadow-2xs [&_*]:text-white",
       // Danger Outline
       "danger-outline":
-        "bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 active:bg-rose-100 focus-visible:ring-rose-500",
+        "bg-white border border-[#FECACA] text-[#991B1B] hover:bg-[#FEF2F2] hover:border-[#FCA5A5] active:bg-[#FEE2E2] focus-visible:ring-[#991B1B]/20",
     };
 
     const sizeStyles = {
-      sm: "h-8 px-3 text-xs rounded-lg gap-1.5",
-      md: "h-9 sm:h-10 px-4 text-xs sm:text-sm rounded-xl gap-2",
-      lg: "h-11 sm:h-12 px-6 text-sm sm:text-base rounded-xl gap-2.5",
-      icon: "h-9 w-9 p-0 rounded-xl justify-center",
+      sm: "h-8 px-2.5 text-xs rounded-lg gap-1.5",
+      md: "h-9 px-3.5 text-xs font-semibold rounded-lg gap-2",
+      lg: "h-10 px-5 text-sm font-semibold rounded-lg gap-2.5",
+      icon: "h-8 w-8 p-0 rounded-lg justify-center",
     };
 
     const combinedClassName = cn(baseStyles, variantStyles[variant], sizeStyles[size], className);

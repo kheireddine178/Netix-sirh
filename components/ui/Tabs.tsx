@@ -46,7 +46,7 @@ export function Tabs({
         <div
           role="tablist"
           className={cn(
-            "inline-flex p-1 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-1",
+            "inline-flex p-1 bg-[#FAF9F8] border border-[#F0EFEA] rounded-lg gap-1",
             className
           )}
         >
@@ -61,8 +61,8 @@ export function Tabs({
                 className={cn(
                   "inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-all select-none cursor-pointer",
                   isActive
-                    ? "bg-white text-[#0F172A] shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
-                    : "text-[#64748B] hover:text-[#0F172A]"
+                    ? "bg-white text-[#111827] shadow-2xs border border-[#E4E4E7]"
+                    : "text-[#71717A] hover:text-[#111827]"
                 )}
               >
                 {tab.icon && <span className="shrink-0">{tab.icon}</span>}
@@ -71,7 +71,7 @@ export function Tabs({
                   <span
                     className={cn(
                       "text-[10px] px-1.5 py-0.2 rounded-full tabular-nums font-bold",
-                      isActive ? "bg-[#EEF2FF] text-[#4F46E5]" : "bg-[#E2E8F0] text-[#64748B]"
+                      isActive ? "bg-[#E6F3EE] text-[#0D3B2E]" : "bg-[#F4F4F5] text-[#71717A]"
                     )}
                   >
                     {tab.badge}
@@ -88,7 +88,7 @@ export function Tabs({
     return (
       <div
         role="tablist"
-        className={cn("flex border-b border-[#E2E8F0] gap-6 overflow-x-auto", className)}
+        className={cn("flex border-b border-[#F0EFEA] gap-6 overflow-x-auto", className)}
       >
         {tabs.map((tab) => {
           const isActive = tab.id === activeTab;
@@ -99,10 +99,10 @@ export function Tabs({
               aria-selected={isActive}
               onClick={() => onChange && onChange(tab.id)}
               className={cn(
-                "inline-flex items-center gap-2 pb-3 pt-1 text-sm font-medium border-b-2 transition-all relative select-none whitespace-nowrap cursor-pointer",
+                "inline-flex items-center gap-2 pb-2.5 pt-1 text-xs sm:text-sm font-medium border-b-2 transition-all relative select-none whitespace-nowrap cursor-pointer",
                 isActive
-                  ? "border-[#4F46E5] text-[#4F46E5] font-semibold"
-                  : "border-transparent text-[#64748B] hover:text-[#0F172A] hover:border-[#CBD5E1]"
+                  ? "border-[#0D3B2E] text-[#0D3B2E] font-bold"
+                  : "border-transparent text-[#71717A] hover:text-[#111827] hover:border-[#E4E4E7]"
               )}
             >
               {tab.icon && <span className="shrink-0">{tab.icon}</span>}
@@ -110,8 +110,8 @@ export function Tabs({
               {tab.badge !== undefined && (
                 <span
                   className={cn(
-                    "text-[11px] px-2 py-0.5 rounded-full tabular-nums font-semibold",
-                    isActive ? "bg-[#EEF2FF] text-[#4F46E5]" : "bg-[#F1F5F9] text-[#64748B]"
+                    "text-[10px] px-2 py-0.5 rounded-full tabular-nums font-bold",
+                    isActive ? "bg-[#E6F3EE] text-[#0D3B2E]" : "bg-[#FAF9F8] text-[#71717A]"
                   )}
                 >
                   {tab.badge}
@@ -142,7 +142,7 @@ export function TabsList({ className, children, ...props }: any) {
     <div
       role="tablist"
       className={cn(
-        "inline-flex p-1 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-1",
+        "inline-flex p-1 bg-[#FAF9F8] border border-[#F0EFEA] rounded-lg gap-1",
         className
       )}
       {...props}
@@ -165,10 +165,10 @@ export function TabsTrigger({ value, className, children, ...props }: any) {
       aria-selected={isActive}
       onClick={() => context.setValue(value)}
       className={cn(
-        "inline-flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-all select-none cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2",
+        "inline-flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-md transition-all select-none cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-[#0D3B2E]",
         isActive
-          ? "bg-white text-[#0F172A] shadow-sm"
-          : "text-[#64748B] hover:text-[#0F172A]",
+          ? "bg-white text-[#111827] shadow-2xs border border-[#E4E4E7]"
+          : "text-[#71717A] hover:text-[#111827]",
         className
       )}
       {...props}
@@ -189,7 +189,7 @@ export function TabsContent({ value, className, children, ...props }: any) {
       role="tabpanel"
       hidden={!isSelected}
       className={cn(
-        "mt-2 outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2",
+        "mt-2 outline-none focus-visible:ring-1 focus-visible:ring-[#0D3B2E]",
         !isSelected && "hidden",
         className
       )}

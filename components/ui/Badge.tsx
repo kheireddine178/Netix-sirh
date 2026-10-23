@@ -21,23 +21,23 @@ export function Badge({
 }: BadgeProps) {
   const variantStyles = {
     // Validé / Payé / Conforme
-    success: "bg-emerald-50 text-emerald-700 border-emerald-200/80 shadow-[0_0_8px_rgba(16,185,129,0.1)]",
+    success: "bg-[#E6F3EE] text-[#065F46] border-[#A7F3D0]",
     // Alerte / Échéance proche
-    warning: "bg-amber-50 text-amber-700 border-amber-200/80 shadow-[0_0_8px_rgba(245,158,11,0.1)]",
+    warning: "bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]",
     // Erreur / Retard / Suppression
-    danger: "bg-rose-50 text-rose-700 border-rose-200/80 shadow-[0_0_8px_rgba(239,68,68,0.1)]",
+    danger: "bg-[#FEE2E2] text-[#991B1B] border-[#FECACA]",
     // Neutre / Brouillon
-    neutral: "bg-slate-100/80 text-slate-600 border-slate-200",
+    neutral: "bg-[#F4F4F5] text-[#52525B] border-[#E4E4E7]",
     // Brand / Actif / Netix
-    brand: "bg-indigo-50 text-indigo-700 border-indigo-200/80 shadow-[0_0_8px_rgba(79,70,229,0.1)]",
+    brand: "bg-[#E6F3EE] text-[#0D3B2E] border-[#A7F3D0]",
   };
 
   const dotColors = {
-    success: "bg-emerald-500",
-    warning: "bg-amber-500",
-    danger: "bg-rose-500",
-    neutral: "bg-slate-400",
-    brand: "bg-indigo-600",
+    success: "bg-[#10B981]",
+    warning: "bg-[#F59E0B]",
+    danger: "bg-[#EF4444]",
+    neutral: "bg-[#A1A1AA]",
+    brand: "bg-[#0D3B2E]",
   };
 
   const sizeStyles = {

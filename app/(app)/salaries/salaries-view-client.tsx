@@ -101,7 +101,7 @@ export default function SalariesViewClient({
       header: "Matricule",
       width: "120px",
       render: (s) => (
-        <span className="font-mono text-xs text-[#4F46E5] font-bold">
+        <span className="font-mono text-xs text-[#0D3B2E] font-bold">
           {s.matricule || "—"}
         </span>
       ),
@@ -120,17 +120,17 @@ export default function SalariesViewClient({
 
         return (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#EEF2FF] border border-[#E0E7FF] text-[#4F46E5] flex items-center justify-center font-bold text-xs shrink-0">
+            <div className="w-8 h-8 rounded-full bg-[#E6F3EE] border border-[#A7F3D0] text-[#0D3B2E] flex items-center justify-center font-bold text-xs shrink-0">
               {initials}
             </div>
             <div className="flex flex-col">
               <Link
                 href={`/salaries/${s.id}`}
-                className="font-bold text-[#0F172A] hover:text-[#4F46E5] transition-colors"
+                className="font-bold text-[#111827] hover:text-[#0D3B2E] transition-colors"
               >
                 {s.nom_prenom}
               </Link>
-              <span className="text-xs text-[#64748B]">
+              <span className="text-xs text-[#71717A]">
                 {s.fonction || "Fonction non définie"}
               </span>
             </div>
@@ -143,7 +143,7 @@ export default function SalariesViewClient({
       header: "Salaire de Base",
       isCurrency: true,
       render: (s) => (
-        <span className="tabular-nums font-semibold text-[#0F172A]">
+        <span className="tabular-nums font-semibold text-[#111827]">
           {formatDA(s.salaire_base_theorique)}
         </span>
       ),
@@ -152,11 +152,11 @@ export default function SalariesViewClient({
       key: "ccp_rib",
       header: "RIB / CNAS",
       render: (s) => (
-        <div className="flex flex-col text-xs text-[#64748B]">
+        <div className="flex flex-col text-xs text-[#71717A]">
           <span className="tabular-nums">
             {s.ccp_rib ? `RIB: ${s.ccp_rib.slice(0, 10)}...` : "RIB manquant"}
           </span>
-          <span className="tabular-nums text-[11px] text-[#94A3B8]">
+          <span className="tabular-nums text-[11px] text-[#A1A1AA]">
             {s.date_visite_medicale ? "Visite médicale OK" : "Visite à planifier"}
           </span>
         </div>
@@ -202,7 +202,7 @@ export default function SalariesViewClient({
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      {/* PageHeader conforme §4.2 */}
+      {/* PageHeader */}
       <PageHeader
         breadcrumbs={[
           { label: "Accueil", href: "/dashboard" },
@@ -221,13 +221,13 @@ export default function SalariesViewClient({
           </Button>
         }
         secondaryActions={
-          <div className="flex items-center border border-[#E2E8F0] rounded-lg p-0.5 bg-white">
+          <div className="flex items-center border border-[#F0EFEA] rounded-lg p-0.5 bg-white">
             <button
               onClick={() => setViewMode("table")}
               className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                 viewMode === "table"
-                  ? "bg-[#EEF2FF] text-[#4F46E5]"
-                  : "text-[#64748B] hover:text-[#0F172A]"
+                  ? "bg-[#E6F3EE] text-[#0D3B2E]"
+                  : "text-[#71717A] hover:text-[#111827]"
               }`}
               title="Vue Tableau"
             >
@@ -237,8 +237,8 @@ export default function SalariesViewClient({
               onClick={() => setViewMode("grid")}
               className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                 viewMode === "grid"
-                  ? "bg-[#EEF2FF] text-[#4F46E5]"
-                  : "text-[#64748B] hover:text-[#0F172A]"
+                  ? "bg-[#E6F3EE] text-[#0D3B2E]"
+                  : "text-[#71717A] hover:text-[#111827]"
               }`}
               title="Vue Cartes"
             >
@@ -285,17 +285,17 @@ export default function SalariesViewClient({
                 <CardContent className="p-5 flex flex-col gap-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-lg bg-[#EEF2FF] border border-[#E0E7FF] text-[#4F46E5] flex items-center justify-center font-bold text-sm shrink-0">
+                      <div className="w-11 h-11 rounded-lg bg-[#E6F3EE] border border-[#A7F3D0] text-[#0D3B2E] flex items-center justify-center font-bold text-sm shrink-0">
                         {initials}
                       </div>
                       <div className="flex flex-col min-w-0">
                         <Link
                           href={`/salaries/${s.id}`}
-                          className="font-bold text-sm text-[#0F172A] hover:text-[#4F46E5] transition-colors truncate"
+                          className="font-bold text-sm text-[#111827] hover:text-[#0D3B2E] transition-colors truncate"
                         >
                           {s.nom_prenom}
                         </Link>
-                        <span className="text-xs text-[#64748B] truncate">
+                        <span className="text-xs text-[#71717A] truncate">
                           {s.fonction || "Fonction non définie"}
                         </span>
                       </div>
@@ -305,23 +305,23 @@ export default function SalariesViewClient({
                     </Badge>
                   </div>
 
-                  <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg flex flex-col gap-1.5 text-xs">
+                  <div className="p-3 bg-[#FAF9F8] border border-[#F0EFEA] rounded-lg flex flex-col gap-1.5 text-xs">
                     <div className="flex justify-between">
-                      <span className="text-[#64748B]">Matricule :</span>
-                      <span className="font-mono font-bold text-[#4F46E5]">{s.matricule || "—"}</span>
+                      <span className="text-[#71717A]">Matricule :</span>
+                      <span className="font-mono font-bold text-[#0D3B2E]">{s.matricule || "—"}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#64748B]">Salaire de base :</span>
-                      <span className="font-semibold tabular-nums text-[#0F172A]">
+                      <span className="text-[#71717A]">Salaire de base :</span>
+                      <span className="font-semibold tabular-nums text-[#111827]">
                         {formatDA(s.salaire_base_theorique)}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-[#F1F5F9] text-xs">
+                  <div className="flex items-center justify-between pt-2 border-t border-[#F0EFEA] text-xs">
                     <Link
                       href={`/saisie?salarieId=${s.id}`}
-                      className="text-xs font-semibold text-[#4F46E5] hover:underline"
+                      className="text-xs font-semibold text-[#0D3B2E] hover:underline"
                     >
                       Calculer la paie
                     </Link>

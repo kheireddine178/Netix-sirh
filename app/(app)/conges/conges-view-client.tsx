@@ -145,11 +145,9 @@ export default function CongesViewClient({
             <Users className="w-4 h-4" />
             {viewMode === "balances" ? "Vue Demandes" : "Soldes Collaborateurs"}
           </Button>
-        }
-      >
-        <div className="flex items-center gap-4 mt-6">
+          <div className="flex items-center gap-4 mt-6">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A1A1AA]" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -157,7 +155,7 @@ export default function CongesViewClient({
               className="pl-9"
             />
           </div>
-          <div className="flex bg-[#F1F5F9] p-1 rounded-lg">
+          <div className="flex bg-[#F0EFEA] p-1 rounded-lg">
             {[
               { id: "all", label: "Toutes" },
               { id: "attente", label: `À valider (${totalEnAttente})` },
@@ -166,8 +164,8 @@ export default function CongesViewClient({
               <button
                 key={f.id}
                 onClick={() => setFilterStatut(f.id)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  filterStatut === f.id ? "bg-white text-[#0F172A] shadow-sm" : "text-[#64748B] hover:text-[#0F172A]"
+                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors cursor-pointer ${
+                  filterStatut === f.id ? "bg-white text-[#111827] shadow-2xs font-semibold" : "text-[#71717A] hover:text-[#111827]"
                 }`}
               >
                 {f.label}
@@ -177,42 +175,42 @@ export default function CongesViewClient({
         </div>
       </PageHeader>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-[#64748B]">En attente de validation</p>
-                <p className="text-2xl font-semibold text-[#0F172A] mt-2">{totalEnAttente}</p>
+                <p className="text-xs font-medium text-[#71717A]">En attente de validation</p>
+                <p className="text-2xl font-semibold tabular-nums text-[#111827] mt-1">{totalEnAttente}</p>
               </div>
-              <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center">
-                <Clock className="w-6 h-6 text-amber-600" />
+              <div className="w-10 h-10 bg-amber-50 rounded-lg border border-amber-200/50 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-amber-600" />
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-[#64748B]">Demandes approuvées</p>
-                <p className="text-2xl font-semibold text-[#0F172A] mt-2">{totalApprouves}</p>
+                <p className="text-xs font-medium text-[#71717A]">Demandes approuvées</p>
+                <p className="text-2xl font-semibold tabular-nums text-[#111827] mt-1">{totalApprouves}</p>
               </div>
-              <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-teal-600" />
+              <div className="w-10 h-10 bg-[#E6F3EE] rounded-lg border border-[#A7F3D0]/60 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-[#0D3B2E]" />
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-[#64748B]">Jours pris cumulés</p>
-                <p className="text-2xl font-semibold text-[#0F172A] mt-2">{totalJoursPris}</p>
+                <p className="text-xs font-medium text-[#71717A]">Jours pris cumulés</p>
+                <p className="text-2xl font-semibold tabular-nums text-[#111827] mt-1">{totalJoursPris}</p>
               </div>
-              <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center">
-                <CalendarDays className="w-6 h-6 text-[#4F46E5]" />
+              <div className="w-10 h-10 bg-[#FAF9F8] rounded-lg border border-[#F0EFEA] flex items-center justify-center">
+                <CalendarDays className="w-5 h-5 text-[#71717A]" />
               </div>
             </div>
           </CardContent>
@@ -222,7 +220,7 @@ export default function CongesViewClient({
       {message && (
         <div className={`p-4 rounded-lg text-sm font-medium border ${
           message.type === 'success' 
-            ? 'bg-teal-50 text-teal-900 border-teal-200' 
+            ? 'bg-[#E6F3EE] text-[#0D3B2E] border-[#A7F3D0]' 
             : 'bg-red-50 text-red-900 border-red-200'
         }`}>
           {message.text}
@@ -234,22 +232,22 @@ export default function CongesViewClient({
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead>
-                <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
-                  <th className="p-4 font-semibold text-[#64748B]">Collaborateur</th>
-                  <th className="p-4 font-semibold text-[#64748B] text-center">Jours pris</th>
-                  <th className="p-4 font-semibold text-[#64748B] text-center">Jours en attente</th>
-                  <th className="p-4 font-semibold text-[#64748B] text-center">Reliquat</th>
+                <tr className="bg-[#FAF9F8] border-b border-[#F0EFEA]">
+                  <th className="p-4 font-semibold text-[#71717A]">Collaborateur</th>
+                  <th className="p-4 font-semibold text-[#71717A] text-center">Jours pris</th>
+                  <th className="p-4 font-semibold text-[#71717A] text-center">Jours en attente</th>
+                  <th className="p-4 font-semibold text-[#71717A] text-center">Reliquat</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E2E8F0]">
+              <tbody className="divide-y divide-[#F0EFEA]">
                 {salaries.map((s) => {
                   const stat = statsSalarie[s.id] || { pris: 0, enAttente: 0, reliquat: 30 };
                   return (
-                    <tr key={s.id} className="hover:bg-[#F8FAFC]/50 transition-colors">
-                      <td className="p-4 font-medium text-[#0F172A]">{s.nom_prenom}</td>
-                      <td className="p-4 text-center text-[#64748B]">{stat.pris} j</td>
-                      <td className="p-4 text-center text-amber-600 font-medium">{stat.enAttente > 0 ? `${stat.enAttente} j` : "-"}</td>
-                      <td className="p-4 text-center font-medium text-[#0F172A]">{stat.reliquat} j</td>
+                    <tr key={s.id} className="hover:bg-[#FAF9F8] transition-colors">
+                      <td className="p-4 font-medium text-[#111827]">{s.nom_prenom}</td>
+                      <td className="p-4 text-center tabular-nums text-[#71717A]">{stat.pris} j</td>
+                      <td className="p-4 text-center tabular-nums text-amber-600 font-medium">{stat.enAttente > 0 ? `${stat.enAttente} j` : "-"}</td>
+                      <td className="p-4 text-center tabular-nums font-semibold text-[#111827]">{stat.reliquat} j</td>
                     </tr>
                   );
                 })}
@@ -258,18 +256,18 @@ export default function CongesViewClient({
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredConges.map((c) => (
             <Card key={c.id} className="flex flex-col">
               <CardContent className="p-5 flex-1 flex flex-col">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#EEF2FF] flex items-center justify-center text-sm font-bold text-[#4F46E5]">
+                    <div className="w-9 h-9 rounded-full bg-[#E6F3EE] border border-[#A7F3D0] flex items-center justify-center text-xs font-bold text-[#0D3B2E]">
                       {c.salaries?.nom_prenom?.slice(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-[#0F172A] text-sm">{c.salaries?.nom_prenom}</h4>
-                      <p className="text-xs text-[#64748B]">{c.type_conge}</p>
+                      <h4 className="font-semibold text-[#111827] text-sm">{c.salaries?.nom_prenom}</h4>
+                      <p className="text-xs text-[#71717A]">{c.type_conge}</p>
                     </div>
                   </div>
                   <Badge variant={c.statut === "Approuvé" ? "success" : c.statut === "Rejeté" ? "danger" : "warning"}>
@@ -277,62 +275,66 @@ export default function CongesViewClient({
                   </Badge>
                 </div>
                 
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#64748B]">Période</span>
-                    <span className="font-medium text-[#0F172A]">
+                <div className="space-y-2 mb-4">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[#71717A]">Période</span>
+                    <span className="font-medium text-[#111827]">
                       {new Date(c.date_debut).toLocaleDateString()} - {new Date(c.date_fin).toLocaleDateString()}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#64748B]">Durée</span>
-                    <span className="font-medium text-[#0F172A]">{c.jours_ouvrables} jours</span>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[#71717A]">Durée</span>
+                    <span className="font-semibold tabular-nums text-[#111827]">{c.jours_ouvrables} jours</span>
                   </div>
                   {c.motif && (
-                    <p className="text-xs text-[#64748B] bg-[#F8FAFC] p-2 rounded line-clamp-2">
+                    <p className="text-xs text-[#71717A] bg-[#FAF9F8] border border-[#F0EFEA] p-2 rounded line-clamp-2">
                       {c.motif}
                     </p>
                   )}
                 </div>
 
-                <div className="mt-auto pt-4 border-t border-[#E2E8F0] flex justify-between gap-2">
+                <div className="mt-auto pt-3 border-t border-[#F0EFEA] flex justify-between gap-2">
                   {(c.statut === "En attente" || c.statut === "En attente validation RH") && (
                     <>
                       <Button 
                         variant="secondary" 
-                        className="flex-1 text-teal-600 bg-teal-50 hover:bg-teal-100 border-none"
+                        size="sm"
+                        className="flex-1 text-[#0D3B2E] bg-[#E6F3EE] hover:bg-[#d8ece4] border-[#A7F3D0]"
                         onClick={() => handleChangerStatut(c.id, "Approuvé")}
                         disabled={isPending}
                       >
-                        <CheckCircle className="w-4 h-4 mr-2" /> Approuver
+                        <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Approuver
                       </Button>
                       <Button 
                         variant="secondary"
-                        className="flex-1 text-red-600 bg-red-50 hover:bg-red-100 border-none"
+                        size="sm"
+                        className="flex-1 text-red-600 bg-red-50 hover:bg-red-100 border-red-200"
                         onClick={() => handleChangerStatut(c.id, "Rejeté")}
                         disabled={isPending}
                       >
-                        <XCircle className="w-4 h-4 mr-2" /> Rejeter
+                        <XCircle className="w-3.5 h-3.5 mr-1.5" /> Rejeter
                       </Button>
                     </>
                   )}
                   {c.statut === "Approuvé" && (
                     <Button 
                       variant="secondary"
-                      className="w-full text-amber-600 bg-amber-50 hover:bg-amber-100 border-none"
+                      size="sm"
+                      className="w-full text-amber-700 bg-amber-50 hover:bg-amber-100 border-amber-200"
                       onClick={() => handleChangerStatut(c.id, "En attente")}
                       disabled={isPending}
                     >
-                      <AlertCircle className="w-4 h-4 mr-2" /> Remettre en attente
+                      <AlertCircle className="w-3.5 h-3.5 mr-1.5" /> Remettre en attente
                     </Button>
                   )}
                   <Button 
                     variant="ghost" 
-                    className="px-3 text-[#64748B] hover:text-red-600"
+                    size="sm"
+                    className="px-2.5 text-[#71717A] hover:text-red-600"
                     onClick={() => handleSupprimer(c.id)}
                     disabled={isPending}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
               </CardContent>
@@ -342,24 +344,24 @@ export default function CongesViewClient({
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md shadow-xl border-none">
+        <div className="fixed inset-0 bg-[#111827]/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md shadow-lg border border-[#F0EFEA] bg-white">
             <CardContent className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-[#0F172A]">Nouvelle demande</h3>
-                <button onClick={() => setIsModalOpen(false)} className="text-[#64748B] hover:text-[#0F172A]">
+              <div className="flex justify-between items-center mb-5 pb-3 border-b border-[#F0EFEA]">
+                <h3 className="text-base font-semibold text-[#111827]">Nouvelle demande de congé</h3>
+                <button onClick={() => setIsModalOpen(false)} className="text-[#71717A] hover:text-[#111827]">
                   <XCircle className="w-5 h-5" />
                 </button>
               </div>
               
               <form onSubmit={handleCreerConge} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#0F172A]">Collaborateur</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-[#111827]">Collaborateur</label>
                   <Select value={formSalarieId} onChange={setFormSalarieId} options={salaries.map(s => ({ value: String(s.id), label: s.nom_prenom }))} />
                 </div>
                 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#0F172A]">Type de congé</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-[#111827]">Type de congé</label>
                   <Select value={formType} onChange={setFormType} options={[
                     { value: "Annuel", label: "Congé Annuel" },
                     { value: "Maladie", label: "Maladie" },
@@ -368,34 +370,34 @@ export default function CongesViewClient({
                   ]} />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#0F172A]">Du</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[#111827]">Du</label>
                     <Input type="date" value={formDebut} onChange={e => setFormDebut(e.target.value)} required />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#0F172A]">Au</label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-[#111827]">Au</label>
                     <Input type="date" value={formFin} onChange={e => setFormFin(e.target.value)} required />
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#0F172A]">Jours ouvrables</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-[#111827]">Jours ouvrables</label>
                   <Input type="number" step="0.5" min="0.5" value={formJours} onChange={e => setFormJours(parseFloat(e.target.value))} required />
                 </div>
                 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-[#0F172A]">Motif (optionnel)</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-[#111827]">Motif (optionnel)</label>
                   <textarea 
-                    className="w-full min-h-[80px] p-2.5 text-sm rounded-md border border-[#E2E8F0] focus:outline-none focus:ring-1 focus:ring-[#4F46E5]"
+                    className="w-full min-h-[75px] p-2.5 text-xs rounded-lg border border-[#E4E4E7] focus:outline-none focus:border-[#0D3B2E] focus:ring-1 focus:ring-[#0D3B2E]"
                     value={formMotif}
                     onChange={e => setFormMotif(e.target.value)}
                   />
                 </div>
                 
-                <div className="pt-4 flex justify-end gap-3">
-                  <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Annuler</Button>
-                  <Button type="submit" disabled={isPending}>Enregistrer</Button>
+                <div className="pt-3 flex justify-end gap-2 border-t border-[#F0EFEA]">
+                  <Button variant="secondary" size="sm" onClick={() => setIsModalOpen(false)}>Annuler</Button>
+                  <Button type="submit" size="sm" disabled={isPending}>Enregistrer</Button>
                 </div>
               </form>
             </CardContent>

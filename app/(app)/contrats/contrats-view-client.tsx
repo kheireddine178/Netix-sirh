@@ -193,34 +193,34 @@ export default function ContratsViewClient({
           label="Contrats en cours"
           value={totalActifs}
           subtext="Contrats actifs dans l'effectif"
-          icon={<CheckCircle className="w-5 h-5 text-[#16A34A]" />}
+          icon={<CheckCircle className="w-5 h-5 text-[#0D3B2E]" />}
         />
         <StatCard
           label="CDD à échéance (< 30j)"
           value={cddExpirants.length}
           subtext={cddExpirants.length > 0 ? "Action RH requise (renouvellement)" : "Aucune échéance critique"}
-          icon={<AlertTriangle className={`w-5 h-5 ${cddExpirants.length > 0 ? "text-[#DC2626]" : "text-[#D97706]"}`} />}
+          icon={<AlertTriangle className={`w-5 h-5 ${cddExpirants.length > 0 ? "text-[#DC2626]" : "text-amber-600"}`} />}
           trend={cddExpirants.length > 0 ? { value: `${cddExpirants.length} alertes`, direction: "up" } : undefined}
         />
         <StatCard
           label="Effectif CDI"
           value={totalCDI}
           subtext="Contrats à durée indéterminée"
-          icon={<Briefcase className="w-5 h-5 text-[#4F46E5]" />}
+          icon={<Briefcase className="w-5 h-5 text-[#0D3B2E]" />}
         />
         <StatCard
           label="Période d'essai"
           value={totalEssai}
           subtext="Évaluation en cours"
-          icon={<Clock className="w-5 h-5 text-[#64748B]" />}
+          icon={<Clock className="w-5 h-5 text-[#71717A]" />}
         />
       </div>
 
-      {/* 3. Bandeau d'alerte CDD (§5.4) */}
+      {/* 3. Bandeau d'alerte CDD */}
       {cddExpirants.length > 0 && filterType !== "expirant" && (
-        <div className="p-4 rounded-lg border border-[#FCD34D] bg-[#FFFBEB] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2.5 text-[#92400E]">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-[#D97706]" />
+        <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5 text-amber-900">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
             <span className="font-semibold">
               {cddExpirants.length} contrat(s) CDD arrivent à terme dans les 30 prochains jours.
             </span>
@@ -240,7 +240,7 @@ export default function ContratsViewClient({
         <div
           className={`p-3.5 text-xs font-semibold rounded-lg border ${
             message.type === "success"
-              ? "bg-[#F0FDF4] text-[#166534] border-[#BBF7D0]"
+              ? "bg-[#E6F3EE] text-[#0D3B2E] border-[#A7F3D0]"
               : "bg-[#FEF2F2] text-[#991B1B] border-[#FECACA]"
           }`}
         >
@@ -249,25 +249,25 @@ export default function ContratsViewClient({
       )}
 
       {/* 4. Barre de contrôle (Onglets de filtre + Recherche) */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-[#E2E8F0] pb-2">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-[#F0EFEA] pb-2">
         <Tabs tabs={FILTER_TABS} activeTab={filterType} onChange={(id) => setFilterType(id)} />
 
         <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A1A1AA]" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher salarié, type..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-[#E2E8F0] rounded-lg text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-hidden focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] transition-all"
+            className="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-[#E4E4E7] rounded-lg text-[#111827] placeholder:text-[#A1A1AA] focus:outline-hidden focus:border-[#0D3B2E] focus:ring-1 focus:ring-[#0D3B2E] transition-all"
           />
         </div>
       </div>
 
       {/* 5. TABLEAU DES CONTRATS */}
-      <div className="overflow-x-auto rounded-lg border border-[#E2E8F0] bg-white shadow-xs">
+      <div className="overflow-x-auto rounded-xl border border-[#F0EFEA] bg-white shadow-2xs">
         <table className="w-full border-collapse text-left text-xs">
-          <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[#64748B] font-semibold uppercase">
+          <thead className="bg-[#FAF9F8] border-b border-[#F0EFEA] text-[#71717A] font-semibold uppercase tracking-wider text-[11px]">
             <tr>
               <th className="py-3 px-4">Collaborateur</th>
               <th className="py-3 px-3">Type</th>
@@ -278,7 +278,7 @@ export default function ContratsViewClient({
               <th className="py-3 px-4 text-right">Actions RH</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#F1F5F9]">
+          <tbody className="divide-y divide-[#F0EFEA]">
             {filteredContrats.length > 0 ? (
               filteredContrats.map((c) => {
                 const isCddExpirant =
@@ -291,22 +291,22 @@ export default function ContratsViewClient({
                 return (
                   <tr
                     key={c.id}
-                    className={`hover:bg-[#F8FAFC] transition-colors ${
-                      isCddExpirant ? "bg-[#FFFBEB]/40" : ""
+                    className={`hover:bg-[#FAF9F8] transition-colors ${
+                      isCddExpirant ? "bg-amber-50/40" : ""
                     }`}
                   >
                     <td className="py-3 px-4">
                       <Link
                         href={`/salaries/${c.salarie_id}`}
-                        className="font-bold text-[#0F172A] hover:text-[#4F46E5] flex items-center gap-2.5"
+                        className="font-bold text-[#111827] hover:text-[#0D3B2E] flex items-center gap-2.5"
                       >
-                        <div className="w-7 h-7 rounded-lg bg-[#EEF2FF] text-[#4F46E5] flex items-center justify-center font-bold text-xs shrink-0 border border-[#E0E7FF]">
+                        <div className="w-7 h-7 rounded-lg bg-[#E6F3EE] text-[#0D3B2E] flex items-center justify-center font-bold text-xs shrink-0 border border-[#A7F3D0]">
                           {(c.salaries?.nom_prenom || "S").slice(0, 2).toUpperCase()}
                         </div>
                         <div>
                           <div>{c.salaries?.nom_prenom || `Salarié #${c.salarie_id}`}</div>
                           {c.salaries?.fonction && (
-                            <span className="text-[11px] font-normal text-[#64748B]">
+                            <span className="text-[11px] font-normal text-[#71717A]">
                               {c.salaries.fonction}
                             </span>
                           )}
@@ -315,17 +315,17 @@ export default function ContratsViewClient({
                     </td>
 
                     <td className="py-3 px-3">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#EEF2FF] text-[#4F46E5] border border-[#E0E7FF]">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#E6F3EE] text-[#0D3B2E] border border-[#A7F3D0]">
                         {c.type_contrat}
                       </span>
                     </td>
 
-                    <td className="py-3 px-3 text-[#334155]">{formatDateFR(c.date_debut)}</td>
+                    <td className="py-3 px-3 text-[#111827]">{formatDateFR(c.date_debut)}</td>
 
                     <td className="py-3 px-3">
                       {c.date_fin ? (
                         <div className="flex items-center gap-1.5">
-                          <span className={isCddExpirant ? "font-bold text-[#DC2626]" : "text-[#334155]"}>
+                          <span className={isCddExpirant ? "font-bold text-[#DC2626]" : "text-[#111827]"}>
                             {formatDateFR(c.date_fin)}
                           </span>
                           {isCddExpirant && (
@@ -335,11 +335,11 @@ export default function ContratsViewClient({
                           )}
                         </div>
                       ) : (
-                        <span className="text-[#94A3B8] italic">Durée indéterminée</span>
+                        <span className="text-[#A1A1AA] italic">Durée indéterminée</span>
                       )}
                     </td>
 
-                    <td className="py-3 px-4 text-right tabular-nums font-semibold text-[#0F172A]">
+                    <td className="py-3 px-4 text-right tabular-nums font-semibold text-[#111827]">
                       {formatDA(c.salaire_base_contrat)}
                     </td>
 
@@ -390,7 +390,7 @@ export default function ContratsViewClient({
                           size="sm"
                           disabled={isPending}
                           onClick={() => handleSupprimer(c.id)}
-                          className="text-[#94A3B8] hover:text-[#DC2626]"
+                          className="text-[#A1A1AA] hover:text-[#DC2626]"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
@@ -401,7 +401,7 @@ export default function ContratsViewClient({
               })
             ) : (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-[#64748B]">
+                <td colSpan={7} className="py-12 text-center text-[#71717A]">
                   Aucun contrat ne correspond à vos critères de recherche.
                 </td>
               </tr>
@@ -410,7 +410,7 @@ export default function ContratsViewClient({
         </table>
       </div>
 
-      {/* 6. MODÈLES & DOCUMENTS RÉGLEMENTAIRES (§5.4) */}
+      {/* 6. MODÈLES & DOCUMENTS RÉGLEMENTAIRES */}
       <Card>
         <CardHeader>
           <CardTitle>Modèles &amp; Pièces Réglementaires Conformes (Loi 90-11)</CardTitle>
@@ -420,47 +420,47 @@ export default function ContratsViewClient({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-            <div className="p-4 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] flex flex-col justify-between">
+            <div className="p-4 rounded-xl border border-[#F0EFEA] bg-[#FAF9F8] flex flex-col justify-between">
               <div>
-                <div className="w-8 h-8 rounded-lg bg-[#EEF2FF] text-[#4F46E5] flex items-center justify-center mb-2">
+                <div className="w-8 h-8 rounded-lg bg-[#E6F3EE] text-[#0D3B2E] border border-[#A7F3D0] flex items-center justify-center mb-2">
                   <FileText className="w-4 h-4" />
                 </div>
-                <h4 className="font-bold text-[#0F172A] mb-1">Attestation de Travail</h4>
-                <p className="text-[11px] text-[#64748B] mb-3">
+                <h4 className="font-bold text-[#111827] mb-1">Attestation de Travail</h4>
+                <p className="text-[11px] text-[#71717A] mb-3">
                   Document obligatoire attestant la période d&apos;activité et la qualification.
                 </p>
               </div>
-              <span className="text-[11px] font-semibold text-[#4F46E5]">
+              <span className="text-[11px] font-semibold text-[#0D3B2E]">
                 Accessible depuis l&apos;onglet « Documents » de chaque fiche →
               </span>
             </div>
 
-            <div className="p-4 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] flex flex-col justify-between">
+            <div className="p-4 rounded-xl border border-[#F0EFEA] bg-[#FAF9F8] flex flex-col justify-between">
               <div>
-                <div className="w-8 h-8 rounded-lg bg-[#EEF2FF] text-[#4F46E5] flex items-center justify-center mb-2">
+                <div className="w-8 h-8 rounded-lg bg-[#E6F3EE] text-[#0D3B2E] border border-[#A7F3D0] flex items-center justify-center mb-2">
                   <FileCheck className="w-4 h-4" />
                 </div>
-                <h4 className="font-bold text-[#0F172A] mb-1">PV d&apos;Installation</h4>
-                <p className="text-[11px] text-[#64748B] mb-3">
+                <h4 className="font-bold text-[#111827] mb-1">PV d&apos;Installation</h4>
+                <p className="text-[11px] text-[#71717A] mb-3">
                   Acte officiel validant la prise de fonction effective à la date d&apos;embauche.
                 </p>
               </div>
-              <span className="text-[11px] font-semibold text-[#4F46E5]">
+              <span className="text-[11px] font-semibold text-[#0D3B2E]">
                 Génération en 1 clic dans le dossier du collaborateur →
               </span>
             </div>
 
-            <div className="p-4 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] flex flex-col justify-between">
+            <div className="p-4 rounded-xl border border-[#F0EFEA] bg-[#FAF9F8] flex flex-col justify-between">
               <div>
-                <div className="w-8 h-8 rounded-lg bg-[#EEF2FF] text-[#4F46E5] flex items-center justify-center mb-2">
+                <div className="w-8 h-8 rounded-lg bg-[#E6F3EE] text-[#0D3B2E] border border-[#A7F3D0] flex items-center justify-center mb-2">
                   <Shield className="w-4 h-4" />
                 </div>
-                <h4 className="font-bold text-[#0F172A] mb-1">Contrat CDI / CDD Type</h4>
-                <p className="text-[11px] text-[#64748B] mb-3">
+                <h4 className="font-bold text-[#111827] mb-1">Contrat CDI / CDD Type</h4>
+                <p className="text-[11px] text-[#71717A] mb-3">
                   Modèle contractuel complet conforme à la convention collective.
                 </p>
               </div>
-              <span className="text-[11px] font-semibold text-[#4F46E5]">
+              <span className="text-[11px] font-semibold text-[#0D3B2E]">
                 Génération avec clauses d&apos;essai et rémunération →
               </span>
             </div>
@@ -491,7 +491,7 @@ export default function ContratsViewClient({
       >
         <form onSubmit={handleCreerContrat} className="flex flex-col gap-4 text-xs">
           <div>
-            <label className="font-bold block mb-1 text-[#0F172A]">Collaborateur concerné :</label>
+            <label className="font-semibold block mb-1 text-[#111827]">Collaborateur concerné :</label>
             <select
               value={formSalarieId}
               onChange={(e) => {
@@ -500,7 +500,7 @@ export default function ContratsViewClient({
                 if (sel) setFormSalaire(sel.salaire_base_theorique);
               }}
               required
-              className="w-full p-2 rounded-lg border border-[#E2E8F0] bg-white text-[#0F172A]"
+              className="w-full p-2 rounded-lg border border-[#E4E4E7] bg-white text-[#111827] focus:outline-none focus:border-[#0D3B2E]"
             >
               {salaries.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -512,11 +512,11 @@ export default function ContratsViewClient({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="font-bold block mb-1 text-[#0F172A]">Type de contrat :</label>
+              <label className="font-semibold block mb-1 text-[#111827]">Type de contrat :</label>
               <select
                 value={formType}
                 onChange={(e) => setFormType(e.target.value)}
-                className="w-full p-2 rounded-lg border border-[#E2E8F0] bg-white text-[#0F172A]"
+                className="w-full p-2 rounded-lg border border-[#E4E4E7] bg-white text-[#111827] focus:outline-none focus:border-[#0D3B2E]"
               >
                 <option value="CDI">CDI (Durée indéterminée)</option>
                 <option value="CDD">CDD (Durée déterminée)</option>
@@ -526,32 +526,32 @@ export default function ContratsViewClient({
             </div>
 
             <div>
-              <label className="font-bold block mb-1 text-[#0F172A]">Salaire de base (DA) :</label>
+              <label className="font-semibold block mb-1 text-[#111827]">Salaire de base (DA) :</label>
               <input
                 type="number"
                 min={20000}
                 value={formSalaire}
                 onChange={(e) => setFormSalaire(parseFloat(e.target.value) || 0)}
                 required
-                className="w-full p-2 rounded-lg border border-[#E2E8F0] bg-white text-[#0F172A] font-bold"
+                className="w-full p-2 rounded-lg border border-[#E4E4E7] bg-white text-[#111827] font-semibold tabular-nums focus:outline-none focus:border-[#0D3B2E]"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="font-bold block mb-1 text-[#0F172A]">Date de début :</label>
+              <label className="font-semibold block mb-1 text-[#111827]">Date de début :</label>
               <input
                 type="date"
                 value={formDebut}
                 onChange={(e) => setFormDebut(e.target.value)}
                 required
-                className="w-full p-2 rounded-lg border border-[#E2E8F0] bg-white text-[#0F172A]"
+                className="w-full p-2 rounded-lg border border-[#E4E4E7] bg-white text-[#111827] focus:outline-none focus:border-[#0D3B2E]"
               />
             </div>
 
             <div>
-              <label className="font-bold block mb-1 text-[#0F172A]">
+              <label className="font-semibold block mb-1 text-[#111827]">
                 Date de fin {formType === "CDI" ? "(Optionnelle)" : "(Requise)"} :
               </label>
               <input
@@ -559,30 +559,30 @@ export default function ContratsViewClient({
                 value={formFin}
                 onChange={(e) => setFormFin(e.target.value)}
                 required={formType === "CDD"}
-                className="w-full p-2 rounded-lg border border-[#E2E8F0] bg-white text-[#0F172A]"
+                className="w-full p-2 rounded-lg border border-[#E4E4E7] bg-white text-[#111827] focus:outline-none focus:border-[#0D3B2E]"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="font-bold block mb-1 text-[#0F172A]">Période d&apos;essai (mois) :</label>
+              <label className="font-semibold block mb-1 text-[#111827]">Période d&apos;essai (mois) :</label>
               <input
                 type="number"
                 min="0"
                 max="12"
                 value={formEssai}
                 onChange={(e) => setFormEssai(parseInt(e.target.value, 10) || 0)}
-                className="w-full p-2 rounded-lg border border-[#E2E8F0] bg-white text-[#0F172A]"
+                className="w-full p-2 rounded-lg border border-[#E4E4E7] bg-white text-[#111827] focus:outline-none focus:border-[#0D3B2E]"
               />
             </div>
 
             <div>
-              <label className="font-bold block mb-1 text-[#0F172A]">Statut contractuel :</label>
+              <label className="font-semibold block mb-1 text-[#111827]">Statut contractuel :</label>
               <select
                 value={formStatut}
                 onChange={(e) => setFormStatut(e.target.value)}
-                className="w-full p-2 rounded-lg border border-[#E2E8F0] bg-white text-[#0F172A]"
+                className="w-full p-2 rounded-lg border border-[#E4E4E7] bg-white text-[#111827] focus:outline-none focus:border-[#0D3B2E]"
               >
                 <option value="En cours">En cours</option>
                 <option value="Période d'essai">Période d&apos;essai</option>

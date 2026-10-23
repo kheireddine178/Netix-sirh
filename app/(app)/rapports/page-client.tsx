@@ -170,19 +170,19 @@ export default function PageClient({ catalogue }: { catalogue: RubriqueCatalogue
       <Card className="no-print">
         <CardContent className="p-4 flex flex-wrap items-end gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-[#64748B]">Période</span>
+            <span className="text-xs font-semibold text-[#71717A]">Période</span>
             <select value={mois} onChange={e => setMois(parseInt(e.target.value))}
-              className="p-2 rounded-md border border-[#E2E8F0] text-sm bg-white focus:ring-1 focus:ring-[#4F46E5] focus:outline-none">
+              className="p-2 rounded-lg border border-[#E4E4E7] text-xs bg-white text-[#111827] focus:ring-1 focus:ring-[#0D3B2E] focus:outline-none">
               {MOIS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
             </select>
             <Input type="number" value={annee} onChange={e => setAnnee(parseInt(e.target.value) || now.getFullYear())}
-              className="w-20 text-center" />
+              className="w-20 text-center text-xs" />
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-[#64748B]">Rapport</span>
+            <span className="text-xs font-semibold text-[#71717A]">Rapport</span>
             <select value={onglet} onChange={e => { setOnglet(e.target.value as any); setRecap(null); setNominatifList([]); setVirementList([]); }}
-              className="p-2 rounded-md border border-[#E2E8F0] text-sm bg-white focus:ring-1 focus:ring-[#4F46E5] focus:outline-none font-medium">
+              className="p-2 rounded-lg border border-[#E4E4E7] text-xs bg-white text-[#111827] focus:ring-1 focus:ring-[#0D3B2E] focus:outline-none font-medium">
               <option value="centralisateur">Centralisateur Général (Grand Livre)</option>
               <option value="cnas">Bordereau CNAS (DAC 34,5%)</option>
               <option value="g50">Synthèse G50 (IRG Salariés Art. 104)</option>
@@ -193,15 +193,15 @@ export default function PageClient({ catalogue }: { catalogue: RubriqueCatalogue
 
           {onglet === "nominatif" && (
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-[#64748B]">Rubrique</span>
+              <span className="text-xs font-semibold text-[#71717A]">Rubrique</span>
               <select value={selectedRubrique} onChange={e => { setSelectedRubrique(e.target.value); setNominatifList([]); }}
-                className="p-2 rounded-md border border-[#E2E8F0] text-sm bg-white focus:ring-1 focus:ring-[#4F46E5] focus:outline-none">
+                className="p-2 rounded-lg border border-[#E4E4E7] text-xs bg-white text-[#111827] focus:ring-1 focus:ring-[#0D3B2E] focus:outline-none">
                 {codeRubriquesOptions.map(o => <option key={o.code} value={o.code}>{o.code} — {o.name}</option>)}
               </select>
             </div>
           )}
 
-          <Button onClick={handleGenerer} disabled={isPending} className="ml-auto">
+          <Button onClick={handleGenerer} disabled={isPending} size="sm" className="ml-auto">
             {isPending ? "Génération..." : "Obtenir l'état"}
           </Button>
         </CardContent>

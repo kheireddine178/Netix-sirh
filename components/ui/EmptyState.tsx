@@ -24,23 +24,23 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "rounded-lg border border-dashed border-[#CBD5E1] bg-[#F8FAFC] p-8 text-center flex flex-col items-center justify-center min-h-[220px]",
+        "rounded-xl border border-dashed border-[#E4E4E7] bg-[#FAF9F8] p-8 text-center flex flex-col items-center justify-center min-h-[200px]",
         className
       )}
     >
-      <div className="w-12 h-12 rounded-full bg-white border border-[#E2E8F0] text-[#64748B] flex items-center justify-center mb-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-        {icon || <FolderSearch className="w-6 h-6 text-[#94A3B8]" strokeWidth={1.5} />}
+      <div className="w-11 h-11 rounded-xl bg-white border border-[#F0EFEA] text-[#0D3B2E] flex items-center justify-center mb-3 shadow-2xs">
+        {icon || <FolderSearch className="w-5 h-5 text-[#A1A1AA]" />}
       </div>
 
-      <h4 className="text-sm font-semibold text-[#0F172A] mb-1">{title}</h4>
+      <h4 className="text-sm font-bold text-[#111827] mb-1">{title}</h4>
 
       {description && (
-        <p className="text-xs text-[#64748B] max-w-sm mb-4 leading-relaxed">
+        <p className="text-xs text-[#71717A] max-w-sm mb-3.5 leading-relaxed">
           {description}
         </p>
       )}
 
-      {action && <div className="mt-2">{action}</div>}
+      {action && <div className="mt-1">{action}</div>}
     </div>
   );
 }

@@ -35,38 +35,38 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs flex flex-col justify-between transition-all duration-200 hover:border-slate-300 hover:shadow-md",
+        "rounded-xl border border-[#F0EFEA] bg-white p-4 sm:p-5 shadow-2xs flex flex-col justify-between transition-all duration-150 hover:border-[#E4E4E7]",
         className
       )}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-[#71717A]">
           {label}
         </span>
         {icon && (
-          <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 text-slate-500 flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#FAF9F8] border border-[#F0EFEA] text-[#0D3B2E] flex items-center justify-center shrink-0">
             {icon}
           </div>
         )}
       </div>
 
-      <div className="my-3">
-        <div className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 tabular-nums">
+      <div className="my-2.5">
+        <div className="text-2xl sm:text-3xl font-black tracking-tight text-[#111827] tabular-nums">
           {value}
         </div>
       </div>
 
       {(subtext || trend || badge) && (
-        <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100 text-xs">
-          {subtext && <span className="text-slate-500 truncate">{subtext}</span>}
+        <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-[#F0EFEA] text-xs">
+          {subtext && <span className="text-[#71717A] truncate">{subtext}</span>}
 
           {trend && (
             <span
               className={cn(
                 "inline-flex items-center gap-1 font-bold text-[11px] px-2 py-0.5 rounded-full shrink-0",
                 trend.positive
-                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-                  : "bg-rose-50 text-rose-700 border border-rose-200/60"
+                  ? "bg-[#E6F3EE] text-[#065F46] border border-[#A7F3D0]"
+                  : "bg-[#FEE2E2] text-[#991B1B] border border-[#FECACA]"
               )}
             >
               {trend.positive ? (

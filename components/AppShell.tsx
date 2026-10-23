@@ -12,7 +12,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const { isOpen, toggleSidebar } = useSidebar();
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#F8F7F4] text-[#111315] relative">
+    <div className="flex flex-col md:flex-row min-h-screen bg-[#FAF9F6] text-[#111827] relative">
       {/* Header Mobile avec Drawer fluide */}
       <NavbarMobile />
 
@@ -25,10 +25,10 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
           onClick={toggleSidebar}
           aria-label="Afficher la barre de navigation"
           title="Afficher la navigation (Ctrl+B)"
-          className="hidden md:flex fixed left-0 top-20 z-40 bg-white hover:bg-[#E6F3EE] text-[#0D3B2E] border border-l-0 border-[#E6E4DD] hover:border-[#A7F3D0] px-2 py-3 rounded-r-xl shadow-md transition-all cursor-pointer items-center gap-1 group"
+          className="hidden md:flex fixed left-0 top-20 z-40 bg-white hover:bg-[#E6F3EE] text-[#0D3B2E] border border-l-0 border-[#F0EFEA] hover:border-[#A7F3D0] px-2 py-3 rounded-r-xl shadow-xs transition-all cursor-pointer items-center gap-1 group"
         >
           <PanelLeftOpen className="w-4 h-4 text-[#0D3B2E] group-hover:scale-110 transition-transform" />
-          <ChevronRight className="w-3.5 h-3.5 -ml-1 text-[#5A6065] group-hover:text-[#0D3B2E]" />
+          <ChevronRight className="w-3.5 h-3.5 -ml-1 text-[#71717A] group-hover:text-[#0D3B2E]" />
         </button>
       )}
 
@@ -41,7 +41,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       >
         {/* Barre d'accès rapide & indicateur d'espace élargi quand le menu est masqué */}
         {!isOpen && (
-          <div className="hidden md:flex items-center justify-between mb-4 bg-white/90 backdrop-blur-sm border border-[#E6E4DD] rounded-xl px-4 py-2.5 shadow-xs animate-in fade-in-50 duration-200">
+          <div className="hidden md:flex items-center justify-between mb-4 bg-white border border-[#F0EFEA] rounded-xl px-4 py-2.5 shadow-2xs animate-in fade-in-50 duration-150">
             <div className="flex items-center gap-3">
               <button
                 onClick={toggleSidebar}
@@ -54,12 +54,12 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
                   Ctrl+B
                 </kbd>
               </button>
-              <span className="text-xs text-[#5A6065] font-medium">
+              <span className="text-xs text-[#71717A] font-medium">
                 Espace de travail élargi actif • Pleine largeur pour la paie et les calculs
               </span>
             </div>
 
-            <span className="text-[11px] font-bold text-[#065F46] bg-[#D1FAE5] px-2.5 py-1 rounded-full border border-[#A7F3D0]">
+            <span className="text-[11px] font-bold text-[#065F46] bg-[#E6F3EE] px-2.5 py-1 rounded-full border border-[#A7F3D0]">
               Mode Plein Écran
             </span>
           </div>
